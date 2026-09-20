@@ -1,0 +1,200 @@
+/* ═══════════════════════════════════════════════════════════════
+   СКИН: Товарищ 🚩
+   Пасхальный скин. Не продаётся в магазине.
+   Открывается через секретную комбинацию.
+   ═══════════════════════════════════════════════════════════════ */
+
+body.skin-china{
+  --r-stock: #4a0a0a;
+  --r-grip: #2a0808;
+  --r-receiver: #8a1010;
+  --r-receiver-inset: #d4a82a;
+  --r-barrel: #a01818;
+  --r-barrel-sh: #ffd23c;
+  --r-front-sight: #ffe066;
+  --r-rear-sight: #4a0a0a;
+  --r-muzzle: #ffd23c;
+  --r-muzzle-border: #d4a82a;
+  --r-glow: 0 0 16px rgba(255, 40, 40, .9);
+}
+
+body.skin-china #rifleWrap{
+  filter: drop-shadow(0 0 12px rgba(255, 40, 40, .6));
+}
+
+/* Звезда на прикладе */
+body.skin-china .rifle-stock::after{
+  content: "★";
+  position: absolute;
+  top: 30px;
+  left: 14px;
+  font-size: 22px;
+  color: #ffd23c;
+  text-shadow: 0 0 10px #ffd23c;
+  transform: rotate(9deg);
+  pointer-events: none;
+}
+
+/* Пули-звёздочки */
+body.skin-china .bullet{
+  width: 16px;
+  height: 16px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body.skin-china .bullet::before{
+  content: "★";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #ffd23c;
+  text-shadow: 0 0 8px #ffd23c, 0 0 16px #ff3a3a, 0 0 4px #000;
+  animation: chinaSpin .6s linear infinite;
+}
+@keyframes chinaSpin{
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ★ СПЕЦСООБЩЕНИЯ КИТАЙСКОГО РЕЖИМА
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Попап "+100 社会信用" на месте убитой мишени */
+.china-popup{
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 20;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.china-popup.credit{
+  font-size: 22px;
+  color: #4ade80;
+  text-shadow:
+    0 0 12px rgba(74, 222, 128, .95),
+    0 0 24px rgba(74, 222, 128, .6),
+    0 2px 4px #000;
+  animation: chinaPopCredit 1.4s cubic-bezier(.2,.8,.3,1) forwards;
+}
+
+.china-popup.miska{
+  font-size: 24px;
+  color: #4ade80;
+  text-shadow:
+    0 0 14px rgba(74, 222, 128, 1),
+    0 0 28px rgba(74, 222, 128, .7),
+    0 2px 4px #000;
+  animation: chinaPopMiska 1.8s cubic-bezier(.2,.8,.3,1) forwards;
+}
+
+.china-popup.full{
+  font-size: 26px;
+  color: #22ff55;
+  text-shadow:
+    0 0 16px rgba(34, 255, 85, 1),
+    0 0 32px rgba(34, 255, 85, .8),
+    0 0 48px rgba(34, 255, 85, .5),
+    0 2px 4px #000;
+  animation: chinaPopFull 2.2s cubic-bezier(.2,.8,.3,1) forwards;
+}
+
+@keyframes chinaPopCredit{
+  0%  { opacity: 0; transform: translate(-50%, -50%) scale(.4); }
+  18% { opacity: 1; transform: translate(-50%, -90%) scale(1.15); }
+  45% { opacity: 1; transform: translate(-50%, -110%) scale(1); }
+  100%{ opacity: 0; transform: translate(-50%, -160%) scale(.9); }
+}
+@keyframes chinaPopMiska{
+  0%  { opacity: 0; transform: translate(-50%, -50%) scale(.4); }
+  15% { opacity: 1; transform: translate(-50%, -100%) scale(1.2); }
+  60% { opacity: 1; transform: translate(-50%, -120%) scale(1); }
+  100%{ opacity: 0; transform: translate(-50%, -180%) scale(.9); }
+}
+@keyframes chinaPopFull{
+  0%  { opacity: 0; transform: translate(-50%, -50%) scale(.4); }
+  12% { opacity: 1; transform: translate(-50%, -100%) scale(1.35); }
+  25% { opacity: 1; transform: translate(-50%, -110%) scale(1.15); }
+  70% { opacity: 1; transform: translate(-50%, -130%) scale(1); }
+  100%{ opacity: 0; transform: translate(-50%, -200%) scale(.9); }
+}
+
+/* Верхнее сообщение "Партия гордится вами!!!" */
+.china-pride{
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  font-weight: 900;
+  color: #4ade80;
+  text-shadow:
+    0 0 12px rgba(74, 222, 128, 1),
+    0 0 24px rgba(74, 222, 128, .6),
+    0 2px 4px #000;
+  pointer-events: none;
+  z-index: 25;
+  white-space: nowrap;
+  animation: chinaPride 1.5s ease-out forwards;
+}
+@keyframes chinaPride{
+  0%  { opacity: 0; transform: translate(-50%, -10px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  80% { opacity: 1; transform: translate(-50%, 0); }
+  100%{ opacity: 0; transform: translate(-50%, -10px); }
+}
+
+/* "Вы разочаровали партию!!!" — под шапкой */
+.china-miss-score{
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 900;
+  color: #ff3a3a;
+  text-shadow:
+    0 0 10px rgba(255, 58, 58, 1),
+    0 0 20px rgba(255, 58, 58, .6),
+    0 2px 4px #000;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  animation: chinaMissScore 1.8s ease-out forwards;
+}
+@keyframes chinaMissScore{
+  0%  { opacity: 0; transform: translate(-50%, -8px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  80% { opacity: 1; transform: translate(-50%, 0); }
+  100%{ opacity: 0; transform: translate(-50%, -8px); }
+}
+
+/* "-1000 社会信用" на месте промаха */
+.china-miss-point{
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  font-weight: 900;
+  color: #ff3a3a;
+  text-shadow:
+    0 0 14px rgba(255, 58, 58, 1),
+    0 0 28px rgba(255, 58, 58, .6),
+    0 2px 4px #000;
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+  animation: chinaMissPoint 1.4s ease-out forwards;
+}
+@keyframes chinaMissPoint{
+  0%  { opacity: 0; transform: translate(-50%, -50%) scale(.5); }
+  18% { opacity: 1; transform: translate(-50%, -80%) scale(1.1); }
+  60% { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+  100%{ opacity: 0; transform: translate(-50%, -150%) scale(.9); }
+}

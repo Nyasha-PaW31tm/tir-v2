@@ -1,0 +1,65 @@
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS — стили экрана настроек
+   ═══════════════════════════════════════════════════════════════ */
+
+#screenSettings .menu-card{
+  text-align:left;
+}
+
+#screenSettings .settings-title{
+  text-align:center;
+  margin:0 0 20px;
+  font-size:24px;
+}
+
+#screenSettings .setting-block{
+  margin-top:14px;
+}
+
+#screenSettings .setting-block h3{
+  font-size:13px;
+  letter-spacing:1.5px;
+}
+
+/* Пасхалка: кнопка "В разработке" — приглушённая */
+#screenSettings .dev-btn{
+  color:#3a4149;
+  transition:color .3s ease;
+}
+
+#screenSettings .dev-btn:active{
+  color:#ffd23c;
+}
+
+/* Слайдер — жёлтая дорожка при перетаскивании */
+.vol-row input[type=range]:active{
+  background:#4a5060;
+}
+
+/* Тост-уведомление (создаётся из JS) */
+.tir-toast{
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#171c25;
+  color:#fff;
+  padding:14px 22px;
+  border-radius:14px;
+  border:1px solid #ffd23c;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+  font-weight:700;
+  font-size:14px;
+  z-index:9999;
+  max-width:90vw;
+  text-align:center;
+  animation:tirToastIn .3s ease-out;
+}
+
+@keyframes tirToastIn{
+  0%  { opacity:0; transform:translate(-50%,-10px); }
+  100%{ opacity:1; transform:translate(-50%,0); }
+}
+
+/* Светлая тема */
+body[data-bg="light"] #screenSettings .dev-btn{color:#b8bec6}

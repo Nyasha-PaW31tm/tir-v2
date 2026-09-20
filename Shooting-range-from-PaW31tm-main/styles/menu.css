@@ -1,0 +1,63 @@
+/* ═══════════════════════════════════════════════════════════════
+   MENU — стили главного меню и его элементов
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Логотип и версия */
+#screenMain .logo-mark{
+  font-size:52px;
+  font-weight:900;
+  letter-spacing:8px;
+  background:linear-gradient(135deg, #ffffff 0%, #aeb7c5 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:2px;
+}
+
+#screenMain h1{
+  font-size:22px;
+  font-weight:700;
+  margin:0 0 6px;
+  letter-spacing:2px;
+}
+
+#screenMain .beta{
+  color:#8893a3;
+  font-size:12px;
+  letter-spacing:2px;
+  margin:0 0 20px;
+  text-transform:uppercase;
+}
+
+/* Кнопки меню — отступы ровнее */
+#screenMain .menu-card button{
+  padding:15px;
+  font-size:15px;
+  letter-spacing:.5px;
+}
+
+/* Кнопка ИГРАТЬ — акцентная, зелёная */
+#screenMain #playBtn{
+  background:linear-gradient(135deg, #4a7c3a, #2f5a25);
+  box-shadow:0 4px 14px rgba(74,124,58,.35);
+  margin-bottom:6px;
+}
+#screenMain #playBtn:active{
+  transform:scale(.98);
+  box-shadow:0 2px 6px rgba(74,124,58,.35);
+}
+
+/* Лёгкая анимация появления карточки */
+@keyframes menuCardAppear{
+  0%  { opacity:0; transform:translateY(12px) scale(.98); }
+  100%{ opacity:1; transform:translateY(0) scale(1); }
+}
+#screenMain .menu-card{
+  animation:menuCardAppear .35s cubic-bezier(.2,.8,.3,1);
+}
+
+/* В бесконечном режиме — фиолетовый акцент на кнопке ИГРАТЬ */
+body.infinite-active #playBtn{
+  background:linear-gradient(135deg, #7a2a5a, #4a1a3a);
+  box-shadow:0 4px 14px rgba(122,42,90,.45);
+}

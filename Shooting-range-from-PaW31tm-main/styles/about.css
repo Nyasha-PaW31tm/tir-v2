@@ -1,0 +1,82 @@
+/* ═══════════════════════════════════════════════════════════════
+   ABOUT — стили экрана «Об игре»
+   ═══════════════════════════════════════════════════════════════ */
+
+#screenAbout .menu-card{
+  text-align:left;
+  max-height:80vh;
+  overflow-y:auto;
+}
+
+#screenAbout h1{
+  text-align:center;
+  margin:8px 0 4px;
+  font-size:26px;
+}
+
+#screenAbout .beta{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+#screenAbout h3{
+  color:#ffd23c;
+  margin:20px 0 10px;
+  font-size:14px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  border-bottom:1px solid #2a3039;
+  padding-bottom:6px;
+}
+
+#screenAbout ul{
+  margin:0;
+  padding-left:18px;
+  color:#c7d0dc;
+  font-size:14px;
+  line-height:1.7;
+}
+
+#screenAbout ul li{
+  margin-bottom:6px;
+}
+
+#screenAbout ul li b{
+  color:#fff;
+}
+
+#screenAbout a{
+  color:#6db3f2;
+  text-decoration:none;
+  font-weight:700;
+}
+#screenAbout a:active{opacity:.7}
+
+#screenAbout .version-tag{
+  display:inline-block;
+  background:#ffd23c;
+  color:#111;
+  font-weight:900;
+  font-size:12px;
+  padding:3px 12px;
+  border-radius:8px;
+  letter-spacing:1px;
+}
+
+#screenAbout p{
+  color:#aeb7c5;
+  font-size:13px;
+  line-height:1.6;
+  margin:8px 0;
+}
+
+/* Скроллбар */
+#screenAbout .menu-card::-webkit-scrollbar{width:5px}
+#screenAbout .menu-card::-webkit-scrollbar-track{background:transparent}
+#screenAbout .menu-card::-webkit-scrollbar-thumb{background:#333b48;border-radius:3px}
+
+/* Светлая тема */
+body[data-bg="light"] #screenAbout h3{border-bottom-color:#a8b0ba}
+body[data-bg="light"] #screenAbout ul{color:#3a4149}
+body[data-bg="light"] #screenAbout ul li b{color:#111}
+body[data-bg="light"] #screenAbout p{color:#5a6470}

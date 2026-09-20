@@ -1,0 +1,48 @@
+/* ═══════════════════════════════════════════════════════════════
+   RATING — стили рейтинга
+   ═══════════════════════════════════════════════════════════════ */
+
+.rating-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:11px 14px;
+  margin-bottom:8px;
+  border-radius:12px;
+  background:#11161e;
+  border:1px solid #2a3039;
+}
+body[data-bg="light"] .rating-row{background:#d0d6de;border-color:#a8b0ba;color:#111}
+
+.rating-row.top1{background:#3a3010;border-color:#ffd23c}
+.rating-row.top2{background:#2a3039;border-color:#b8bec6}
+.rating-row.top3{background:#3a2818;border-color:#c08040}
+
+.rating-rank{
+  font-size:18px;
+  font-weight:900;
+  min-width:34px;
+  text-align:center;
+  color:#ffd23c;
+}
+
+.rating-name{
+  flex:1;
+  font-weight:700;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.rating-score{
+  font-weight:900;
+  color:#ffd23c;
+  font-size:16px;
+}
+
+.rating-sub{
+  font-size:11px;
+  color:#8893a3;
+  display:block;
+  margin-top:2px;
+}

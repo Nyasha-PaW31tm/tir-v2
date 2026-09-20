@@ -1,0 +1,100 @@
+/* ═══════════════════════════════════════════════════════════════
+   ФОН: Космос — финальная версия
+   Фон и мерцание живут в ::before, мишени не трогает.
+   ═══════════════════════════════════════════════════════════════ */
+
+body[data-bg="star"]{
+  --bg-top: #050510;
+  --bg-bottom: #0a0520;
+  --body-bg: #050510;
+}
+
+/* Убираем фон с самого #range — он теперь в ::before */
+body[data-bg="star"] #range{
+  background: #050510 !important;
+}
+
+/* Фон в псевдоэлементе — под всеми мишенями, ружьём и т.д. */
+body[data-bg="star"] #range::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background-color: #050510;
+  background-image:
+    /* 1-5: Звёзды (повторяются) */
+    radial-gradient(circle at 30px 40px, #fff 2px, rgba(255,255,255,.4) 2.5px, transparent 4px),
+    radial-gradient(circle at 200px 60px, #d0e4ff 2.5px, rgba(208,228,255,.4) 3px, transparent 5px),
+    radial-gradient(circle at 100px 180px, #fff 2px, rgba(255,255,255,.4) 2.5px, transparent 4px),
+    radial-gradient(circle at 260px 200px, #ffe4b0 2px, rgba(255,228,176,.4) 2.5px, transparent 4px),
+    radial-gradient(circle at 170px 250px, #fff 2.5px, rgba(255,255,255,.4) 3px, transparent 5px),
+    /* 6: Туманность слева снизу */
+    radial-gradient(ellipse 60% 40% at 15% 75%, rgba(200,70,200,.55), transparent 70%),
+    /* 7: Туманность справа сверху */
+    radial-gradient(ellipse 70% 50% at 85% 35%, rgba(70,90,230,.55), transparent 75%),
+    /* 8: Планета справа сверху */
+    radial-gradient(circle 60px at 88% 12%,
+      rgba(230,180,255,1) 0%,
+      rgba(180,100,240,.9) 45%,
+      rgba(120,50,200,.5) 70%,
+      transparent 100%),
+    /* 9: Мелкие звёзды */
+    radial-gradient(circle at 15px 15px, rgba(255,255,255,.6) 1px, transparent 1.5px),
+    /* 10: База */
+    linear-gradient(#050510, #0a0520);
+
+  background-size:
+    300px 300px,
+    300px 300px,
+    300px 300px,
+    300px 300px,
+    300px 300px,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    80px 80px,
+    100% 100%;
+
+  background-repeat:
+    repeat, repeat, repeat, repeat, repeat,
+    no-repeat, no-repeat, no-repeat, repeat, no-repeat;
+
+  background-position: 0 0;
+
+  /* ★ Мерцание — только на фоне, не на мишенях */
+  animation: starTwinkle 5s ease-in-out infinite;
+}
+
+@keyframes starTwinkle{
+  0%, 100%{ filter: brightness(1); }
+  50%{ filter: brightness(1.2); }
+}
+
+/* Мишени — с усиленной обводкой */
+body[data-bg="star"] .target{
+  box-shadow: 0 0 0 3px #000, 0 0 22px rgba(180,200,255,.55);
+}
+body[data-bg="star"] .target.gold{
+  box-shadow: 0 0 0 3px #000, 0 0 30px rgba(255,210,60,1);
+}
+
+/* Топ и кнопки */
+body[data-bg="star"] .top{
+  background:#0a0a22;
+  border-bottom-color:#2a2a5a;
+}
+body[data-bg="star"] .controls{
+  background:#0a0a22;
+}
+
+/* Лазер */
+body[data-bg="star"] #laser{
+  background:rgba(120,200,255,.95);
+  box-shadow:0 0 8px rgba(120,200,255,1);
+}
+body[data-bg="star"] #laser:after{
+  background:#7ec8ff;
+  box-shadow:0 0 12px #7ec8ff;
+}

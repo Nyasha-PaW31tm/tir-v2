@@ -1,0 +1,87 @@
+/* ═══════════════════════════════════════════════════════════════
+   ФОН: Китайская народная 🚩
+   Настоящий флаг: 5 звёзд в верхнем левом углу, красный фон.
+   ═══════════════════════════════════════════════════════════════ */
+
+body[data-bg="china"]{
+  --bg-top: #de2910;
+  --bg-bottom: #a01008;
+  --body-bg: #de2910;
+}
+
+body[data-bg="china"] #range{
+  background: #de2910 !important;
+}
+
+body[data-bg="china"] #range::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background-color: #de2910;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23DE2910'/%3E%3Cg fill='%23FFDE00'%3E%3Cpolygon points='0,-30 6.74,-9.27 28.53,-9.27 10.9,3.54 17.63,24.27 0,11.46 -17.63,24.27 -10.9,3.54 -28.53,-9.27 -6.74,-9.27' transform='translate(50 50)'/%3E%3Cpolygon points='0,-10 2.25,-3.09 9.51,-3.09 3.63,1.18 5.88,8.09 0,3.82 -5.88,8.09 -3.63,1.18 -9.51,-3.09 -2.25,-3.09' transform='translate(100 20)'/%3E%3Cpolygon points='0,-10 2.25,-3.09 9.51,-3.09 3.63,1.18 5.88,8.09 0,3.82 -5.88,8.09 -3.63,1.18 -9.51,-3.09 -2.25,-3.09' transform='translate(120 40)'/%3E%3Cpolygon points='0,-10 2.25,-3.09 9.51,-3.09 3.63,1.18 5.88,8.09 0,3.82 -5.88,8.09 -3.63,1.18 -9.51,-3.09 -2.25,-3.09' transform='translate(120 70)'/%3E%3Cpolygon points='0,-10 2.25,-3.09 9.51,-3.09 3.63,1.18 5.88,8.09 0,3.82 -5.88,8.09 -3.63,1.18 -9.51,-3.09 -2.25,-3.09' transform='translate(100 90)'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-attachment: local;
+
+  /* Красный градиент ниже флага */
+  box-shadow: inset 0 -500px 500px -100px #a01008;
+}
+
+/* Мишени — золотая обводка для контраста */
+body[data-bg="china"] .target{
+  box-shadow: 0 0 0 4px #ffde00, 0 0 24px rgba(255, 222, 0, .7);
+}
+body[data-bg="china"] .target.gold{
+  box-shadow: 0 0 0 4px #fff, 0 0 30px rgba(255, 210, 60, 1);
+}
+body[data-bg="china"] .target:after{
+  border-color: #de2910;
+}
+
+/* Топ-бар и кнопки */
+body[data-bg="china"] .top{
+  background: #6a0808;
+  border-bottom-color: #ffde00;
+}
+body[data-bg="china"] .controls{
+  background: #6a0808;
+}
+
+/* Лазер — жёлтый */
+body[data-bg="china"] #laser{
+  background: rgba(255, 222, 0, .95);
+  box-shadow: 0 0 10px rgba(255, 222, 0, 1);
+}
+body[data-bg="china"] #laser:after{
+  background: #ffde00;
+  box-shadow: 0 0 14px #ffde00;
+}
+
+/* Красная вспышка логотипа ТИР */
+.logo-flash{
+  animation: logoFlash .5s ease-out;
+}
+@keyframes logoFlash{
+  0%   { color: #fff; text-shadow: none; }
+  50%  { color: #ff3a3a; text-shadow: 0 0 20px #ff3a3a, 0 0 40px #ff3a3a; }
+  100% { color: #fff; text-shadow: none; }
+}
+
+/* Падающие звёзды-конфетти */
+.china-star-fall{
+  position: fixed;
+  top: -30px;
+  color: #ffde00;
+  text-shadow: 0 0 10px #ffde00, 0 0 20px #ffde00;
+  z-index: 9999;
+  pointer-events: none;
+  animation: chinaStarFall linear forwards;
+}
+@keyframes chinaStarFall{
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}

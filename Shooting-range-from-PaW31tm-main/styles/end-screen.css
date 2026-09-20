@@ -1,0 +1,49 @@
+/* ═══════════════════════════════════════════════════════════════
+   ЭКРАН ФИНИША (победа / проигрыш)
+   Базовые стили .overlay и .menu-card — в style.css
+   ═══════════════════════════════════════════════════════════════ */
+
+#endScreen .menu-card{
+  max-width:380px;
+}
+
+#endScreen #endTitle{
+  font-size:32px;
+  margin:8px 0 16px;
+  letter-spacing:1px;
+}
+
+#endScreen #finalScore{
+  color:#ffd23c;
+  font-size:20px;
+}
+
+#endScreen #endReason{
+  color:#aeb7c5;
+  font-size:14px;
+  margin:10px 0;
+  min-height:18px;
+}
+
+#endScreen #coinsEarned{
+  color:#ffd23c;
+  font-weight:900;
+  font-size:16px;
+  margin:8px 0 0;
+  text-shadow:0 0 10px rgba(255,210,60,.5);
+}
+
+#endScreen #stickerBtn{
+  background:#2a9d8f;
+}
+
+#endScreen #again{
+  background:#3f4a5b;
+}
+
+#endScreen #backMenu{
+  background:#242b36;
+}
+
+/* Скины-плейсхолдеры (место под будущие темы финала) */
+body[data-bg="light"] #endScreen #endReason{color:#5a6470}

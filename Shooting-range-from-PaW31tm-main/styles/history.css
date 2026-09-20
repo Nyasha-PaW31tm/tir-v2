@@ -1,0 +1,16 @@
+/* ═══════════════════════════════════════════════════════════════
+   HISTORY — стили истории забегов
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Основные стили для карточек истории пишутся инлайн в history.js.
+   Здесь — только контейнер, если понадобится доработать. */
+
+#historyList{
+  max-height:60vh;
+  overflow-y:auto;
+  padding-right:4px;
+}
+
+#historyList::-webkit-scrollbar{width:4px}
+#historyList::-webkit-scrollbar-track{background:transparent}
+#historyList::-webkit-scrollbar-thumb{background:#333b48;border-radius:2px}

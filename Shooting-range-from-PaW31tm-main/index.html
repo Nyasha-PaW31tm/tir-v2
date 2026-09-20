@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Тир — BETA 0.9</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<!-- Базовые стили игры -->
+<link rel="stylesheet" href="style.css">
+
+<!-- Стили экранов -->
+<link rel="stylesheet" href="styles/ui.css">
+<link rel="stylesheet" href="styles/menu.css">
+<link rel="stylesheet" href="styles/shop.css">
+<link rel="stylesheet" href="styles/rating.css">
+<link rel="stylesheet" href="styles/history.css">
+<link rel="stylesheet" href="styles/setting.css">
+<link rel="stylesheet" href="styles/about.css">
+<link rel="stylesheet" href="styles/end-screen.css">
+
+<!-- Скины (default — обязательно, остальные опционально) -->
+<link rel="stylesheet" href="skins/default.css">
+<link rel="stylesheet" href="skins/neon.css">
+<link rel="stylesheet" href="skins/star.css">
+<link rel="stylesheet" href="skins/bg-star.css">
+<link rel="stylesheet" href="skins/china.css">
+<link rel="stylesheet" href="skins/bg-china.css">
+<link rel="stylesheet" href="skins/skins.css">
+</head>
+<body data-bg="dark">
+<div id="app">
+
+  <!-- ═══════════════ ИГРА ═══════════════ -->
+  <header class="top">
+    <div class="score">Очки: <b id="score">0</b></div>
+    <div class="stats">
+      <span id="comboBlock">Комбо <b id="combo">×1.0</b></span>
+      <span id="ultBlock">ULT <b id="ult">0/5</b></span>
+      <span id="missesBlock" class="hidden">Промахи <b id="misses">0/8</b></span>
+      <span class="coins">🪙 <b id="coins">0</b></span>
+    </div>
+  </header>
+
+  <main id="range">
+    <button id="homeBtn" class="home-btn hidden" title="Выйти в меню">🏠</button>
+    <div id="modeBadge" class="mode-badge hidden">♾ БЕСКОНЕЧНЫЙ</div>
+
+    <div class="lane" data-lane="0"></div>
+    <div class="lane" data-lane="1"></div>
+    <div class="lane" data-lane="2"></div>
+
+    <div id="laser" class="hidden"></div>
+
+    <div id="rifleWrap">
+      <div id="rifle">
+        <div class="rifle-stock"></div>
+        <div class="rifle-grip"></div>
+        <div class="rifle-receiver"></div>
+        <div class="rifle-barrel"></div>
+        <div class="rifle-front-sight"></div>
+        <div class="rifle-rear-sight"></div>
+        <div class="rifle-muzzle"></div>
+      </div>
+    </div>
+
+    <div id="muzzleFlash"></div>
+    <div id="message"></div>
+  </main>
+
+  <footer class="controls">
+    <button id="fire">ВЫСТРЕЛ</button>
+    <button id="ultimate">ULT</button>
+  </footer>
+
+  <!-- ═══════════════ ЭКРАН ПОБЕДЫ / ПРОИГРЫША ═══════════════ -->
+  <section id="endScreen" class="overlay hidden">
+    <div class="menu-card">
+      <h1 id="endTitle">ПОБЕДА!</h1>
+      <p>Результат: <b id="finalScore">0</b></p>
+      <p id="endReason"></p>
+      <p id="coinsEarned" class="hidden">🪙 +0 монет</p>
+      <button id="stickerBtn" class="hidden">🎁 ЗАБРАТЬ СТИКЕРЫ</button>
+      <button id="again">ЕЩЁ РАЗ</button>
+      <button id="backMenu" class="secondary">В МЕНЮ</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════ ГЛАВНОЕ МЕНЮ ═══════════════ -->
+  <section id="screenMain" class="overlay">
+    <div class="menu-card">
+      <div class="logo-mark">ТИР</div>
+      <h1>Стрельбище</h1>
+      <p class="beta">BETA 0.9</p>
+
+      <div class="menu-coins">🪙 <span id="menuCoins">0</span></div>
+
+      <button id="playBtn">ИГРАТЬ</button>
+
+      <div id="infiniteBlock" class="infinite-toggle hidden">
+        <span>♾ Бесконечный<br><small>8 промахов — конец. Без лимита очков.</small></span>
+        <button id="infiniteToggle" class="toggle off">ВЫКЛ</button>
+      </div>
+
+      <button id="ratingBtn" class="secondary">🏆 РЕЙТИНГ</button>
+      <button id="shopBtn" class="secondary">🛒 МАГАЗИН</button>
+      <button id="historyBtn" class="secondary">ИСТОРИЯ</button>
+      <button id="aboutBtn" class="secondary">ОБ ИГРЕ</button>
+      <button id="settingsBtn" class="secondary">НАСТРОЙКИ</button>
+
+      <div class="setting">
+        <span>Лазерный целеуказатель<br><small>−35% к очкам при включении</small></span>
+        <button id="laserToggle" class="toggle off">ВЫКЛ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ НАСТРОЙКИ ═══════════════ -->
+  <section id="screenSettings" class="overlay hidden">
+    <div class="menu-card">
+      <h2 class="settings-title">⚙️ Настройки</h2>
+
+      <div class="setting-block">
+        <h3>🔊 Звук</h3>
+        <div class="vol-row">
+          <input type="range" id="volSlider" min="0" max="100" value="70">
+          <span class="vol-val" id="volVal">70%</span>
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <h3>🎨 Фон</h3>
+        <div class="bg-row">
+          <button class="bg-btn color-dark" data-bg="dark">Тёмный</button>
+          <button class="bg-btn color-black" data-bg="black">Чёрный</button>
+          <button class="bg-btn color-gray" data-bg="gray">Серый</button>
+          <button class="bg-btn color-light" data-bg="light">Светлый</button>
+          <button class="bg-btn color-confetti hidden" id="bgConfettiBtn" data-bg="confetti">🌸 Конфети</button>
+          
+          <button class="bg-btn" data-bg="star" style="background:linear-gradient(135deg,#0a0a1f,#5a3c9a);color:#fff">🌟 Космос</button>
+          
+          <button class="bg-btn color-china hidden" id="bgChinaBtn" data-bg="china" style="background:linear-gradient(135deg,#de2910,#a01008);color:#ffde00">🚩 Китай</button>
+          
+        </div>
+      </div>
+
+      <button id="devBtn" class="dev-btn">🚧 В разработке</button>
+      <button id="backFromSettings" class="secondary" style="margin-top:20px">← НАЗАД</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════ ОБ ИГРЕ ═══════════════ -->
+  <section id="screenAbout" class="overlay hidden">
+    <div class="menu-card">
+      <h1>О игре</h1>
+      <p class="beta">BETA 0.9</p>
+      <p>Тир / Стрельбище — браузерная игра на чистом HTML/CSS/JS</p>
+      <button id="backFromAbout" class="secondary">← НАЗАД</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════ ИСТОРИЯ ═══════════════ -->
+  <section id="screenHistory" class="overlay hidden">
+    <div class="menu-card">
+      <h1>📜 История</h1>
+      <p class="beta">Последние 10 забегов</p>
+      <div id="historyList"></div>
+      <button id="backFromHistory" class="secondary">← НАЗАД</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════ РЕЙТИНГ ═══════════════ -->
+  <section id="screenRating" class="overlay hidden">
+    <div class="menu-card">
+      <h1>🏆 Рейтинг</h1>
+      <p class="beta">Топ-10 игроков</p>
+      <div id="ratingList"></div>
+      <button id="backFromRating" class="secondary">← НАЗАД</button>
+    </div>
+  </section>
+
+<!-- ═══════════════ МАГАЗИН ═══════════════ -->
+<section id="screenShop" class="overlay hidden">
+  <div class="menu-card">
+    <h1>🛒 Магазин</h1>
+
+    <div class="shop-header">
+      <span class="shop-coins">🪙 <span id="shopCoins">0</span></span>
+    </div>
+
+    <!-- Кнопки категорий -->
+    <div class="shop-categories">
+      <button class="shop-cat-btn active" data-category="weapon">
+        <span class="icon">🔫</span>
+        <span>Оружие</span>
+      </button>
+      <button class="shop-cat-btn" data-category="background">
+        <span class="icon">🎨</span>
+        <span>Фоны</span>
+      </button>
+      <button class="shop-cat-btn" data-category="target">
+        <span class="icon">🎯</span>
+        <span>Мишени</span>
+      </button>
+    </div>
+
+    <!-- Список товаров -->
+    <div id="shopList" class="shop-list">
+      <p class="shop-empty">Загрузка...</p>
+    </div>
+
+    <button id="backFromShop" class="secondary" style="margin-top:20px">← НАЗАД</button>
+  </div>
+</section>
+
+</div>
+
+<!-- ═══════════════ СКРИПТЫ (порядок важен) ═══════════════ -->
+<script src="js/storage.js"></script>
+<script src="js/api.js"></script>
+<script src="js/skins.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui/menu.js"></script>
+<script src="js/ui/shop.js"></script>
+<script src="js/ui/roulette.js"></script>
+<script src="js/ui/rating.js"></script>
+<script src="js/ui/history.js"></script>
+<script src="js/ui/setting.js"></script>
+<script src="js/ui/about.js"></script>
+</body>
+</html>

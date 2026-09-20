@@ -1,0 +1,539 @@
+/* ═══════════════════════════════════════════════════════════════
+   ТИР — BETA 0.9 — базовые стили игры
+   Скины ружья живут в skins/*.css
+   ═══════════════════════════════════════════════════════════════ */
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  touch-action:none;
+}
+
+#app{
+  height:100dvh;
+  max-width:720px;
+  margin:auto;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ─── ФОНЫ ─── */
+:root{
+  --bg-top:#151a23;
+  --bg-bottom:#0d1118;
+  --body-bg:#090c11;
+}
+body{background:var(--body-bg);transition:background .3s ease}
+
+body[data-bg="dark"]  { --bg-top:#151a23; --bg-bottom:#0d1118; --body-bg:#090c11; }
+body[data-bg="black"] { --bg-top:#0a0a0a; --bg-bottom:#000;    --body-bg:#000;    }
+body[data-bg="gray"]  { --bg-top:#3a4149; --bg-bottom:#2a2f38; --body-bg:#22262d; }
+body[data-bg="light"] { --bg-top:#e8ecf1; --bg-bottom:#c8ced6; --body-bg:#b8bec6; color:#111; }
+body[data-bg="light"] .top{background:#d0d6de;border-bottom-color:#a8b0ba;color:#111}
+body[data-bg="light"] .stats{color:#5a6470}
+body[data-bg="light"] .stats b{color:#111}
+body[data-bg="light"] .score b{color:#111}
+body[data-bg="confetti"]{ --bg-top:#5a2050; --bg-bottom:#3a1030; --body-bg:#4a1a3a; }
+
+/* ─── ТОП БАР ─── */
+.top{
+  height:76px;
+  flex:none;
+  padding:10px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#11161e;
+  border-bottom:1px solid #2a3039;
+  z-index:10;
+}
+.score{font-size:20px}
+.score.gold-record,
+.score.gold-record b{
+  color:#ffd23c;
+  text-shadow:0 0 12px rgba(255,210,60,.7), 0 0 24px rgba(255,180,20,.4);
+}
+.stats{display:flex;gap:12px;color:#aeb7c5;font-size:14px;align-items:center}
+.stats b{color:#fff}
+.coins{color:#ffd23c;font-weight:800}
+.coins b{color:#ffd23c}
+#missesBlock b{color:#ff6b6b}
+
+/* ─── ПОЛИГОН ─── */
+#range{
+  position:relative;
+  flex:1;
+  overflow:hidden;
+  background:linear-gradient(var(--bg-top),var(--bg-bottom));
+}
+
+body[data-bg="confetti"] #range{
+  background-image:
+    radial-gradient(circle at 20px 30px, #ff6b9d 3px, transparent 4px),
+    radial-gradient(circle at 90px 60px, #ffd93d 3px, transparent 4px),
+    radial-gradient(circle at 50px 120px, #6bcbff 3px, transparent 4px),
+    radial-gradient(circle at 140px 40px, #7bff9c 3px, transparent 4px),
+    radial-gradient(circle at 180px 110px, #ff8cd9 3px, transparent 4px),
+    radial-gradient(circle at 30px 180px, #c58cff 3px, transparent 4px),
+    linear-gradient(var(--bg-top),var(--bg-bottom));
+  background-size:220px 220px,220px 220px,220px 220px,220px 220px,220px 220px,220px 220px,100% 100%;
+}
+
+/* ─── 3 ЛИНИИ МИШЕНЕЙ ─── */
+.lane{
+  position:absolute;
+  left:0;
+  width:100%;
+  height:17%;
+  border-top:1px solid #303844;
+}
+.lane[data-lane="0"]{ top:4%; }
+.lane[data-lane="1"]{ top:22%; }
+.lane[data-lane="2"]{
+  top:40%;
+  border-bottom:1px solid #303844;
+}
+.lane:after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:8px;
+  border-bottom:1px dashed #222934;
+}
+
+/* ─── МИШЕНИ ─── */
+.target{
+  position:absolute;
+  width:58px;height:58px;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 0 3px #111,0 0 15px rgba(255,255,255,.16);
+  z-index:4;
+}
+.target:after{
+  content:"";
+  position:absolute;
+  inset:12px;
+  border-radius:50%;
+  border:3px solid rgba(255,255,255,.9);
+}
+.target.normal{background:#d9dee5}
+.target.fast{background:#f08b32}
+.target.armored{background:#707987;border:4px solid #d3d8df}
+.target.maneuver{background:#9664e9}
+.target.gold{background:#ffd23c;box-shadow:0 0 0 3px #111,0 0 24px rgba(255,210,60,.75)}
+.target.gold.fastgold{width:calc(50% - 12px);height:58px;border-radius:30px}
+.hp{
+  position:absolute;
+  top:-19px;left:50%;
+  transform:translateX(-50%);
+  font-size:11px;
+  white-space:nowrap;
+  text-shadow:0 1px 3px #000;
+}
+
+/* Манёвренная — телеграф + прыжок */
+.target.maneuver.telegraph{animation:telegraph .42s ease-in-out}
+@keyframes telegraph{
+  0%{filter:brightness(1)}
+  35%{filter:brightness(2.1);box-shadow:0 0 0 4px #fff,0 0 24px #b98aff}
+  100%{filter:brightness(1)}
+}
+.target.maneuver.jumping{animation:jumpLine .34s cubic-bezier(.2,.8,.2,1)}
+@keyframes jumpLine{
+  0%{transform:translate(-50%,-50%) scale(1)}
+  45%{transform:translate(-50%,-50%) scale(1.15,.78)}
+  100%{transform:translate(-50%,-50%) scale(1)}
+}
+
+/* ─── ЛАЗЕР ─── */
+#laser{
+  position:absolute;
+  height:2px;
+  background:rgba(255,70,70,.9);
+  box-shadow:0 0 6px rgba(255,60,60,.9);
+  transform-origin:left center;
+  z-index:6;
+  pointer-events:none;
+}
+#laser:after{
+  content:"";
+  position:absolute;
+  right:-5px;top:50%;
+  width:8px;height:8px;
+  border-radius:50%;
+  background:#ff4b4b;
+  box-shadow:0 0 9px #ff4b4b;
+  transform:translateY(-50%);
+}
+
+/* ─── ПУЛЯ (база — скины переопределяют) ─── */
+.bullet{
+  position:absolute;
+  width:9px;height:18px;
+  border-radius:6px;
+  background:#f3f6fb;
+  box-shadow:0 0 5px #fff,0 0 12px rgba(255,255,255,.8);
+  z-index:9;
+  pointer-events:none;
+}
+@keyframes bulletTravel{
+  from{transform:translate(-50%,-50%) rotate(var(--angle))}
+  to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--angle))}
+}
+
+/* ─── ОСКОЛКИ МИШЕНИ (разлёт при убийстве) ─── */
+.shard{
+  position:absolute;
+  width:12px;
+  height:12px;
+  border-radius:3px;
+  z-index:15;
+  pointer-events:none;
+  box-shadow:0 0 6px rgba(255,255,255,.5);
+  animation:shatter .55s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes shatter{
+  0%{
+    transform:translate(-50%,-50%) scale(1) rotate(0);
+    opacity:1;
+  }
+  100%{
+    transform:translate(
+      calc(-50% + var(--dx)),
+      calc(-50% + var(--dy))
+    ) scale(.35) rotate(220deg);
+    opacity:0;
+  }
+}
+
+/* ─── ЗОЛОТОЕ КОМБО (всплывает при росте ×1.0) ─── */
+.combo-pop{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  font-weight:900;
+  font-size:26px;
+  color:#ffd23c;
+  text-shadow:
+    0 0 12px rgba(255,210,60,.95),
+    0 0 24px rgba(255,180,20,.7),
+    0 2px 4px #000;
+  pointer-events:none;
+  z-index:20;
+  animation:comboPop 1.2s cubic-bezier(.2,.8,.3,1) forwards;
+}
+@keyframes comboPop{
+  0%  { opacity:0; transform:translate(-50%,-50%) scale(.4); }
+  18% { opacity:1; transform:translate(-50%,-90%) scale(1.25); }
+  45% { opacity:1; transform:translate(-50%,-110%) scale(1); }
+  100%{ opacity:0; transform:translate(-50%,-160%) scale(.95); }
+}
+
+/* ─── ВСПЫШКА ВЫСТРЕЛА ─── */
+#muzzleFlash{
+  position:absolute;
+  width:34px;height:48px;
+  z-index:8;
+  opacity:0;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+}
+#muzzleFlash.fire{animation:mflash .11s ease-out}
+@keyframes mflash{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(.55)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.4)}
+}
+#muzzleFlash:before,#muzzleFlash:after{
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  background:#fff;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+}
+#muzzleFlash:before{width:10px;height:44px}
+#muzzleFlash:after{width:34px;height:10px}
+
+/* ─── СООБЩЕНИЕ (ULT ×3 и т.д.) ─── */
+#message{
+  position:absolute;
+  top:14px;left:50%;
+  transform:translateX(-50%);
+  font-weight:900;
+  font-size:22px;
+  z-index:12;
+  text-shadow:0 2px 5px #000;
+  pointer-events:none;
+}
+.pop{animation:pop .4s ease-out}
+@keyframes pop{
+  0%{opacity:0;transform:translate(-50%,-8px) scale(.7)}
+  100%{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+
+/* ─── КНОПКА ДОМИКА ─── */
+.home-btn{
+  position:absolute;
+  top:10px;right:10px;
+  z-index:50;
+  width:48px;height:48px;
+  padding:0;margin:0;
+  font-size:22px;
+  line-height:1;
+  background:rgba(20,25,32,.85);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .1s ease,background .2s ease;
+  touch-action:manipulation;
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+.home-btn:active{transform:scale(.92);background:rgba(40,50,65,.95)}
+
+/* ─── БЕЙДЖ РЕЖИМА ─── */
+.mode-badge{
+  position:absolute;
+  top:10px;left:10px;
+  z-index:20;
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:1px;
+  background:rgba(20,25,32,.85);
+  border:1px solid rgba(255,255,255,.15);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  pointer-events:none;
+}
+.mode-badge.infinite{
+  background:linear-gradient(135deg,#5a2050,#3a1030);
+  border-color:#ff6b9d;
+  color:#fff;
+  box-shadow:0 0 20px rgba(255,107,157,.4);
+}
+
+/* ─── КНОПКИ ВНИЗУ ─── */
+.controls{
+  height:92px;
+  flex:none;
+  display:flex;
+  gap:12px;
+  padding:12px;
+  background:#11161e;
+  z-index:10;
+}
+.controls button{
+  flex:1;
+  border:0;
+  color:#fff;
+  font-weight:800;
+  font-size:16px;
+  border-radius:14px;
+  background:#303846;
+  cursor:pointer;
+}
+.controls button:first-child{background:#414c5d}
+.controls button:active{transform:scale(.98)}
+#ultimate.ready{
+  background:#bd9000;
+  box-shadow:0 0 18px rgba(255,210,60,.55);
+}
+
+/* ─── ОВЕРЛЕЙ ─── */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(5,7,10,.86);
+  display:grid;
+  place-items:center;
+  padding:24px;
+  z-index:40;
+  overflow-y:auto;
+}
+
+.menu-card{
+  width:min(420px,92vw);
+  padding:30px;
+  border-radius:24px;
+  background:#171c25;
+  border:1px solid #333b48;
+  text-align:center;
+  box-shadow:0 22px 70px #000;
+  color:#fff;
+}
+.menu-card h1{margin:8px 0 4px}
+.menu-card button{
+  display:block;
+  width:100%;
+  padding:16px;
+  margin-top:12px;
+  background:#3f4a5b;
+  border:0;
+  color:#fff;
+  font-weight:800;
+  font-size:16px;
+  border-radius:14px;
+  cursor:pointer;
+}
+.menu-card button.secondary{background:#242b36}
+.menu-card button:active{transform:scale(.98)}
+
+/* ─── ЭКРАН ПОБЕДЫ / ПРОИГРЫША ─── */
+#endTitle{margin:8px 0 4px}
+#coinsEarned{color:#ffd23c;font-weight:800}
+#stickerBtn{background:#2a9d8f}
+
+/* ─── ЭЛЕМЕНТЫ МЕНЮ ─── */
+.logo-mark{font-size:42px;font-weight:900;letter-spacing:5px}
+.beta{color:#8893a3;font-size:12px;margin:0 0 24px}
+
+.menu-coins{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 14px;
+  border-radius:14px;
+  background:#11161e;
+  border:1px solid #2a3039;
+  font-weight:900;
+  font-size:14px;
+  color:#ffd23c;
+  margin-bottom:16px;
+}
+
+.toggle{
+  width:82px!important;
+  margin:0!important;
+  padding:11px 8px!important;
+  font-size:12px;
+  border:0;
+  color:#fff;
+  font-weight:800;
+  border-radius:14px;
+  cursor:pointer;
+}
+.toggle.on{background:#a43e3e}
+.toggle.off{background:#343c49}
+
+.setting{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  text-align:left;
+  margin-top:18px;
+  padding:14px;
+  border-radius:14px;
+  background:#11161e;
+  color:#e6eaf0;
+  font-weight:700;
+}
+.setting small{color:#8f99a8;font-weight:400}
+
+.infinite-toggle{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:12px;
+  padding:14px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#3a1030,#2a0820);
+  border:1px solid #7a3a6a;
+  text-align:left;
+  font-weight:700;
+  color:#fff;
+}
+.infinite-toggle span small{
+  color:#ff8cd9;
+  font-weight:400;
+  display:block;
+  margin-top:4px;
+  font-size:11px;
+}
+
+/* ─── НАСТРОЙКИ ─── */
+.settings-title{margin:0 0 20px;font-size:22px}
+.setting-block{
+  margin-top:16px;
+  padding:16px;
+  border-radius:14px;
+  background:#11161e;
+  text-align:left;
+}
+.setting-block h3{
+  margin:0 0 12px;
+  font-size:15px;
+  color:#aeb7c5;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+.vol-row{display:flex;align-items:center;gap:12px}
+.vol-row input[type=range]{
+  flex:1;
+  -webkit-appearance:none;
+  appearance:none;
+  height:6px;
+  border-radius:4px;
+  background:#3f4a5b;
+  outline:none;
+}
+.vol-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:22px;height:22px;
+  border-radius:50%;
+  background:#ffd23c;
+  cursor:pointer;
+  box-shadow:0 0 8px rgba(255,210,60,.6);
+}
+.vol-val{min-width:48px;text-align:right;font-weight:900;color:#ffd23c}
+
+.bg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bg-btn{
+  margin:0!important;
+  padding:12px 8px!important;
+  font-size:13px!important;
+  background:#242b36!important;
+  border:2px solid transparent!important;
+  border-radius:14px;
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+.bg-btn.active{border-color:#ffd23c!important;background:#3a4150!important}
+.bg-btn.color-dark{background:#11161e!important}
+.bg-btn.color-black{background:#000!important}
+.bg-btn.color-gray{background:#3a4149!important}
+.bg-btn.color-light{background:#c8ced6!important;color:#111!important}
+.bg-btn.color-confetti{background:linear-gradient(135deg,#5a2050,#3a1030 60%,#7a2a5a)!important;color:#fff!important}
+
+.dev-btn{
+  margin-top:16px!important;
+  background:#1a1f27!important;
+  color:#6b7280!important;
+  font-size:13px!important;
+}
+
+/* Light theme overrides */
+body[data-bg="light"] .menu-card{background:#e8ecf1;color:#111;border-color:#a8b0ba}
+body[data-bg="light"] .beta{color:#5a6470}
+body[data-bg="light"] .setting{background:#d0d6de;color:#111}
+body[data-bg="light"] .setting small{color:#5a6470}
+body[data-bg="light"] .menu-coins{background:#d0d6de;border-color:#a8b0ba;color:#8a6a00}
+body[data-bg="light"] .setting-block{background:#d0d6de}
+body[data-bg="light"] .setting-block h3{color:#5a6470}
+
+body[data-bg="confetti"] .menu-card{background:#3a1028;border-color:#7a3a6a}
+
+.hidden{display:none!important}

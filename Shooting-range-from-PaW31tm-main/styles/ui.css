@@ -1,0 +1,22 @@
+/* ═══════════════════════════════════════════════════════════════
+   UI — общие стили оверлеев и элементов
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Мини-значки режимов */
+.mini-badge{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:8px;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.5px;
+  background:#2a3039;
+  color:#aeb7c5;
+}
+.mini-badge.infinite{background:#5a2050;color:#fff}
+.mini-badge.laser{background:#4a2020;color:#ff9a9a}
+
+/* Скроллбары оверлеев */
+.overlay::-webkit-scrollbar{width:6px}
+.overlay::-webkit-scrollbar-track{background:transparent}
+.overlay::-webkit-scrollbar-thumb{background:#333b48;border-radius:3px}
