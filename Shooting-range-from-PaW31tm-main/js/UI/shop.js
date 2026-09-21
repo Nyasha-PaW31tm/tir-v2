@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    SHOP — магазин скинов + рулетка + китайские пасхалки
+   BETA 0.9.2 — финальная версия
    ═══════════════════════════════════════════════════════════════ */
 
 const Shop = (() => {
@@ -9,6 +10,7 @@ const Shop = (() => {
   let cachedCoins = 0;
   let lastServerData = null;
 
+  /* ─── Тост ─── */
   function toast(text, ms = 2200){
     const el = document.createElement('div');
     el.textContent = text;
@@ -21,11 +23,13 @@ const Shop = (() => {
     setTimeout(() => el.remove(), ms);
   }
 
+  /* ─── Обновить счётчик монет ─── */
   function updateCoins(){
     const el = document.getElementById('shopCoins');
     if (el) el.textContent = Storage.getCoins();
   }
 
+  /* ─── Кнопки категорий ─── */
   function initCategories(){
     const buttons = document.querySelectorAll('.shop-cat-btn');
     buttons.forEach(btn => {
@@ -37,6 +41,7 @@ const Shop = (() => {
     });
   }
 
+  /* ─── Кнопка рулетки (в шапке магазина) ─── */
   function ensureRouletteBtn(){
     let btn = document.getElementById('rouletteBtn');
     if (btn) return btn;
@@ -79,7 +84,7 @@ const Shop = (() => {
     }
   }
 
-  /* ★ Универсальное применение */
+  /* ─── Универсальное применение: скин оружия / фон / пасхалка ─── */
   function applyItem(itemId){
     if (itemId.startsWith('bg_')){
       const bgName = itemId.slice(3);
@@ -95,7 +100,7 @@ const Shop = (() => {
     Skins.apply(itemId);
   }
 
-  /* ★ Инъекция китайских пасхальных скинов */
+  /* ─── Инъекция китайских пасхальных скинов ─── */
   function injectChinaSkins(skins){
     if (!Storage.isChinaUnlocked()) return skins;
 
@@ -132,10 +137,17 @@ const Shop = (() => {
     return result;
   }
 
+  /* ─── Превью скина ─── */
   function getPreviewHTML(skin){
     const cat = skin.category || 'weapon';
     if (cat === 'weapon'){
       return `<div class="shop-preview weapon-${skin.id}"></div>`;
+    }
+    if (cat === 'target'){
+      return `<div class="shop-preview target-${skin.id}"></div>`;
+    }
+    if (cat === 'ultimate'){
+      return `<div class="shop-preview ult-${skin.id}"></div>`;
     }
     if (skin.id === 'bg_star'){
       return `<div class="shop-preview background-bg_star"></div>`;
@@ -146,8 +158,14 @@ const Shop = (() => {
     return `<div class="shop-preview placeholder">СКОРО</div>`;
   }
 
+  /* ─── Блок цены ─── */
   function getPriceHTML(skin){
-    if (skin.owned || skin.price === 0) return '';
+    if (skin.owned) return '';
+
+    if (typeof skin.price === 'string' && skin.price.indexOf('?') !== -1){
+      return `<div class="shop-price-block"><span class="shop-price">🪙 ???</span></div>`;
+    }
+    if (skin.price === 0) return '';
 
     if (skin.discount > 0 && skin.base_price > skin.price){
       return `
@@ -160,6 +178,7 @@ const Shop = (() => {
     return `<div class="shop-price-block"><span class="shop-price">🪙 ${skin.price}</span></div>`;
   }
 
+  /* ─── Кнопка действия ─── */
   function getButtonHTML(skin){
     if (skin.active){
       return `<button class="shop-buy active" disabled>✅ НАДЕТ</button>`;
@@ -167,12 +186,16 @@ const Shop = (() => {
     if (skin.owned){
       return `<button class="shop-buy owned" data-action="equip" data-id="${skin.id}">НАДЕТЬ</button>`;
     }
+    if (typeof skin.price === 'string' && skin.price.indexOf('?') !== -1){
+      return `<button class="shop-buy" disabled style="opacity:.5">СКОРО</button>`;
+    }
     if (skin.price === 0){
       return `<button class="shop-buy owned" data-action="equip" data-id="${skin.id}">БЕСПЛАТНО</button>`;
     }
     return `<button class="shop-buy" data-action="buy" data-id="${skin.id}" data-price="${skin.price}">КУПИТЬ</button>`;
   }
 
+  /* ─── Отрисовка списка ─── */
   function renderList(){
     const list = document.getElementById('shopList');
     if (!list) return;
@@ -205,6 +228,10 @@ const Shop = (() => {
     });
   }
 
+/* ═══════════ СТОП. НЕ УДАЛЯЙ. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ */
+
+
+  /* ─── Действие: покупка или экипировка ─── */
   async function handleAction(btn){
     const action = btn.dataset.action;
     const skinId = btn.dataset.id;
@@ -226,6 +253,14 @@ const Shop = (() => {
         Sync.updateCoinsUI();
         updateCoins();
         toast('🎉 Куплено!');
+
+        // ★ Запоминаем, какой фон куплен
+if (skinId === 'bg_star'){
+  Storage.set('owned_bg_star', '1');
+}
+if (skinId === 'bg_sunset'){
+  Storage.set('owned_bg_sunset', '1');
+}
 
         const eq = await API.setSkin(skinId);
         if (eq.ok){
@@ -273,10 +308,10 @@ const Shop = (() => {
     }
   }
 
+  /* ─── Загрузка данных с сервера ─── */
   async function load(){
     if (!API.isTelegramReady()){
       const list = document.getElementById('shopList');
-      // Всё равно показываем китайские скины локально
       cachedSkins = injectChinaSkins([]);
       renderList();
       if (list && cachedSkins.length === 0){
@@ -292,7 +327,6 @@ const Shop = (() => {
     const data = await API.getSkins();
     if (!data.ok){
       const list = document.getElementById('shopList');
-      // Всё равно показываем локальные
       cachedSkins = injectChinaSkins([]);
       renderList();
       return;
@@ -302,10 +336,27 @@ const Shop = (() => {
     cachedCoins = data.coins || 0;
     lastServerData = data;
 
+    // ★ Синхронизируем флаги покупки фонов
+const bgStar = (data.skins || []).find(s => s.id === 'bg_star');
+if (bgStar && bgStar.owned) {
+  Storage.set('owned_bg_star', '1');
+}
+const bgSunset = (data.skins || []).find(s => s.id === 'bg_sunset');
+if (bgSunset && bgSunset.owned) {
+  Storage.set('owned_bg_sunset', '1');
+}
+
     Storage.setCoins(cachedCoins);
-    if (data.active_skin){
+
+    // ★ Фикс: не сбрасываем пасхальный скин "Товарищ"
+    const localActive = Storage.getActiveSkin();
+    const isEasterSkin = (localActive === 'china');
+
+    if (data.active_skin && !isEasterSkin){
       Storage.setActiveSkin(data.active_skin);
       Skins.apply(data.active_skin);
+    } else if (isEasterSkin){
+      Skins.apply(localActive);
     }
 
     Sync.updateCoinsUI();
@@ -314,6 +365,7 @@ const Shop = (() => {
     renderList();
   }
 
+  /* ─── Публичный render (вызывается из Menu) ─── */
   async function render(){
     updateCoins();
     ensureRouletteBtn();

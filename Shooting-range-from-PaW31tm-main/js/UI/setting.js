@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   SETTINGS — экран настроек + китайский триггер
+   SETTINGS — настройки + пасхалки + промокоды
    ═══════════════════════════════════════════════════════════════ */
 
 const Settings = (() => {
 
+  /* ─── Тост ─── */
   function showToast(text, ms = 2400){
     const el = document.createElement('div');
     el.textContent = text;
@@ -39,9 +40,23 @@ const Settings = (() => {
     const buttons = document.querySelectorAll('.bg-btn');
     if (!buttons.length) return;
 
-    // Скрываем китайский фон, если не открыт
+    // Китайский фон — только если открыт
     const chinaBtn = document.getElementById('bgChinaBtn');
     if (chinaBtn) chinaBtn.classList.toggle('hidden', !Storage.isChinaUnlocked());
+
+    // Космос — только если куплен
+    const starBtn = document.getElementById('bgStarBtn');
+    if (starBtn){
+      const ownedBgStar = Storage.get('owned_bg_star', '0') === '1';
+      starBtn.classList.toggle('hidden', !ownedBgStar);
+    }
+    
+    // Закат — только если куплен
+const sunsetBtn = document.getElementById('bgSunsetBtn');
+if (sunsetBtn){
+  const ownedBgSunset = Storage.get('owned_bg_sunset', '0') === '1';
+  sunsetBtn.classList.toggle('hidden', !ownedBgSunset);
+}
 
     const current = Storage.getBackground();
     document.body.dataset.bg = current;
@@ -85,7 +100,6 @@ const Settings = (() => {
   /* ═══════════════════════════════════════════════════════════════
      ★ КИТАЙСКИЙ ТРИГГЕР
      5 тапов на лого + лазер ON + фон "Космос"
-     На 2-м тапе — красная вспышка (намёк)
      ═══════════════════════════════════════════════════════════════ */
   function renderChinaTrigger(){
     const logo = document.querySelector('#screenMain .logo-mark');
@@ -104,7 +118,6 @@ const Settings = (() => {
       clearTimeout(resetTimer);
       resetTimer = setTimeout(() => { clicks = 0; }, 3000);
 
-      // На 2-м тапе — красная вспышка на полсекунды
       if (clicks === 2){
         logo.classList.remove('logo-flash');
         void logo.offsetWidth;
@@ -123,9 +136,7 @@ const Settings = (() => {
     const laserOn = Storage.isLaserEnabled();
     const bg = Storage.getBackground();
 
-    // Проверка условий
     if (!laserOn || bg !== 'star'){
-      // Условия не выполнены — мягкий намёк
       const needed = [];
       if (!laserOn) needed.push('лазер');
       if (bg !== 'star') needed.push('Космос');
@@ -133,26 +144,20 @@ const Settings = (() => {
       return;
     }
 
-    // ★ ВСЁ ВЫПОЛНЕНО
     Storage.unlockChina();
 
-    // Меняем фон и скин
     document.body.dataset.bg = 'china';
     Storage.setBackground('china');
     Skins.apply('china');
     Storage.setActiveSkin('china');
 
-    // Обновляем кнопки в настройках
     document.querySelectorAll('.bg-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.bg === 'china');
     });
     const chinaBtn = document.getElementById('bgChinaBtn');
     if (chinaBtn) chinaBtn.classList.remove('hidden');
 
-    // Звёздный залп
     showChinaStars();
-
-    // Тост
     showToast('🚩 +100 社会信用 · Партия выдаёт вам Миска Рис и Кошка Жена', 4000);
   }
 
@@ -170,12 +175,117 @@ const Settings = (() => {
     }
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     ★ ПРОМОКОДЫ
+     ═══════════════════════════════════════════════════════════════ */
+  function renderPromo(){
+    const promoBtn = document.getElementById('promoBtn');
+    const promoModal = document.getElementById('promoModal');
+    const promoInput = document.getElementById('promoInput');
+    const promoSubmit = document.getElementById('promoSubmit');
+    const promoClose = document.getElementById('promoClose');
+    const promoResult = document.getElementById('promoResult');
+
+    if (!promoBtn || !promoModal) return;
+
+    /* Открыть модалку */
+    promoBtn.onclick = () => {
+      promoModal.classList.remove('hidden');
+      if (promoInput){
+        promoInput.value = '';
+        promoInput.focus();
+      }
+      if (promoResult){
+        promoResult.classList.add('hidden');
+        promoResult.textContent = '';
+        promoResult.className = 'promo-result hidden';
+      }
+    };
+
+    /* Закрыть */
+    if (promoClose){
+      promoClose.onclick = () => {
+        promoModal.classList.add('hidden');
+      };
+    }
+
+    /* Отправить код */
+    async function submitCode(){
+      if (!promoInput || !promoResult) return;
+
+      const code = promoInput.value.trim().toUpperCase();
+      if (!code){
+        showPromoResult('Введи код', 'error');
+        return;
+      }
+
+      if (!API.isTelegramReady()){
+        showPromoResult('Открой игру через Telegram-бота', 'error');
+        return;
+      }
+
+      if (promoSubmit){
+        promoSubmit.disabled = true;
+        promoSubmit.textContent = '⏳ ПРОВЕРКА...';
+      }
+
+      const data = await API.redeemPromo(code);
+
+      if (promoSubmit){
+        promoSubmit.disabled = false;
+        promoSubmit.textContent = 'АКТИВИРОВАТЬ';
+      }
+
+      if (!data || !data.ok){
+        const errors = {
+          'invalid code': '❌ Неверный код',
+          'expired': '❌ Код истёк',
+          'limit reached': '❌ Лимит активаций исчерпан',
+          'already used': '❌ Ты уже активировал этот код',
+          'no code': '❌ Пустой код',
+          'auth': '❌ Ошибка авторизации',
+          'network': '❌ Нет связи с сервером'
+        };
+        const msg = errors[data?.error] || ('❌ Ошибка: ' + (data?.error || 'unknown'));
+        showPromoResult(msg, 'error');
+        return;
+      }
+
+      // Успех
+      Storage.setCoins(data.new_balance || (Storage.getCoins() + data.coins_added));
+      Sync.updateCoinsUI();
+      if (typeof Shop !== 'undefined' && Shop.updateCoins) Shop.updateCoins();
+
+      showPromoResult('✅ Получено: 🪙 +' + data.coins_added + ' монет!', 'success');
+
+      if (promoInput) promoInput.value = '';
+    }
+
+    function showPromoResult(text, type){
+      if (!promoResult) return;
+      promoResult.textContent = text;
+      promoResult.className = 'promo-result ' + (type === 'success' ? 'success' : 'error');
+      promoResult.classList.remove('hidden');
+    }
+
+    if (promoSubmit){
+      promoSubmit.onclick = submitCode;
+    }
+
+    if (promoInput){
+      promoInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') submitCode();
+      });
+    }
+  }
+
   /* ─── Init ─── */
   function init(){
     renderVolume();
     renderBackgrounds();
     renderEasterEgg();
     renderChinaTrigger();
+    renderPromo();
   }
 
   return {

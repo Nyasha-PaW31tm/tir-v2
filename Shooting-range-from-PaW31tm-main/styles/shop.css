@@ -115,16 +115,17 @@ body[data-bg="light"] .shop-cat-btn.active{background:#a8c4dc!important;border-c
   gap:10px;
   margin-top:8px;
 }
-.shop-row{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:14px;
-  border-radius:14px;
-  background:#11161e;
-  border:1px solid #2a3039;
-  text-align:left;
-  position:relative;
+.shop-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #11161e;
+  border: 1px solid #2a3039;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
 }
 body[data-bg="light"] .shop-row{background:#d0d6de;border-color:#a8b0ba;color:#111}
 
@@ -196,9 +197,27 @@ body[data-bg="light"] .shop-row{background:#d0d6de;border-color:#a8b0ba;color:#1
 }
 
 /* Информация о товаре */
-.shop-info{flex:1;min-width:0}
-.shop-name{font-weight:900;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.shop-desc{font-size:11px;color:#8893a3;margin-top:2px}
+.shop-info{
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+.shop-name{
+  font-weight: 900;
+  font-size: 15px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+.shop-desc{
+  font-size: 11px;
+  color: #8893a3;
+  margin-top: 2px;
+  line-height: 1.3;
+  word-wrap: break-word;
+}
 
 /* ★ Блок цены со скидкой */
 .shop-price-block{
@@ -232,16 +251,21 @@ body[data-bg="light"] .shop-row{background:#d0d6de;border-color:#a8b0ba;color:#1
 
 /* Кнопка покупки / надеть */
 .shop-buy{
-  padding:10px 16px!important;
-  margin:0!important;
-  font-size:13px!important;
-  background:#3a4150!important;
-  min-width:96px;
-  border:0;
-  color:#fff;
-  font-weight:800;
-  border-radius:14px;
-  cursor:pointer;
+  padding: 10px 14px !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  background: #3a4150 !important;
+  min-width: 88px;
+  max-width: 96px;
+  flex: 0 0 auto;
+  border: 0;
+  color: #fff;
+  font-weight: 800;
+  border-radius: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .shop-buy.owned{background:#2a5d3a!important;color:#c7f5d3!important}
 .shop-buy.active{
@@ -491,4 +515,108 @@ body[data-bg="light"] .shop-empty{background:#d0d6de;border-color:#a8b0ba}
     radial-gradient(circle 12px at 30% 30%, #ffde00 99%, transparent 100%),
     linear-gradient(135deg, #de2910, #a01008);
   border-color: #ffde00;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПРЕВЬЮ МИШЕНЕЙ (категория "Мишени")
+   ═══════════════════════════════════════════════════════════════ */
+
+.shop-preview.target-tg_classic{
+  background: radial-gradient(circle,
+    #d9dee5 0%, #d9dee5 32%,
+    #111 34%, #111 40%,
+    #d9dee5 42%, #d9dee5 58%,
+    #111 60%, #111 64%,
+    #d9dee5 66%, #d9dee5 100%);
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 0 0 2px #111, 0 0 12px rgba(255,255,255,.3);
+}
+
+.shop-preview.target-tg_neon{
+  background: radial-gradient(circle,
+    #00e5ff 0%, #00e5ff 30%,
+    #1a0a2a 32%, #1a0a2a 42%,
+    #ff00aa 44%, #ff00aa 55%,
+    #1a0a2a 57%, #1a0a2a 68%,
+    #00e5ff 70%, #00e5ff 100%);
+  border-radius: 50%;
+  border: none;
+  box-shadow:
+    0 0 0 2px #0d1820,
+    0 0 12px #00e5ff,
+    0 0 24px rgba(255,0,170,.7);
+  animation: neonPulse 1.8s ease-in-out infinite alternate;
+}
+@keyframes neonPulse{
+  0%  { box-shadow: 0 0 0 2px #0d1820, 0 0 10px #00e5ff, 0 0 20px rgba(255,0,170,.5); }
+  100%{ box-shadow: 0 0 0 2px #0d1820, 0 0 16px #00e5ff, 0 0 32px rgba(255,0,170,.9); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПРЕВЬЮ УЛЬТИМЕЙТОВ (категория "Ульты")
+   ═══════════════════════════════════════════════════════════════ */
+
+.shop-preview.ult-ult_classic{
+  background: linear-gradient(135deg, #ffd23c, #ff6b00);
+  border-color: #ffd23c;
+  box-shadow: 0 0 14px rgba(255,210,60,.6);
+  position: relative;
+}
+.shop-preview.ult-ult_classic::after{
+  content: "×3";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 8px #000;
+}
+
+.shop-preview.ult-ult_laser{
+  background: linear-gradient(135deg, #1a0a2a, #00e5ff);
+  border-color: #00e5ff;
+  box-shadow: 0 0 14px rgba(0,229,255,.7);
+  position: relative;
+}
+.shop-preview.ult-ult_laser::after{
+  content: "?";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 12px #00e5ff;
+}
+
+.shop-preview.ult-ult_MLRS{
+  background: linear-gradient(135deg, #3a0a0a, #c43a3a);
+  border-color: #c43a3a;
+  box-shadow: 0 0 14px rgba(196,58,58,.7);
+  position: relative;
+}
+.shop-preview.ult-ult_MLRS::after{
+  content: "?";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 12px #c43a3a;
+}
+
+/* Сетка магазина на 4 категории на узких экранах */
+@media (max-width: 400px){
+  .shop-categories{
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }

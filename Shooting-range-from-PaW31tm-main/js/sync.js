@@ -40,10 +40,15 @@ const Sync = (() => {
     if (typeof data.coins === 'number'){
       Storage.setCoins(data.coins);
     }
-    if (data.active_skin){
-      Storage.setActiveSkin(data.active_skin);
-      Skins.apply(data.active_skin);
-    }
+ const localActive = Storage.getActiveSkin();
+const isEasterSkin = (localActive === 'china');
+
+if (data.active_skin && !isEasterSkin){
+  Storage.setActiveSkin(data.active_skin);
+  Skins.apply(data.active_skin);
+} else if (isEasterSkin){
+  Skins.apply(localActive);
+}
     if (typeof data.personal_best === 'number'){
       Storage.setPersonalBest(data.personal_best);
     }

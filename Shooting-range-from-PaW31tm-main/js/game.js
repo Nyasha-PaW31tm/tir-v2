@@ -17,7 +17,7 @@ const Game = (() => {
     armored:  {base: 80, hp:2, speed:  0, color:'armored'},
     maneuver: {base:120, hp:1, speed: 70, color:'maneuver'},
     gold:     {base:200, hp:1, speed:  0, color:'gold'},
-    fastgold: {base:350, hp:1, speed:  0, color:'gold fastgold'}
+    fastgold: {base:350, hp:1, speed:160, color:"black_gold"}
   };
 
   let game = false;
@@ -36,6 +36,7 @@ const Game = (() => {
   let missCount = 0;
   let personalBest = 0;
   let ultReadySoundPlayed = false;
+  let sawTenCombo = false;
 
   let runStats = {
     shotCount: 0, ultCount: 0, maxComboMult: 1,
@@ -155,11 +156,11 @@ const Game = (() => {
   }
 
   function validType(type){
-    if (type === 'gold' || type === 'fastgold'){
-      return targets.filter(t => t.gold).length < 2 && freePoints() >= (type === 'fastgold' ? 2 : 1);
-    }
-    return freePoints() >= 1;
+  if (type === 'gold' || type === 'fastgold'){
+    return targets.filter(t => t.gold).length < 2 && freePoints() >= 1;
   }
+  return freePoints() >= 1;
+}
 
   function spawn(){
     if (!game || targets.length >= 5) return;
@@ -173,7 +174,7 @@ const Game = (() => {
 
     const d = TYPES[type];
     const gold = type === 'gold' || type === 'fastgold';
-    const slots = type === 'fastgold' ? 2 : 1;
+    const slots = 1;
     const lane = Math.floor(Math.random() * 3);
     const laneSlots = targets.filter(t => t.lane === lane).reduce((n,t) => n + t.slots, 0);
     if (laneSlots + slots > 2){ setTimeout(spawn, 120); return; }
@@ -182,11 +183,11 @@ const Game = (() => {
     el.className = 'target ' + d.color;
     const t = {
       id: nextId++, type, lane,
-      x: type === 'fastgold' ? 50 : 12 + Math.random() * 76,
+      x: 12 + Math.random() * 76,
       y: 50, hp: d.hp, slots, gold, el,
-      dx: type === 'fast' ? (Math.random() < .5 ? 1 : -1) * d.speed
-        : type === 'maneuver' ? (Math.random() < .5 ? 1 : -1) * d.speed
-        : 0,
+      dx: (type === 'fast' || type === 'fastgold') ? (Math.random() < .5 ? 1 : -1) * d.speed
+  : type === 'maneuver' ? (Math.random() < .5 ? 1 : -1) * d.speed
+  : 0,
       last: performance.now(),
       jumpAt: performance.now() + 1200 + Math.random() * 1500,
       telegraphing: false
@@ -339,17 +340,20 @@ const Game = (() => {
     }
 
     const newFloor = Math.floor(comboMult());
-    if (newFloor > prevComboFloor){
-      prevComboFloor = newFloor;
-      const c = center || getElCenter(t.el);
+if (newFloor > prevComboFloor){
+  prevComboFloor = newFloor;
+  const c = center || getElCenter(t.el);
 
-if (isChinaActive()){
-  showChinaCombo(c.x, c.y, newFloor);
-  if (newFloor % 5 === 0) showChinaPride();
-} else {
-        showGoldCombo(c.x, c.y, newFloor);
-      }
-    }
+  // ★ Флаг для картинки кошки-жены при проигрыше в бесконечном
+  if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
+
+  if (isChinaActive()){
+    showChinaCombo(c.x, c.y, newFloor);
+    if (newFloor % 5 === 0) showChinaPride();
+  } else {
+    showGoldCombo(c.x, c.y, newFloor);
+  }
+}
 
     if (!alive) removeTarget(t);
     updateUI();
@@ -472,9 +476,11 @@ if (isChinaActive()){
   /* ═══════════════════════════════════════════════════════════════
      ULT
      ═══════════════════════════════════════════════════════════════ */
-  function ultimate(){
-    if (!game || ultHits < 5) return;
-    runStats.ultCount++;
+  function ultimate() {
+  if (!game || ultHits < 5) return;
+  window._ultJustFired = true;
+  setTimeout(() => { window._ultJustFired = false; }, 800);
+  runStats.ultCount++;
     playSfx('ult');
     ultReadySoundPlayed = false;
 
@@ -521,8 +527,9 @@ if (isChinaActive()){
     score = 0; comboHits = 0; ultHits = 0; targets = [];
     bullets.forEach(b => b.remove()); bullets = [];
     nextId = 1; missCount = 0; prevComboFloor = 1;
-    ultReadySoundPlayed = false;
-    game = true;
+ultReadySoundPlayed = false;
+sawTenCombo = false;
+game = true;
 
     laserEnabled = Storage.isLaserEnabled();
     personalBest = Storage.getPersonalBest();
@@ -611,7 +618,14 @@ if (isChinaActive()){
     const stickerBtn = document.getElementById('stickerBtn');
     if (stickerBtn) stickerBtn.classList.toggle('hidden', !win);
 
-    endScreen.classList.remove('hidden');
+    // ★ Картинка кошки-жены: при проигрыше в бесконечном с комбо ×10+
+const catwifeEl = document.getElementById('catwifeImage');
+if (catwifeEl) {
+  const showCatwife = !win && runStats.mode === 'infinite' && sawTenCombo;
+  catwifeEl.classList.toggle('hidden', !showCatwife);
+}
+
+endScreen.classList.remove('hidden');
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -724,13 +738,20 @@ if (isChinaActive()){
       }
     }
 
-    if (!Storage.isInfiniteMode() && score >= WIN_SCORE){
-      finish(true);
-    } else {
-      updateRifle();
-      raf = requestAnimationFrame(loop);
-    }
-  }
+    // ★ Если мишеней 0 и игра идёт — срочно спавним (кроме окна после ULT)
+if (game && targets.length === 0 && !window._ultJustFired){
+  spawn();
+}
+
+if (!Storage.isInfiniteMode() && score >= WIN_SCORE){
+  finish(true);
+} else {
+  updateRifle();
+  raf = requestAnimationFrame(loop);
+}
+  }   // ← ЭТА СКОБКА ЗАКРЫВАЕТ ФУНКЦИЮ loop()
+
+
 
   /* ═══════════════════════════════════════════════════════════════
      ОБРАБОТЧИКИ
