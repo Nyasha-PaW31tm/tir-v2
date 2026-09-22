@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   SHOP — магазин скинов + рулетка + китайские пасхалки
-   BETA 0.9.2 — финальная версия
+   SHOP — магазин скинов + рулетка
+   BETA 0.9.4
    ═══════════════════════════════════════════════════════════════ */
 
 const Shop = (() => {
@@ -10,7 +10,6 @@ const Shop = (() => {
   let cachedCoins = 0;
   let lastServerData = null;
 
-  /* ─── Тост ─── */
   function toast(text, ms = 2200){
     const el = document.createElement('div');
     el.textContent = text;
@@ -23,13 +22,11 @@ const Shop = (() => {
     setTimeout(() => el.remove(), ms);
   }
 
-  /* ─── Обновить счётчик монет ─── */
   function updateCoins(){
     const el = document.getElementById('shopCoins');
     if (el) el.textContent = Storage.getCoins();
   }
 
-  /* ─── Кнопки категорий ─── */
   function initCategories(){
     const buttons = document.querySelectorAll('.shop-cat-btn');
     buttons.forEach(btn => {
@@ -41,7 +38,6 @@ const Shop = (() => {
     });
   }
 
-  /* ─── Кнопка рулетки (в шапке магазина) ─── */
   function ensureRouletteBtn(){
     let btn = document.getElementById('rouletteBtn');
     if (btn) return btn;
@@ -84,7 +80,7 @@ const Shop = (() => {
     }
   }
 
-  /* ─── Универсальное применение: скин оружия / фон / пасхалка ─── */
+  /* ★ Универсальное применение: скин оружия или фон */
   function applyItem(itemId){
     if (itemId.startsWith('bg_')){
       const bgName = itemId.slice(3);
@@ -100,7 +96,7 @@ const Shop = (() => {
     Skins.apply(itemId);
   }
 
-  /* ─── Инъекция китайских пасхальных скинов ─── */
+  /* ★ Инъекция пасхальных скинов */
   function injectChinaSkins(skins){
     if (!Storage.isChinaUnlocked()) return skins;
 
@@ -137,7 +133,18 @@ const Shop = (() => {
     return result;
   }
 
-  /* ─── Превью скина ─── */
+  /* ★ Бейдж "СКИН" / "ОРУЖИЕ" */
+  function getKindBadge(skin){
+    const cat = skin.category || 'weapon';
+    if (cat !== 'weapon') return '';
+
+    if (skin.id === 'akc74m'){
+      return '<span class="shop-kind weapon">Оружие</span>';
+    }
+    return '<span class="shop-kind skin">Скин</span>';
+  }
+
+  /* Превью */
   function getPreviewHTML(skin){
     const cat = skin.category || 'weapon';
     if (cat === 'weapon'){
@@ -152,13 +159,16 @@ const Shop = (() => {
     if (skin.id === 'bg_star'){
       return `<div class="shop-preview background-bg_star"></div>`;
     }
+    if (skin.id === 'bg_sunset'){
+      return `<div class="shop-preview background-bg_sunset"></div>`;
+    }
     if (skin.id === 'bg_china'){
       return `<div class="shop-preview background-bg_china"></div>`;
     }
     return `<div class="shop-preview placeholder">СКОРО</div>`;
   }
 
-  /* ─── Блок цены ─── */
+  /* Цена */
   function getPriceHTML(skin){
     if (skin.owned) return '';
 
@@ -178,7 +188,7 @@ const Shop = (() => {
     return `<div class="shop-price-block"><span class="shop-price">🪙 ${skin.price}</span></div>`;
   }
 
-  /* ─── Кнопка действия ─── */
+  /* Кнопка */
   function getButtonHTML(skin){
     if (skin.active){
       return `<button class="shop-buy active" disabled>✅ НАДЕТ</button>`;
@@ -195,10 +205,34 @@ const Shop = (() => {
     return `<button class="shop-buy" data-action="buy" data-id="${skin.id}" data-price="${skin.price}">КУПИТЬ</button>`;
   }
 
+/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ */
+
+  /* ─── Пересчёт active перед выводом ─── */
+  function recalcActive(){
+    const activeWeapon = Storage.getActiveSkin();
+    const activeBg     = Storage.getBackground();
+    const activeTarget = Storage.getActiveTargetSkin();
+
+    cachedSkins.forEach(s => {
+      const cat = s.category || 'weapon';
+      if (cat === 'weapon'){
+        s.active = (activeWeapon === s.id);
+      } else if (cat === 'background'){
+        s.active = (activeBg === s.id || 'bg_' + activeBg === s.id);
+      } else if (cat === 'target'){
+        s.active = (activeTarget === s.id);
+      } else {
+        s.active = false;
+      }
+    });
+  }
+
   /* ─── Отрисовка списка ─── */
   function renderList(){
     const list = document.getElementById('shopList');
     if (!list) return;
+
+    recalcActive();
 
     const filtered = cachedSkins.filter(s => (s.category || 'weapon') === currentCategory);
 
@@ -219,7 +253,10 @@ const Shop = (() => {
           <div class="shop-desc">${skin.description || ''}</div>
           ${getPriceHTML(skin)}
         </div>
-        ${getButtonHTML(skin)}
+        <div class="shop-action">
+          ${getKindBadge(skin)}
+          ${getButtonHTML(skin)}
+        </div>
       </div>
     `).join('');
 
@@ -228,15 +265,18 @@ const Shop = (() => {
     });
   }
 
-/* ═══════════ СТОП. НЕ УДАЛЯЙ. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ */
-
-
-  /* ─── Действие: покупка или экипировка ─── */
+  /* ═══════════════════════════════════════════════════════════════
+     ДЕЙСТВИЯ: покупка / экипировка
+     ═══════════════════════════════════════════════════════════════ */
   async function handleAction(btn){
     const action = btn.dataset.action;
     const skinId = btn.dataset.id;
     const price = parseInt(btn.dataset.price || '0', 10);
 
+    const skinData = cachedSkins.find(s => s.id === skinId) || {};
+    const cat = skinData.category || 'weapon';
+
+    /* ─── ПОКУПКА ─── */
     if (action === 'buy'){
       const current = Storage.getCoins();
       if (current < price){
@@ -254,18 +294,23 @@ const Shop = (() => {
         updateCoins();
         toast('🎉 Куплено!');
 
-        // ★ Запоминаем, какой фон куплен
-if (skinId === 'bg_star'){
-  Storage.set('owned_bg_star', '1');
-}
-if (skinId === 'bg_sunset'){
-  Storage.set('owned_bg_sunset', '1');
-}
+        // Флаги покупки фонов
+        if (skinId === 'bg_star')  Storage.set('owned_bg_star', '1');
+        if (skinId === 'bg_sunset') Storage.set('owned_bg_sunset', '1');
 
-        const eq = await API.setSkin(skinId);
-        if (eq.ok){
-          Storage.setActiveSkin(skinId);
-          applyItem(skinId);
+        // ★ Применение по категории
+        if (cat === 'background' || skinId.startsWith('bg_')){
+          const bgName = skinId.replace(/^bg_/, '');
+          document.body.dataset.bg = bgName;
+          Storage.setBackground(bgName);
+        } else if (cat === 'target' || skinId.startsWith('tg_')){
+          Skins.applyTargetSkin(skinId);
+        } else {
+          const eq = await API.setSkin(skinId);
+          if (eq.ok){
+            Storage.setActiveSkin(skinId);
+            Skins.apply(skinId);
+          }
         }
         await load();
       } else if (resp.error === 'not enough coins'){
@@ -282,23 +327,43 @@ if (skinId === 'bg_sunset'){
       return;
     }
 
+    /* ─── ЭКИПИРОВКА ─── */
     if (action === 'equip'){
       btn.disabled = true;
       btn.textContent = '⏳...';
 
-      // Пасхальные скины — только локально
-      if (skinId === 'china' || skinId === 'bg_china'){
+      // ★ ФОН
+      if (cat === 'background' || skinId.startsWith('bg_')){
+        const bgName = skinId.replace(/^bg_/, '');
+        document.body.dataset.bg = bgName;
+        Storage.setBackground(bgName);
+        toast('✅ Фон надет');
+        await load();
+        return;
+      }
+
+      // ★ МИШЕНИ
+      if (cat === 'target' || skinId.startsWith('tg_')){
+        Skins.applyTargetSkin(skinId);
+        toast('✅ Мишени надеты');
+        await load();
+        return;
+      }
+
+      // ★ ПАСХАЛЬНЫЙ СКИН ОРУЖИЯ
+      if (skinId === 'china'){
         Storage.setActiveSkin(skinId);
-        applyItem(skinId);
+        Skins.apply(skinId);
         toast('✅ Надето');
         await load();
         return;
       }
 
+      // ★ ОБЫЧНЫЙ СКИН ОРУЖИЯ
       const resp = await API.setSkin(skinId);
       if (resp.ok){
         Storage.setActiveSkin(skinId);
-        applyItem(skinId);
+        Skins.apply(skinId);
         toast('✅ Надето');
         await load();
       } else {
@@ -308,11 +373,14 @@ if (skinId === 'bg_sunset'){
     }
   }
 
-  /* ─── Загрузка данных с сервера ─── */
+  /* ═══════════════════════════════════════════════════════════════
+     ЗАГРУЗКА ДАННЫХ С СЕРВЕРА
+     ═══════════════════════════════════════════════════════════════ */
   async function load(){
     if (!API.isTelegramReady()){
       const list = document.getElementById('shopList');
       cachedSkins = injectChinaSkins([]);
+      recalcActive();
       renderList();
       if (list && cachedSkins.length === 0){
         list.innerHTML = `
@@ -326,8 +394,8 @@ if (skinId === 'bg_sunset'){
 
     const data = await API.getSkins();
     if (!data.ok){
-      const list = document.getElementById('shopList');
       cachedSkins = injectChinaSkins([]);
+      recalcActive();
       renderList();
       return;
     }
@@ -336,19 +404,15 @@ if (skinId === 'bg_sunset'){
     cachedCoins = data.coins || 0;
     lastServerData = data;
 
-    // ★ Синхронизируем флаги покупки фонов
-const bgStar = (data.skins || []).find(s => s.id === 'bg_star');
-if (bgStar && bgStar.owned) {
-  Storage.set('owned_bg_star', '1');
-}
-const bgSunset = (data.skins || []).find(s => s.id === 'bg_sunset');
-if (bgSunset && bgSunset.owned) {
-  Storage.set('owned_bg_sunset', '1');
-}
+    // Флаги покупки фонов
+    const bgStar = (data.skins || []).find(s => s.id === 'bg_star');
+    if (bgStar && bgStar.owned) Storage.set('owned_bg_star', '1');
+    const bgSunset = (data.skins || []).find(s => s.id === 'bg_sunset');
+    if (bgSunset && bgSunset.owned) Storage.set('owned_bg_sunset', '1');
 
     Storage.setCoins(cachedCoins);
 
-    // ★ Фикс: не сбрасываем пасхальный скин "Товарищ"
+    // Фикс: не сбрасываем пасхальный скин "Товарищ"
     const localActive = Storage.getActiveSkin();
     const isEasterSkin = (localActive === 'china');
 
@@ -359,13 +423,18 @@ if (bgSunset && bgSunset.owned) {
       Skins.apply(localActive);
     }
 
+    // Мишени из localStorage
+    if (Skins.loadTargetFromStorage){
+      Skins.loadTargetFromStorage();
+    }
+
     Sync.updateCoinsUI();
     updateCoins();
     refreshRouletteBtn();
+    recalcActive();
     renderList();
   }
 
-  /* ─── Публичный render (вызывается из Menu) ─── */
   async function render(){
     updateCoins();
     ensureRouletteBtn();

@@ -5,38 +5,79 @@
 
 const About = (() => {
 
-  const VERSION = 'BETA 0.9';
+  const VERSION = 'BETA 0.9.4';
 
-  const CHANGELOG = `
-    <h3>✨ НОВОЕ В 0.9</h3>
+  const CONTENT = `
+    <h3>🎉 ОБНОВЛЕНИЕ</h3>
+
+    <h4 class="changelog-sub">🐞 Исправлено</h4>
     <ul>
-      <li>♾ <b>Бесконечный режим</b> — открывается после первой победы</li>
-      <li>🪙 <b>Монеты</b> — 1 за каждые 250 очков</li>
-      <li>🛒 <b>Магазин</b> с категориями: оружие, фоны, мишени</li>
-      <li>🎨 <b>Скины оружия</b>: Неон, Звезда и другие</li>
-      <li>📊 <b>Синхронизация</b> — прогресс сохраняется на сервере</li>
-      <li>🎯 Штраф лазера — <b>−35%</b></li>
-      <li>📈 Прогрессивная сложность в бесконечном режиме</li>
+      <li>Манёвренные мишени теперь корректно прыгают между рядами</li>
+      <li>Починены три линии мишеней</li>
+      <li>Устранён баг с двойными пулями</li>
+      <li>Ульта завершает анимацию корректно</li>
     </ul>
 
-    <h3>🛠 РАНЕЕ</h3>
+    <h4 class="changelog-sub">🎨 Новое</h4>
     <ul>
-      <li>Общий рейтинг, история забегов</li>
-      <li>Стикерпак в личку за победу</li>
-      <li>Спецэффекты: осколки мишеней, золотые комбо</li>
-      <li>Звуки, 4 фона, пасхалка 🥚</li>
+      <li>🔫 <b>AKC-74M</b> — полноценное оружие с очередью из 3 пуль</li>
+      <li>⭐ <b>Звезда</b>, 💠 <b>Неон</b> — скины оружия</li>
+      <li>🎯 <b>Неоновые мишени</b></li>
+      <li>🌅 <b>Закат</b>, 🌌 <b>Космос</b></li>
+      <li>🔊 Добавлены новые звуки</li>
     </ul>
 
+    <h4 class="changelog-sub">🛒 Магазин</h4>
+    <ul>
+      <li>Обновлён: 4 категории, превью товаров, скидки</li>
+    </ul>
+
+    <h4 class="changelog-sub">🥚 Пасхалки</h4>
+    <ul>
+      <li>Добавлена <b>1 новая пасхалка</b> — найди её сам</li>
+    </ul>
+
+    <div class="changelog-more">
+      <h4 class="changelog-sub">⚙️ Прочие изменения</h4>
+      <button id="changelogToggle" class="changelog-toggle">Детальнее... ▼</button>
+
+      <div id="changelogDetails" class="changelog-details hidden">
+
+        <h5 class="changelog-mini">💰 Ребаланс</h5>
+        <ul>
+          <li>Закат: <b class="old">80</b> >>> <b class="new">120</b> <span class="nerf">↓</span></li>
+        </ul>
+
+      </div>
+    </div>
+  `;
+
+  const CREDITS = `
     <h3>👤 СОЗДАТЕЛИ</h3>
     <ul>
       <li><b>DeepSeek</b> — архитектура, сервер, дизайн</li>
-      <li><b>Hen_Nyasha</b> — идея, баланс, тесты</li>
+      <li><b>ChatGPT</b> — первоначальная версия (BETA 0.3)</li>
+      <li><b>Hen_Nyasha</b> — идея, баланс, тесты —
+        <a href="https://t.me/Hen_Nyasha" target="_blank">t.me/Hen_Nyasha</a></li>
     </ul>
-
-    <p style="text-align:center;color:#8893a3;font-size:12px;margin-top:20px">
-      Сделано с душой 🎯
-    </p>
   `;
+
+  function bindToggle(){
+    const btn = document.getElementById('changelogToggle');
+    const details = document.getElementById('changelogDetails');
+    if (!btn || !details) return;
+
+    btn.onclick = () => {
+      const isOpen = !details.classList.contains('hidden');
+      if (isOpen){
+        details.classList.add('hidden');
+        btn.textContent = 'Детальнее... ▼';
+      } else {
+        details.classList.remove('hidden');
+        btn.textContent = 'Свернуть ▲';
+      }
+    };
+  }
 
   function render(){
     const card = document.querySelector('#screenAbout .menu-card');
@@ -51,11 +92,13 @@ const About = (() => {
       <p style="text-align:center">
         Браузерная игра для Telegram — на чистом HTML / CSS / JavaScript
       </p>
-      ${CHANGELOG}
+      ${CONTENT}
+      ${CREDITS}
       <button id="backFromAbout" class="secondary" style="margin-top:20px;width:100%">← НАЗАД</button>
     `;
 
-    // Перепривязываем кнопку "Назад" (она пересоздана)
+    bindToggle();
+
     const backBtn = document.getElementById('backFromAbout');
     if (backBtn && typeof Menu !== 'undefined' && Menu.showMain){
       backBtn.onclick = () => Menu.showMain();
@@ -63,7 +106,6 @@ const About = (() => {
   }
 
   function init(){
-    // Рендерим один раз при старте
     render();
   }
 

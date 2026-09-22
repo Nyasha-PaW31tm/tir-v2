@@ -80,3 +80,89 @@ body[data-bg="light"] #screenAbout h3{border-bottom-color:#a8b0ba}
 body[data-bg="light"] #screenAbout ul{color:#3a4149}
 body[data-bg="light"] #screenAbout ul li b{color:#111}
 body[data-bg="light"] #screenAbout p{color:#5a6470}
+/* ═══════════════════════════════════════════════════════════════
+   CHANGELOG — стили раскрывающегося блока
+   ═══════════════════════════════════════════════════════════════ */
+
+.changelog-sub{
+  color: #6db3f2;
+  font-size: 13px;
+  margin: 14px 0 6px;
+  letter-spacing: .5px;
+  font-weight: 800;
+}
+
+.changelog-more{
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #2a3039;
+}
+
+.changelog-toggle{
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: 1px solid #4a90d4;
+  background: #1a2332;
+  color: #6db3f2;
+  font-weight: 800;
+  font-size: 13px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+}
+.changelog-toggle:active{
+  transform: scale(.98);
+  background: #22304a;
+}
+
+.changelog-details{
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #0f141c;
+  border: 1px dashed #2a3039;
+  animation: changelogOpen .3s ease-out;
+}
+@keyframes changelogOpen{
+  0%{ opacity: 0; transform: translateY(-6px); }
+  100%{ opacity: 1; transform: translateY(0); }
+}
+
+.changelog-mini{
+  color: #8893a3;
+  font-size: 12px;
+  margin: 12px 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.changelog-details ul{
+  margin: 0 0 8px;
+  padding-left: 18px;
+  color: #c7d0dc;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.changelog-details ul li{
+  margin-bottom: 4px;
+}
+
+.changelog-details .old{ color: #8893a3; font-weight: 700; }
+.changelog-details .new{ color: #ffd23c; font-weight: 900; }
+.changelog-details .buff{ color: #4ade80; font-weight: 900; }
+.changelog-details .nerf{ color: #ff3a3a; font-weight: 900; }
+
+/* Светлая тема */
+body[data-bg="light"] .changelog-sub{ color: #2c5a9a; }
+body[data-bg="light"] .changelog-toggle{
+  background: #d8e4f0; border-color: #2c5a9a; color: #2c5a9a;
+}
+body[data-bg="light"] .changelog-details{
+  background: #dfe5ec; border-color: #a8b0ba;
+}
+body[data-bg="light"] .changelog-mini{ color: #5a6470; }
+body[data-bg="light"] .changelog-details ul{ color: #3a4149; }
+body[data-bg="light"] .changelog-details .old{ color: #5a6470; }
+body[data-bg="light"] .changelog-details .new{ color: #8a6a00; }

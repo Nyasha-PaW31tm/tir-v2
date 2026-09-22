@@ -80,3 +80,32 @@ body[data-bg="light"] #endScreen #endReason{color:#5a6470}
     transform: scale(1) translateY(0);
   }
 }
+/* ═══════════════════════════════════════════════════════════════
+   ОСКОЛОК РАЗРЕЗАННОГО ДЫМА
+   ═══════════════════════════════════════════════════════════════ */
+.akc-smoke-piece{
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(220, 220, 220, .5) 0%,
+    rgba(180, 180, 180, .3) 50%,
+    transparent 100%);
+  filter: blur(2px);
+  pointer-events: none;
+  z-index: 15;
+  transform: translate(-50%, -50%);
+  animation: akcSmokePiece .9s ease-out forwards;
+}
+@keyframes akcSmokePiece{
+  0%{
+    opacity: .7;
+    transform: translate(-50%, -50%) scale(.8);
+  }
+  100%{
+    opacity: 0;
+    transform: translate(
+      calc(-50% + var(--dx)),
+      calc(-50% + var(--dy))
+    ) scale(1.4);
+  }
+}

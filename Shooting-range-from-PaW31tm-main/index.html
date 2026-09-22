@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Тир — BETA 0.9.2</title>
+<title>Тир — BETA 0.9.3</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <link rel="stylesheet" href="style.css">
@@ -20,6 +20,8 @@
 <link rel="stylesheet" href="skins/neon.css">
 <link rel="stylesheet" href="skins/star.css">
 <link rel="stylesheet" href="skins/china.css">
+<link rel="stylesheet" href="skins/target-neon.css">
+<link rel="stylesheet" href="skins/akc74m.css">
 <link rel="stylesheet" href="skins/bg-star.css">
 <link rel="stylesheet" href="skins/bg-china.css">
 <link rel="stylesheet" href="skins/bg-sunset.css">
@@ -53,7 +55,9 @@
       <div id="rifle">
         <div class="rifle-stock"></div>
         <div class="rifle-grip"></div>
-        <div class="rifle-receiver"></div>
+        <div class="rifle-receiver">
+  <div class="rifle-bolt-handle"></div>
+</div>
         <div class="rifle-barrel"></div>
         <div class="rifle-front-sight"></div>
         <div class="rifle-rear-sight"></div>
@@ -143,6 +147,7 @@
       </div>
 
       <button id="promoBtn" class="promo-btn">🎁 ПРОМОКОД</button>
+      <button id="feedbackBtn" class="feedback-btn">💬 ОБРАТНАЯ СВЯЗЬ</button>
 
       <button id="devBtn" class="dev-btn">🚧 В разработке</button>
       <button id="backFromSettings" class="secondary" style="margin-top:20px">← НАЗАД</button>
@@ -229,6 +234,23 @@
       <div id="promoResult" class="promo-result hidden"></div>
     </div>
   </section>
+  
+  <!-- ═══════════════ МОДАЛКА ОБРАТНОЙ СВЯЗИ ═══════════════ -->
+<section id="feedbackModal" class="overlay hidden">
+  <div class="menu-card">
+    <h1>💬 Обратная связь</h1>
+    <p class="beta">Опиши проблему, баг или предложение</p>
+
+    <textarea id="feedbackInput" class="feedback-input" placeholder="Например: нашёл баг — при выборе скина сбрасывается фон..." maxlength="2000"></textarea>
+
+    <div class="feedback-counter"><span id="feedbackCount">0</span> / 2000</div>
+
+    <button id="feedbackSubmit" class="primary">ОТПРАВИТЬ</button>
+    <button id="feedbackClose" class="secondary">← ОТМЕНА</button>
+
+    <div id="feedbackResult" class="feedback-result hidden"></div>
+  </div>
+</section>
 
 </div>
 

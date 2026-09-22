@@ -35,3 +35,42 @@ body.skin-neon{
 body.skin-neon #rifleWrap{
   filter: drop-shadow(0 0 8px rgba(0, 229, 255, .5));
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ★ ПУЛИ НЕОНА — бирюзовые с голубым свечением
+   ═══════════════════════════════════════════════════════════════ */
+
+body.skin-neon .bullet{
+  width: 7px;
+  height: 20px;
+  border-radius: 3px;
+  background:
+    linear-gradient(180deg,
+      #b0ffff 0%,
+      #00e5ff 40%,
+      #0099cc 75%,
+      #005577 100%);
+  box-shadow:
+    0 0 6px #00e5ff,
+    0 0 14px rgba(0, 229, 255, .9),
+    0 0 24px rgba(0, 180, 220, .5),
+    0 0 36px rgba(0, 150, 200, .25);
+}
+
+/* Внутренний яркий центр */
+body.skin-neon .bullet::after{
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    #ffffff 0%,
+    #b0ffff 40%,
+    transparent 100%);
+  filter: blur(.5px);
+  pointer-events: none;
+}

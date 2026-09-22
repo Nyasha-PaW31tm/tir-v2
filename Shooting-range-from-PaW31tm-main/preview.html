@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PREVIEW — Тир</title>
+
+<!-- ★ Все CSS из игры, как есть -->
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="styles/ui.css">
+<link rel="stylesheet" href="styles/menu.css">
+<link rel="stylesheet" href="styles/shop.css">
+<link rel="stylesheet" href="styles/rating.css">
+<link rel="stylesheet" href="styles/history.css">
+<link rel="stylesheet" href="styles/setting.css">
+<link rel="stylesheet" href="styles/about.css">
+<link rel="stylesheet" href="styles/end-screen.css">
+<link rel="stylesheet" href="skins/default.css">
+<link rel="stylesheet" href="skins/neon.css">
+<link rel="stylesheet" href="skins/star.css">
+<link rel="stylesheet" href="skins/china.css">
+<link rel="stylesheet" href="skins/akc74m.css">
+<link rel="stylesheet" href="skins/target-neon.css">
+<link rel="stylesheet" href="skins/bg-star.css">
+<link rel="stylesheet" href="skins/bg-china.css">
+<link rel="stylesheet" href="skins/bg-sunset.css">
+<link rel="stylesheet" href="skins/skins.css">
+
+<style>
+/* ─── Только стили превьюера (то, чего нет в игре) ─── */
+html, body {
+  overflow: auto !important;
+  height: auto !important;
+  min-height: 100dvh !important;
+  touch-action: auto !important;
+}
+.pv-wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+.pv-title {
+  font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+  color: #8893a3; margin: 16px 0 8px;
+}
+.pv-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.pv-btn {
+  padding: 8px 14px; border-radius: 10px; background: #242b36;
+  color: #fff; font-weight: 800; font-size: 12px; cursor: pointer;
+  border: 2px solid transparent;
+}
+.pv-btn.active { border-color: #ffd23c; background: #3a4150; }
+.pv-btn:active { transform: scale(.96); }
+
+.pv-stage {
+  position: relative; width: 100%; height: 700px;
+  margin: 12px 0 20px; border-radius: 16px; overflow: hidden;
+  border: 2px solid #2a3039;
+}
+.pv-stage #range {
+  position: absolute; inset: 0; flex: none; height: 100%; border-radius: 0;
+}
+
+/* Пуля летит вверх и исчезает (только для превью) */
+.pv-bullet {
+  animation: pvBulletFly 1s linear forwards !important;
+}
+@keyframes pvBulletFly{
+  0%   { transform: translate(-50%, -50%); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translate(-50%, -700px); opacity: 0; }
+}
+</style>
+</head>
+<body data-bg="dark">
+
+<div class="pv-wrap">
+  <h1 style="margin:0 0 4px">🔧 PREVIEW</h1>
+  <p style="color:#8893a3;font-size:13px;margin:0 0 16px">Витрина — все скины из игры</p>
+
+  <div class="pv-title">Оружие</div>
+  <div class="pv-buttons" id="skinsRow">
+    <button class="pv-btn" data-skin="default">Стандарт</button>
+    <button class="pv-btn" data-skin="neon">Неон</button>
+    <button class="pv-btn" data-skin="star">Звезда</button>
+    <button class="pv-btn" data-skin="china">Товарищ</button>
+    <button class="pv-btn" data-skin="akc74m">AKC-74M</button>
+  </div>
+
+  <div class="pv-title">Мишени</div>
+  <div class="pv-buttons" id="targetsRow">
+    <button class="pv-btn" data-target="default">Классика</button>
+    <button class="pv-btn" data-target="tg_neon">Неон</button>
+  </div>
+
+  <div class="pv-title">Фон</div>
+  <div class="pv-buttons" id="bgsRow">
+    <button class="pv-btn" data-bg="dark">Тёмный</button>
+    <button class="pv-btn" data-bg="black">Чёрный</button>
+    <button class="pv-btn" data-bg="gray">Серый</button>
+    <button class="pv-btn" data-bg="light">Светлый</button>
+    <button class="pv-btn" data-bg="confetti">Конфети</button>
+    <button class="pv-btn" data-bg="star">Космос</button>
+    <button class="pv-btn" data-bg="sunset">Закат</button>
+    <button class="pv-btn" data-bg="china">Китай</button>
+  </div>
+
+  <div class="pv-title">Мишени (все типы)</div>
+  <div class="pv-stage">
+    <div id="range">
+
+      <div class="lane" data-lane="0">
+        <div class="target normal" style="left:20%;top:50%"></div>
+        <div class="target gold" style="left:75%;top:50%"></div>
+      </div>
+
+      <div class="lane" data-lane="1">
+        <div class="target fast" style="left:25%;top:50%"></div>
+        <div class="target maneuver" style="left:70%;top:50%"></div>
+      </div>
+
+      <div class="lane" data-lane="2">
+        <div class="target armored" style="left:20%;top:50%">
+          <div class="hp">HP 2/2</div>
+        </div>
+        <div class="target fastgold" style="left:70%;top:50%"></div>
+      </div>
+
+      <div id="rifleWrap">
+        <div id="rifle">
+          <div class="rifle-stock"></div>
+          <div class="rifle-grip"></div>
+          <div class="rifle-receiver">
+            <div class="rifle-bolt-handle"></div>
+          </div>
+          <div class="rifle-barrel"></div>
+          <div class="rifle-front-sight"></div>
+          <div class="rifle-rear-sight"></div>
+          <div class="rifle-muzzle"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin:0 0 12px">
+  <button id="fireBtn" class="pv-btn" style="flex:1;padding:16px;font-size:15px;background:linear-gradient(135deg,#4a7c3a,#2f5a25);border-color:#6ba84a">🔥 ВЫСТРЕЛ</button>
+  <button id="ultBtn" class="pv-btn" style="flex:1;padding:16px;font-size:15px;background:linear-gradient(135deg,#a43e3e,#6a1e1e);border-color:#ff6b6b">⚡ УЛЬТА</button>
+</div>
+
+<div class="pv-title">Звуки</div>
+<div class="pv-buttons" style="margin-bottom:20px">
+  <button class="pv-btn" data-sfx="shot">🔫 Выстрел</button>
+  <button class="pv-btn" data-sfx="shotAkc">💥 Выстрел AKC</button>
+  <button class="pv-btn" data-sfx="hit">🎯 Попадание</button>
+  <button class="pv-btn" data-sfx="miss">❌ Промах</button>
+  <button class="pv-btn" data-sfx="ultReady">⚡ Ульта готова</button>
+  <button class="pv-btn" data-sfx="ult">💥 Активация ульты</button>
+  <button class="pv-btn" data-sfx="win">🏆 Победа</button>
+</div>
+
+  <div class="pv-title">Ультимейты</div>
+  <div class="pv-ults" style="display:flex;gap:12px;flex-wrap:wrap">
+    <div class="shop-preview ult-ult_classic" style="width:90px;height:90px"></div>
+    <div class="shop-preview ult-ult_laser" style="width:90px;height:90px"></div>
+    <div class="shop-preview ult-ult_MLRS" style="width:90px;height:90px"></div>
+  </div>
+</div>
+
+<!-- ★★ Скрипты ИГРЫ (только безопасные модули) ★★ -->
+<script src="js/storage.js"></script>
+<script src="js/api.js"></script>
+<script src="js/skins.js"></script>
+
+<!-- ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ -->
+
+<script>
+(function(){
+  /* ═══════════════════════════════════════════════════════════
+     Превьюер использует Skins.apply() и Skins.applyTargetSkin()
+     из js/skins.js — те же функции, что в игре.
+     ═══════════════════════════════════════════════════════════ */
+     /* ═══════════════════════════════════════════════════════════
+   ЗВУКИ — те же файлы, что в игре
+   ═══════════════════════════════════════════════════════════ */
+const SFX = {
+  shot: new Audio('sounds/fire.mp3'),
+  shotAkc: [
+    new Audio('sounds/akc_fire.mp3'),
+    new Audio('sounds/akc_fire.mp3'),
+    new Audio('sounds/akc_fire.mp3')
+  ],
+  hit: new Audio('sounds/armor.mp3'),
+  ult: new Audio('sounds/series_of_shots.mp3'),
+  ultReady: new Audio('sounds/ult.mp3'),
+  win: new Audio('sounds/win.mp3'),
+  miss: new Audio('sounds/miss.mp3')
+};
+
+let _akcIdx = 0;
+
+function getVolume(){
+  try {
+    if (typeof Storage !== 'undefined' && Storage.getVolume){
+      return Storage.getVolume() / 100;
+    }
+  } catch(e){}
+  return 0.7;
+}
+
+function playSfx(name){
+  const a = SFX[name];
+  if (!a) return;
+  const vol = getVolume();
+  if (vol <= 0) return;
+  try {
+    if (Array.isArray(a)){
+      const audio = a[_akcIdx % a.length];
+      _akcIdx = (_akcIdx + 1) % a.length;
+      audio.currentTime = 0;
+      audio.volume = vol;
+      audio.play().catch(()=>{});
+      return;
+    }
+    a.currentTime = 0;
+    a.volume = vol;
+    a.play().catch(()=>{});
+  } catch(e){}
+}
+
+/* Кнопки теста звуков */
+document.querySelectorAll('[data-sfx]').forEach(btn => {
+  btn.onclick = () => playSfx(btn.dataset.sfx);
+});
+
+/* Кнопка ульты */
+const ultBtn = document.getElementById('ultBtn');
+if (ultBtn) ultBtn.onclick = () => playSfx('ult');
+
+  /* ─── Оружие ─── */
+  document.querySelectorAll('[data-skin]').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('[data-skin]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const s = btn.dataset.skin;
+
+      // Используем функцию из игры
+      if (typeof Skins !== 'undefined' && Skins.apply){
+        Skins.apply(s);
+      } else {
+        // Фоллбэк — если skins.js не загрузился
+        document.body.classList.forEach(c => {
+          if (c.startsWith('skin-')) document.body.classList.remove(c);
+        });
+        if (s !== 'default') document.body.classList.add('skin-' + s);
+      }
+
+      if (typeof stopHeat === 'function') stopHeat();
+    };
+  });
+
+  /* ─── Мишени ─── */
+  document.querySelectorAll('[data-target]').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('[data-target]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const t = btn.dataset.target;
+
+      // Используем функцию из игры
+      if (typeof Skins !== 'undefined' && Skins.applyTargetSkin){
+        Skins.applyTargetSkin(t);
+      } else {
+        // Фоллбэк
+        document.body.classList.forEach(c => {
+          if (c.startsWith('target-skin-')) document.body.classList.remove(c);
+        });
+        if (t !== 'default' && t !== 'tg_classic'){
+          document.body.classList.add('target-skin-' + t.replace(/^tg_/, ''));
+        }
+      }
+    };
+  });
+
+  /* ─── Фоны ─── */
+  document.querySelectorAll('[data-bg]').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('[data-bg]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.body.dataset.bg = btn.dataset.bg;
+    };
+  });
+
+  /* Активируем первый элемент в каждой строке */
+  document.querySelector('[data-skin="default"]').classList.add('active');
+  document.querySelector('[data-target="default"]').classList.add('active');
+  document.querySelector('[data-bg="dark"]').classList.add('active');
+
+  /* ═══════════════════════════════════════════════════════════
+     ВЫСТРЕЛ — используем тот же механизм, что и в игре
+     ═══════════════════════════════════════════════════════════ */
+  const fireBtn = document.getElementById('fireBtn');
+  const rifleWrap = document.getElementById('rifleWrap');
+  const range = document.getElementById('range');
+
+  let totalShotCount = 0;
+  let recentShotTimestamps = [];
+  let isFiring = false;
+  let smokeInterval = null;
+  let coolDownCheck = null;
+
+  function isAkcActive(){
+    return document.body.classList.contains('skin-akc74m');
+  }
+
+  /* ─── Позиция дула (та же логика, что в game.js) ─── */
+  function getMuzzlePos(){
+    const stageRect = range.getBoundingClientRect();
+    const rifle = document.getElementById('rifle');
+    if (!rifle) return { x: 0, y: 0 };
+
+    const muzzle = rifle.querySelector('.rifle-muzzle');
+    if (!muzzle) return { x: 0, y: 0 };
+
+    const mRect = muzzle.getBoundingClientRect();
+    return {
+      x: mRect.left + mRect.width / 2 - stageRect.left,
+      y: mRect.top + mRect.height / 2 - stageRect.top
+    };
+  }
+
+  /* ─── Одна пуля ─── */
+  function spawnBullet(offsetX, offsetY, isTracer){
+    const pos = getMuzzlePos();
+
+    const angleDeg = -90; // вверх
+    const rad = angleDeg * Math.PI / 180;
+    const dist = 700;
+
+    const dx = Math.cos(rad) * dist + (offsetX || 0);
+    const dy = Math.sin(rad) * dist + (offsetY || 0);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+    const b = document.createElement('div');
+    b.className = 'bullet pv-bullet';
+    if (isTracer) b.classList.add('pv-tracer');
+
+    b.style.left = pos.x + 'px';
+    b.style.top = pos.y + 'px';
+    b.style.setProperty('--dx', dx + 'px');
+    b.style.setProperty('--dy', dy + 'px');
+    b.style.setProperty('--angle', (angle + 90) + 'deg');
+
+    range.appendChild(b);
+    setTimeout(() => b.remove(), 1100);
+  }
+
+  /* ─── Гильза (та же физика, что в game.js) ─── */
+  const MAX_SHELLS = 30;
+  function spawnShell(){
+    if (!isAkcActive()) return;
+
+    const existing = range.querySelectorAll('.akc-shell');
+    if (existing.length >= MAX_SHELLS) existing[0].remove();
+
+    const receiver = rifleWrap.querySelector('.rifle-receiver');
+    if (!receiver) return;
+
+    const stageRect = range.getBoundingClientRect();
+    const rRect = receiver.getBoundingClientRect();
+
+    const shell = document.createElement('div');
+    shell.className = 'akc-shell';
+    shell.style.left = (rRect.right - stageRect.left - 4) + 'px';
+    shell.style.top = (rRect.top - stageRect.top + 18) + 'px';
+    range.appendChild(shell);
+
+    const angleRad = (-25 - Math.random() * 50) * Math.PI / 180;
+    const speed = 250 + Math.random() * 200;
+    let vx = Math.cos(angleRad) * speed;
+    let vy = Math.sin(angleRad) * speed;
+
+    const gravity = 1800;
+    const rotSpeed = 600 + Math.random() * 900;
+    const fallY = 120 + Math.random() * 80;
+
+    let x = 0, y = 0, rot = 0;
+    let lastTime = performance.now();
+    let landed = false;
+    const startTime = lastTime;
+    const maxTime = 2500;
+
+    function tick(now){
+      if (!shell.parentNode || landed) return;
+      const dt = Math.min(0.04, (now - lastTime) / 1000);
+      lastTime = now;
+      vy += gravity * dt;
+      x += vx * dt;
+      y += vy * dt;
+      rot += rotSpeed * dt;
+      shell.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+
+      if (y >= fallY || (now - startTime) > maxTime){
+        landed = true;
+        setTimeout(() => {
+          if (!shell.parentNode) return;
+          shell.style.opacity = '0';
+          setTimeout(() => shell.remove(), 900);
+        }, 2000);
+        return;
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+    setTimeout(() => { if (shell.parentNode) shell.remove(); }, 5000);
+  }
+
+  /* ─── Дым ─── */
+  function spawnSmoke(){
+    if (!isAkcActive()) return;
+
+    const muzzle = rifleWrap.querySelector('.rifle-muzzle');
+    if (!muzzle) return;
+
+    const stageRect = range.getBoundingClientRect();
+    const mRect = muzzle.getBoundingClientRect();
+
+    const px = mRect.left + mRect.width / 2 - stageRect.left;
+    const py = mRect.top + mRect.height / 2 - stageRect.top;
+
+    const count = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++){
+      const p = document.createElement('div');
+      p.className = 'akc-smoke-particle';
+      p.style.left = (px + (Math.random() - 0.5) * 12) + 'px';
+      p.style.top = (py - Math.random() * 8) + 'px';
+      p.style.animationDelay = (Math.random() * 0.15) + 's';
+      const sz = 14 + Math.random() * 10;
+      p.style.width = sz + 'px';
+      p.style.height = sz + 'px';
+      range.appendChild(p);
+      setTimeout(() => p.remove(), 2400);
+    }
+  }
+
+  function updateHeat(){
+    if (!isAkcActive()) return;
+    const now = Date.now();
+    recentShotTimestamps = recentShotTimestamps.filter(t => now - t < 20000);
+    const hot = recentShotTimestamps.length >= 10;
+
+    if (hot){
+      rifleWrap.classList.add('akc-hot');
+      if (!smokeInterval) smokeInterval = setInterval(spawnSmoke, 200);
+      if (!coolDownCheck){
+        coolDownCheck = setInterval(() => {
+          const t = Date.now();
+          recentShotTimestamps = recentShotTimestamps.filter(ts => t - ts < 20000);
+          if (recentShotTimestamps.length < 10) stopHeat();
+        }, 500);
+      }
+    } else {
+      stopHeat();
+    }
+  }
+
+  function stopHeat(){
+    if (smokeInterval){ clearInterval(smokeInterval); smokeInterval = null; }
+    if (coolDownCheck){ clearInterval(coolDownCheck); coolDownCheck = null; }
+    if (rifleWrap) rifleWrap.classList.remove('akc-hot');
+  }
+
+  /* ─── Выстрел ─── */
+  function fireOnce() {
+  if (isFiring) return;
+  
+  if (isAkcActive()) {
+    // Очередь из 3
+    isFiring = true;
+    let shots = 0;
+    const burstInterval = setInterval(() => {
+          shots++;
+          totalShotCount++;
+          recentShotTimestamps.push(Date.now());
+          
+          playSfx('shotAkc');
+          
+          rifleWrap.classList.remove('recoil');
+        void rifleWrap.offsetWidth;
+        rifleWrap.classList.add('recoil');
+
+        const isTracer = (totalShotCount % 5 === 0);
+
+        let offsetX = 0, offsetY = 0;
+        if (shots === 2){
+          offsetX = (Math.random() < .5 ? 1 : -1) * (10 + Math.random() * 15);
+          offsetY = (Math.random() - .5) * 20;
+        } else if (shots === 3){
+          offsetX = (Math.random() < .5 ? 1 : -1) * (15 + Math.random() * 20);
+          offsetY = (Math.random() - .5) * 30;
+        }
+
+        spawnBullet(offsetX, offsetY, isTracer);
+        spawnShell();
+        updateHeat();
+
+        if (shots >= 3){
+          clearInterval(burstInterval);
+          setTimeout(() => { isFiring = false; }, 100);
+        }
+      }, 150);
+  } else {
+  // Одиночный
+  totalShotCount++;
+  recentShotTimestamps.push(Date.now());
+  playSfx('shot');
+  rifleWrap.classList.remove('recoil');
+  void rifleWrap.offsetWidth;
+  rifleWrap.classList.add('recoil');
+  spawnBullet(0, 0, false);
+}
+  }
+
+  if (fireBtn) fireBtn.onclick = fireOnce;
+})();
+</script>
+</body>
+</html>

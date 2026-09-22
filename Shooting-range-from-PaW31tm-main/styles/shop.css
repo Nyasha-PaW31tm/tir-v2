@@ -140,36 +140,117 @@ body[data-bg="light"] .shop-row{background:#d0d6de;border-color:#a8b0ba;color:#1
   position:relative;
   overflow:hidden;
 }
-.shop-preview.weapon-default{background:linear-gradient(135deg,#6f7987,#4d5663)}
+/* ═══════════════════════════════════════════════════════════════
+   ИКОНКИ ОРУЖИЯ В МАГАЗИНЕ
+   Мини-силуэт ружья: ствол + коробка + магазин + приклад
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Общая база для всех оружий */
+.shop-preview[class*="weapon-"]{
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+/* Силуэт — сбоку, диогональ, как винтовка в витрине */
+.shop-preview[class*="weapon-"]::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    /* Ствол — тонкая длинная полоска вверх */
+    linear-gradient(90deg,
+      transparent 40%,
+      currentColor 40%, currentColor 52%,
+      transparent 52%),
+    /* Коробка — широкая полоса */
+    linear-gradient(90deg,
+      transparent 30%,
+      currentColor 30%, currentColor 62%,
+      transparent 62%),
+    /* Магазин — снизу под углом */
+    linear-gradient(90deg,
+      transparent 38%,
+      currentColor 38%, currentColor 52%,
+      transparent 52%);
+  background-size:
+    100% 55%,
+    100% 20%,
+    100% 22%;
+  background-position:
+    0 5%,
+    0 48%,
+    0 68%;
+  background-repeat: no-repeat;
+  filter: brightness(1.1) contrast(1.3);
+}
+
+/* Приклад — короткий блок слева-снизу */
+/* ═══════════════════════════════════════════════════════════════
+   ИКОНКИ ОРУЖИЯ В МАГАЗИНЕ
+   Чёткий силуэт винтовки через SVG-маску
+   ═══════════════════════════════════════════════════════════════ */
+
+.shop-preview[class*="weapon-"]{
+  position: relative;
+  overflow: hidden;
+}
+
+/* Общий силуэт винтовки (через маску) */
+.shop-preview[class*="weapon-"]::before{
+  content: "";
+  position: absolute;
+  inset: 14% 2%;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50'%3E%3Cg fill='white'%3E%3Cpolygon points='2,22 18,19 18,32 2,34'/%3E%3Crect x='16' y='19' width='28' height='12'/%3E%3Cpolygon points='22,31 32,31 34,44 24,44'/%3E%3Cpolygon points='34,31 46,31 48,46 36,46'/%3E%3Crect x='44' y='21' width='30' height='8'/%3E%3Crect x='44' y='23' width='52' height='3'/%3E%3Crect x='88' y='21' width='10' height='7'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50'%3E%3Cg fill='white'%3E%3Cpolygon points='2,22 18,19 18,32 2,34'/%3E%3Crect x='16' y='19' width='28' height='12'/%3E%3Cpolygon points='22,31 32,31 34,44 24,44'/%3E%3Cpolygon points='34,31 46,31 48,46 36,46'/%3E%3Crect x='44' y='21' width='30' height='8'/%3E%3Crect x='44' y='23' width='52' height='3'/%3E%3Crect x='88' y='21' width='10' height='7'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+/* ─── Стандарт ─── */
+.shop-preview.weapon-default{
+  background: linear-gradient(135deg, #3a4149, #1a1f26);
+  border-color: #4d5664;
+}
+.shop-preview.weapon-default::before{
+  background: linear-gradient(180deg, #c8d0dc 0%, #7a8290 100%);
+}
+
+/* ─── Неон ─── */
 .shop-preview.weapon-neon{
-  background:linear-gradient(135deg,#0d1820,#0a4a55);
-  border-color:#00e5ff;
-  box-shadow:0 0 14px rgba(0,229,255,.6);
+  background: linear-gradient(135deg, #0d1820, #050a10);
+  border-color: #00e5ff;
+  box-shadow: 0 0 12px rgba(0,229,255,.6);
 }
-.shop-preview.weapon-neon::after{
-  content:"";
-  position:absolute;
-  inset:14px 6px;
-  background:linear-gradient(180deg,#00e5ff,#0088aa);
-  border-radius:4px;
-  box-shadow:0 0 10px #00e5ff;
+.shop-preview.weapon-neon::before{
+  background: linear-gradient(180deg, #b0ffff 0%, #00e5ff 100%);
+  filter: drop-shadow(0 0 4px #00e5ff) drop-shadow(0 0 8px rgba(0,229,255,.6));
 }
+
+/* ─── Звезда ─── */
 .shop-preview.weapon-star{
-  background:linear-gradient(135deg,#3a2a10,#1f1508);
-  border-color:#ffd23c;
-  box-shadow:0 0 14px rgba(255,210,60,.6);
+  background: linear-gradient(135deg, #3a2a10, #1a1208);
+  border-color: #ffd23c;
+  box-shadow: 0 0 12px rgba(255,210,60,.5);
 }
-.shop-preview.weapon-star::after{
-  content:"★";
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:28px;
-  color:#ffd23c;
-  text-shadow:0 0 12px rgba(255,210,60,1);
+.shop-preview.weapon-star::before{
+  background: linear-gradient(180deg, #fff5b0 0%, #ffd23c 100%);
+  filter: drop-shadow(0 0 4px #ffd23c) drop-shadow(0 0 8px rgba(255,210,60,.6));
 }
+
+/* ─── Товарищ ─── */
+.shop-preview.weapon-china{
+  background: linear-gradient(135deg, #8a1010, #4a0a0a);
+  border-color: #ffde00;
+  box-shadow: 0 0 12px rgba(255,40,40,.6);
+}
+.shop-preview.weapon-china::before{
+  background: linear-gradient(180deg, #ffe066 0%, #ffd23c 100%);
+  filter: drop-shadow(0 0 4px #ffde00) drop-shadow(0 0 8px rgba(255,40,40,.7));
+}
+
+
 
 /* Превью для звёздного фона */
 .shop-preview.background-bg_star{
@@ -619,4 +700,153 @@ body[data-bg="light"] .shop-empty{background:#d0d6de;border-color:#a8b0ba}
   .shop-categories{
     grid-template-columns: repeat(2, 1fr) !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ИКОНКА В МАГАЗИНЕ: ЗАКАТ
+   Мини-закат — градиент + солнце
+   ═══════════════════════════════════════════════════════════════ */
+
+.shop-preview.background-bg_sunset{
+  background: linear-gradient(180deg,
+    #1a0a2a 0%,
+    #4a1a4a 25%,
+    #c4384a 55%,
+    #ff8c42 80%,
+    #ffb85c 100%);
+  border-color: #ff8c42;
+  box-shadow: 0 0 14px rgba(255, 140, 66, .7);
+  position: relative;
+  overflow: hidden;
+}
+
+.shop-preview.background-bg_sunset::after{
+  content: "";
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    #fff5c0 0%, #ffd86b 40%, #ff8c42 75%, transparent 100%);
+  box-shadow:
+    0 0 12px #ffd86b,
+    0 0 24px rgba(255, 140, 66, .8);
+}
+
+/* Звёзды наверху */
+.shop-preview.background-bg_sunset::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 15%, rgba(255,255,255,.7) 1px, transparent 1.5px),
+    radial-gradient(circle at 60% 10%, rgba(255,255,255,.5) 0.8px, transparent 1.3px),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,.6) 1px, transparent 1.5px);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ИКОНКА В МАГАЗИНЕ: Товарищ (на всякий случай, если не было)
+   ═══════════════════════════════════════════════════════════════ */
+
+.shop-preview.weapon-china{
+  background: linear-gradient(135deg, #8a1010, #4a0a0a);
+  border-color: #ffde00;
+  box-shadow: 0 0 14px rgba(255, 40, 40, .7);
+}
+.shop-preview.weapon-china::after{
+  content: "★";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #ffde00;
+  text-shadow: 0 0 12px #ffde00;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AKC-74M — финальная версия иконки
+   ═══════════════════════════════════════════════════════════════ */
+
+.shop-preview.weapon-akc74m{
+  background: radial-gradient(circle at 50% 50%,
+    #2a2a2a 0%, #141414 70%, #060606 100%) !important;
+  border-color: #5a5a5a !important;
+  box-shadow:
+    inset 0 0 20px rgba(0,0,0,.9),
+    0 0 10px rgba(255,255,255,.15) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.shop-preview.weapon-akc74m::before{
+  content: "" !important;
+  position: absolute !important;
+  inset: 14% 2% !important;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50'%3E%3Cg fill='white'%3E%3Cpolygon points='0,20 16,17 16,30 0,33'/%3E%3Crect x='14' y='19' width='30' height='13'/%3E%3Cpolygon points='20,32 30,32 33,46 23,46'/%3E%3Cpolygon points='32,32 44,32 47,48 35,48'/%3E%3Crect x='42' y='21' width='32' height='9'/%3E%3Crect x='42' y='24' width='54' height='3'/%3E%3Crect x='90' y='21' width='10' height='8'/%3E%3Crect x='96' y='19' width='4' height='3'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat !important;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50'%3E%3Cg fill='white'%3E%3Cpolygon points='0,20 16,17 16,30 0,33'/%3E%3Crect x='14' y='19' width='30' height='13'/%3E%3Cpolygon points='20,32 30,32 33,46 23,46'/%3E%3Cpolygon points='32,32 44,32 47,48 35,48'/%3E%3Crect x='42' y='21' width='32' height='9'/%3E%3Crect x='42' y='24' width='54' height='3'/%3E%3Crect x='90' y='21' width='10' height='8'/%3E%3Crect x='96' y='19' width='4' height='3'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat !important;
+  background: #ffffff !important;
+  filter:
+    drop-shadow(0 0 3px rgba(255,255,255,.9))
+    drop-shadow(0 0 6px rgba(200,220,255,.6))
+    drop-shadow(0 1px 2px rgba(0,0,0,.9)) !important;
+}
+/* ═══════════════════════════════════════════════════════════════
+   БЕЙДЖИ ТИПА ТОВАРА: СКИН / ОРУЖИЕ
+   ═══════════════════════════════════════════════════════════════ */
+
+.shop-kind {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .8px;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
+.shop-kind.skin{
+  background: #2a3039;
+  color: #8893a3;
+}
+
+.shop-kind.weapon{
+  background: linear-gradient(135deg, #ffd23c 0%, #ff8c42 100%);
+  color: #111;
+  box-shadow:
+    0 0 8px rgba(255,210,60,.7),
+    inset 0 1px 0 rgba(255,255,255,.5);
+  text-shadow: 0 1px 0 rgba(255,255,255,.3);
+}
+
+body[data-bg="light"] .shop-kind.skin{
+  background: #b8bec6;
+  color: #3a4149;
+}
+/* ═══════════════════════════════════════════════════════════════
+   КОЛОНКА ДЕЙСТВИЙ — бейдж + кнопка
+   ═══════════════════════════════════════════════════════════════ */
+.shop-action{
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-width: 96px;
+}
+
+/* Бейдж теперь — над кнопкой */
+.shop-action .shop-kind{
+  margin-left: 0;
+  text-align: center;
+  padding: 4px 8px;
+  font-size: 10px;
+  letter-spacing: 1px;
 }

@@ -20,20 +20,40 @@ const Skins = (() => {
   }
 
   /* Применить скин */
-  function apply(skinId){
-    const id = (skinId || DEFAULT_SKIN).toString().trim();
-    clearSkinClasses();
-
-    // «default» = никаких доп. классов, базовые цвета из skins/default.css
-    if (id && id !== DEFAULT_SKIN){
-      document.body.classList.add('skin-' + id);
-    }
-
-    currentSkin = id;
-    Storage.setActiveSkin(id);
-
-    console.log('[skins] applied:', id);
+  function apply(skinId) {
+  const id = (skinId || DEFAULT_SKIN).toString().trim();
+  clearSkinClasses();
+  
+  if (id && id !== DEFAULT_SKIN) {
+    document.body.classList.add('skin-' + id);
   }
+  
+  currentSkin = id;
+  Storage.setActiveSkin(id);
+  console.log('[skins] applied:', id);
+}
+
+/* ★ Применение скина мишеней */
+function applyTargetSkin(targetId) {
+  const id = (targetId || 'default').toString().trim();
+  
+  // Убираем старые классы мишеней
+  document.body.classList.forEach(c => {
+    if (c.startsWith('target-skin-')) document.body.classList.remove(c);
+  });
+  
+  if (id !== 'default' && id !== 'tg_classic') {
+    document.body.classList.add('target-skin-' + id.replace(/^tg_/, ''));
+  }
+  
+  Storage.setActiveTargetSkin(id);
+  console.log('[skins] target applied:', id);
+}
+
+function loadTargetFromStorage() {
+  const saved = Storage.getActiveTargetSkin() || 'default';
+  applyTargetSkin(saved);
+}
 
   /* Текущий скин */
   function current(){
@@ -46,5 +66,12 @@ const Skins = (() => {
     apply(saved);
   }
 
-  return { apply, current, loadFromStorage, DEFAULT_SKIN };
+  return {
+  apply,
+  current,
+  loadFromStorage,
+  applyTargetSkin,
+  loadTargetFromStorage,
+  DEFAULT_SKIN
+};
 })();

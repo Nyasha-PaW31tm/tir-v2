@@ -46,6 +46,9 @@ const Storage = (() => {
 
     getActiveSkin: () => get('activeSkin', 'default'),
     setActiveSkin: (v) => set('activeSkin', v),
+    
+    getActiveTargetSkin: () => get('targetSkin', 'default'),
+setActiveTargetSkin: (v) => set('targetSkin', v),
 
     getPersonalBest: () => parseInt(get('personalBest', '0'), 10),
     setPersonalBest: (v) => set('personalBest', String(v)),

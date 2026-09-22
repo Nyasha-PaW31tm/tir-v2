@@ -1,7 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   ТИР — BETA 0.9.1 — ядро игры
-   Использует: Storage, API, Skins, Sync, Menu
-   ЧАСТЬ 1 из 2
+   ТИР — BETA 0.9.4 — ядро игры
    ═══════════════════════════════════════════════════════════════ */
 
 const Game = (() => {
@@ -10,6 +8,7 @@ const Game = (() => {
   const MAX_MISSES = 8;
   const LASER_PENALTY = 0.65;
   const COINS_PER_POINTS = 250;
+  const MAX_SHELLS = 30;
 
   const TYPES = {
     normal:   {base: 25, hp:1, speed:  0, color:'normal'},
@@ -17,9 +16,10 @@ const Game = (() => {
     armored:  {base: 80, hp:2, speed:  0, color:'armored'},
     maneuver: {base:120, hp:1, speed: 70, color:'maneuver'},
     gold:     {base:200, hp:1, speed:  0, color:'gold'},
-    fastgold: {base:350, hp:1, speed:160, color:"black_gold"}
+    fastgold: {base:350, hp:1, speed:160, color:'fastgold'}
   };
 
+  /* ─── Состояние игры ─── */
   let game = false;
   let score = 0;
   let comboHits = 0;
@@ -38,6 +38,17 @@ const Game = (() => {
   let ultReadySoundPlayed = false;
   let sawTenCombo = false;
 
+  /* ─── AKC-74M ─── */
+  let isFiring = false;
+  let totalShotCount = 0;
+  let recentShotTimestamps = [];
+  let smokeInterval = null;
+  let coolDownCheck = null;
+
+  /* ─── Прицеливание ульты ─── */
+  let ultAiming = false;
+  let ultAimTarget = null;
+
   let runStats = {
     shotCount: 0, ultCount: 0, maxComboMult: 1,
     startTime: 0, duration: 0, mode: 'normal', laser: false
@@ -47,20 +58,35 @@ const Game = (() => {
      ЗВУКИ
      ═══════════════════════════════════════════════════════════════ */
   const SFX = {
-    shot:     new Audio('sounds/fire.mp3'),
-    hit:      new Audio('sounds/armor.mp3'),
-    ult:      new Audio('sounds/series_of_shots.mp3'),
+    shot: new Audio('sounds/fire.mp3'),
+    shotAkc: [
+      new Audio('sounds/akc_fire.mp3'),
+      new Audio('sounds/akc_fire.mp3'),
+      new Audio('sounds/akc_fire.mp3')
+    ],
+    hit: new Audio('sounds/armor.mp3'),
+    ult: new Audio('sounds/series_of_shots.mp3'),
     ultReady: new Audio('sounds/ult.mp3'),
-    win:      new Audio('sounds/win.mp3'),
-    miss:     new Audio('sounds/miss.mp3')
+    win: new Audio('sounds/win.mp3'),
+    miss: new Audio('sounds/miss.mp3')
   };
 
   let masterVolume = Storage.getVolume() / 100;
+  let akcShotIndex = 0;
 
   function playSfx(name){
     const a = SFX[name];
     if (!a || masterVolume <= 0) return;
+
     try {
+      if (Array.isArray(a)){
+        const audio = a[akcShotIndex % a.length];
+        akcShotIndex = (akcShotIndex + 1) % a.length;
+        audio.currentTime = 0;
+        audio.volume = masterVolume;
+        audio.play().catch(() => {});
+        return;
+      }
       a.currentTime = 0;
       a.volume = masterVolume;
       a.play().catch(() => {});
@@ -72,7 +98,7 @@ const Game = (() => {
   }
 
   /* ═══════════════════════════════════════════════════════════════
-     DOM
+     DOM-ссылки
      ═══════════════════════════════════════════════════════════════ */
   let range, rifle, rifleWrap, flash, laser;
   let scoreEl, comboEl, ultEl, ultBtn, endScreen;
@@ -96,13 +122,15 @@ const Game = (() => {
     scoreBox    = document.querySelector('.score');
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ПРОВЕРКА: китайский скин активен?
-     ═══════════════════════════════════════════════════════════════ */
   function isChinaActive(){
     return document.body.classList.contains('skin-china');
   }
 
+  function isAkcActive(){
+    return document.body.classList.contains('skin-akc74m');
+  }
+
+/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ */ 
   /* ═══════════════════════════════════════════════════════════════
      СЛОЖНОСТЬ
      ═══════════════════════════════════════════════════════════════ */
@@ -156,11 +184,11 @@ const Game = (() => {
   }
 
   function validType(type){
-  if (type === 'gold' || type === 'fastgold'){
-    return targets.filter(t => t.gold).length < 2 && freePoints() >= 1;
+    if (type === 'gold' || type === 'fastgold'){
+      return targets.filter(t => t.gold).length < 2 && freePoints() >= 1;
+    }
+    return freePoints() >= 1;
   }
-  return freePoints() >= 1;
-}
 
   function spawn(){
     if (!game || targets.length >= 5) return;
@@ -186,8 +214,8 @@ const Game = (() => {
       x: 12 + Math.random() * 76,
       y: 50, hp: d.hp, slots, gold, el,
       dx: (type === 'fast' || type === 'fastgold') ? (Math.random() < .5 ? 1 : -1) * d.speed
-  : type === 'maneuver' ? (Math.random() < .5 ? 1 : -1) * d.speed
-  : 0,
+        : type === 'maneuver' ? (Math.random() < .5 ? 1 : -1) * d.speed
+        : 0,
       last: performance.now(),
       jumpAt: performance.now() + 1200 + Math.random() * 1500,
       telegraphing: false
@@ -205,7 +233,10 @@ const Game = (() => {
     targets.push(t);
   }
 
-  function removeTarget(t){ t.el.remove(); targets = targets.filter(x => x !== t); }
+  function removeTarget(t){
+    t.el.remove();
+    targets = targets.filter(x => x !== t);
+  }
 
   /* ═══════════════════════════════════════════════════════════════
      СПЕЦЭФФЕКТЫ
@@ -247,11 +278,8 @@ const Game = (() => {
     setTimeout(() => el.remove(), 1300);
   }
 
-/* ═══════════════ ★★★ СТОП. ВСТАВЬ СЮДА ЧАСТЬ 2 ★★★ ═══════════════ */
-
-
   /* ═══════════════════════════════════════════════════════════════
-     ★ КИТАЙСКИЕ ПОПАПЫ
+     КИТАЙСКИЕ ПОПАПЫ
      ═══════════════════════════════════════════════════════════════ */
   function chinaPopup(x, y, type, text){
     const el = document.createElement('div');
@@ -267,11 +295,9 @@ const Game = (() => {
   function showChinaCombo(x, y, floor){
     if (floor % 10 === 0){
       chinaPopup(x, y, 'full', '+ Миска Рис и Кошка Жена');
-    }
-    else if (floor % 5 === 0){
+    } else if (floor % 5 === 0){
       chinaPopup(x, y, 'miska', '+ Миска Рис');
-    }
-    else {
+    } else {
       chinaPopup(x, y, 'credit', '+100 社会信用');
     }
   }
@@ -305,13 +331,196 @@ const Game = (() => {
     setTimeout(() => el.remove(), 1500);
   }
 
+/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 3 НИЖЕ ═══════════ */ 
+
   /* ═══════════════════════════════════════════════════════════════
-     ОЧКИ И ПОПАДАНИЕ
+     ★ AKC-74M — ГИЛЬЗЫ, ДЫМ, РАЗРЕЗ ДЫМА
+     ═══════════════════════════════════════════════════════════════ */
+
+  function spawnShell(){
+    if (!isAkcActive() || !range || !rifleWrap) return;
+
+    const existing = range.querySelectorAll('.akc-shell');
+    if (existing.length >= MAX_SHELLS) existing[0].remove();
+
+    const receiver = rifleWrap.querySelector('.rifle-receiver');
+    if (!receiver) return;
+
+    const stageRect = range.getBoundingClientRect();
+    const rRect = receiver.getBoundingClientRect();
+
+    const shell = document.createElement('div');
+    shell.className = 'akc-shell';
+    shell.style.left = (rRect.right - stageRect.left - 4) + 'px';
+    shell.style.top  = (rRect.top - stageRect.top + 18) + 'px';
+    range.appendChild(shell);
+
+    const angleRad = (-25 - Math.random() * 50) * Math.PI / 180;
+    const speed = 250 + Math.random() * 200;
+    let vx = Math.cos(angleRad) * speed;
+    let vy = Math.sin(angleRad) * speed;
+
+    const gravity = 1800;
+    const rotSpeed = 600 + Math.random() * 900;
+    const fallY = 120 + Math.random() * 80;
+
+    let x = 0, y = 0, rot = 0;
+    let lastTime = performance.now();
+    let landed = false;
+    const startTime = lastTime;
+    const maxTime = 2500;
+
+    function tick(now){
+      if (!shell.parentNode || landed) return;
+
+      const dt = Math.min(0.04, (now - lastTime) / 1000);
+      lastTime = now;
+
+      vy += gravity * dt;
+      x += vx * dt;
+      y += vy * dt;
+      rot += rotSpeed * dt;
+
+      shell.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+
+      if (y >= fallY || (now - startTime) > maxTime){
+        landed = true;
+        setTimeout(() => {
+          if (!shell.parentNode) return;
+          shell.style.opacity = '0';
+          setTimeout(() => shell.remove(), 900);
+        }, 2000);
+        return;
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    setTimeout(() => { if (shell.parentNode) shell.remove(); }, 5000);
+  }
+
+  function cutSmokeAlongBullet(bullet){
+    if (!range) return;
+
+    const checkInterval = setInterval(() => {
+      if (!bullet.parentNode){
+        clearInterval(checkInterval);
+        return;
+      }
+
+      const rect = bullet.getBoundingClientRect();
+      if (!rect){ clearInterval(checkInterval); return; }
+
+      const stageRect = range.getBoundingClientRect();
+      const bulletX = rect.left + rect.width / 2 - stageRect.left;
+      const bulletY = rect.top + rect.height / 2 - stageRect.top;
+
+      const particles = range.querySelectorAll('.akc-smoke-particle');
+      particles.forEach(p => {
+        const pRect = p.getBoundingClientRect();
+        const pX = pRect.left + pRect.width / 2 - stageRect.left;
+        const pY = pRect.top + pRect.height / 2 - stageRect.top;
+
+        if (Math.abs(bulletX - pX) < 25 && Math.abs(bulletY - pY) < 25){
+          cutSmokeParticle(pX, pY, bulletX < pX ? 1 : -1);
+          p.remove();
+        }
+      });
+    }, 40);
+  }
+
+  function cutSmokeParticle(px, py, direction){
+    const piecesCount = 3 + Math.floor(Math.random() * 2);
+
+    for (let i = 0; i < piecesCount; i++){
+      const piece = document.createElement('div');
+      piece.className = 'akc-smoke-piece';
+
+      const angle = (i / piecesCount) * Math.PI - Math.PI / 2;
+      const dx = Math.cos(angle) * (20 + Math.random() * 20) + direction * 10;
+      const dy = -Math.sin(angle) * (20 + Math.random() * 20) - 15;
+
+      piece.style.left = px + 'px';
+      piece.style.top = py + 'px';
+      piece.style.setProperty('--dx', dx + 'px');
+      piece.style.setProperty('--dy', dy + 'px');
+
+      const size = 6 + Math.random() * 6;
+      piece.style.width = size + 'px';
+      piece.style.height = size + 'px';
+
+      range.appendChild(piece);
+      setTimeout(() => piece.remove(), 1200);
+    }
+  }
+
+  function spawnSmoke(){
+    if (!isAkcActive() || !range || !rifleWrap) return;
+
+    const muzzle = rifleWrap.querySelector('.rifle-muzzle');
+    if (!muzzle) return;
+
+    const stageRect = range.getBoundingClientRect();
+    const mRect = muzzle.getBoundingClientRect();
+
+    const px = mRect.left + mRect.width / 2 - stageRect.left;
+    const py = mRect.top + mRect.height / 2 - stageRect.top;
+
+    const count = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++){
+      const p = document.createElement('div');
+      p.className = 'akc-smoke-particle';
+      p.style.left = (px + (Math.random() - 0.5) * 12) + 'px';
+      p.style.top  = (py - Math.random() * 8) + 'px';
+      p.style.animationDelay = (Math.random() * 0.15) + 's';
+      const sz = 14 + Math.random() * 10;
+      p.style.width = sz + 'px';
+      p.style.height = sz + 'px';
+      range.appendChild(p);
+      setTimeout(() => p.remove(), 2400);
+    }
+  }
+
+  function updateHeat(){
+    if (!isAkcActive()) return;
+
+    const now = Date.now();
+    recentShotTimestamps = recentShotTimestamps.filter(t => now - t < 20000);
+    const hot = recentShotTimestamps.length >= 10;
+
+    if (hot){
+      rifleWrap.classList.add('akc-hot');
+      if (!smokeInterval) smokeInterval = setInterval(spawnSmoke, 200);
+      if (!coolDownCheck){
+        coolDownCheck = setInterval(() => {
+          const t = Date.now();
+          recentShotTimestamps = recentShotTimestamps.filter(ts => t - ts < 20000);
+          if (recentShotTimestamps.length < 10) stopHeat();
+        }, 500);
+      }
+    } else {
+      stopHeat();
+    }
+  }
+
+  function stopHeat(){
+    if (smokeInterval){ clearInterval(smokeInterval); smokeInterval = null; }
+    if (coolDownCheck){ clearInterval(coolDownCheck); coolDownCheck = null; }
+    if (rifleWrap) rifleWrap.classList.remove('akc-hot');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ОЧКИ
      ═══════════════════════════════════════════════════════════════ */
   function addScore(points){
     score += points * (laserEnabled ? LASER_PENALTY : 1);
   }
 
+/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 4 НИЖЕ ═══════════ */
+
+  /* ═══════════════════════════════════════════════════════════════
+     ПОПАДАНИЕ
+     ═══════════════════════════════════════════════════════════════ */
   function hitTarget(t){
     playSfx('hit');
     t.hp--;
@@ -325,7 +534,6 @@ const Game = (() => {
     }
 
     comboHits++;
-
     const wasUltReady = ultHits >= 5;
     ultHits = Math.min(5, ultHits + 1);
     if (!wasUltReady && ultHits >= 5 && !ultReadySoundPlayed){
@@ -340,20 +548,61 @@ const Game = (() => {
     }
 
     const newFloor = Math.floor(comboMult());
-if (newFloor > prevComboFloor){
-  prevComboFloor = newFloor;
-  const c = center || getElCenter(t.el);
+    if (newFloor > prevComboFloor){
+      prevComboFloor = newFloor;
+      if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
+      const c = center || getElCenter(t.el);
+      if (isChinaActive()){
+        showChinaCombo(c.x, c.y, newFloor);
+        if (newFloor % 5 === 0) showChinaPride();
+      } else {
+        showGoldCombo(c.x, c.y, newFloor);
+      }
+    }
 
-  // ★ Флаг для картинки кошки-жены при проигрыше в бесконечном
-  if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
-
-  if (isChinaActive()){
-    showChinaCombo(c.x, c.y, newFloor);
-    if (newFloor % 5 === 0) showChinaPride();
-  } else {
-    showGoldCombo(c.x, c.y, newFloor);
+    if (!alive) removeTarget(t);
+    updateUI();
   }
-}
+
+  /* То же, но без вызова miss при промахе (для очереди AKC) */
+  function hitTargetNoMiss(t){
+    playSfx('hit');
+    t.hp--;
+    const alive = t.hp > 0;
+
+    if (alive){
+      const hp = t.el.querySelector('.hp');
+      if (hp) hp.textContent = 'HP 1/2';
+    } else {
+      addScore(TYPES[t.type].base * comboMult());
+    }
+
+    comboHits++;
+    const wasUltReady = ultHits >= 5;
+    ultHits = Math.min(5, ultHits + 1);
+    if (!wasUltReady && ultHits >= 5 && !ultReadySoundPlayed){
+      playSfx('ultReady');
+      ultReadySoundPlayed = true;
+    }
+
+    let center = null;
+    if (!alive){
+      center = getElCenter(t.el);
+      shatterTarget(t.el, center.x, center.y);
+    }
+
+    const newFloor = Math.floor(comboMult());
+    if (newFloor > prevComboFloor){
+      prevComboFloor = newFloor;
+      if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
+      const c = center || getElCenter(t.el);
+      if (isChinaActive()){
+        showChinaCombo(c.x, c.y, newFloor);
+        if (newFloor % 5 === 0) showChinaPride();
+      } else {
+        showGoldCombo(c.x, c.y, newFloor);
+      }
+    }
 
     if (!alive) removeTarget(t);
     updateUI();
@@ -361,12 +610,27 @@ if (newFloor > prevComboFloor){
 
   function miss(){
     playSfx('miss');
-
     if (isChinaActive()){
       showChinaMissScore();
       showChinaMissPoint(aimX, aimY);
     }
 
+    comboHits = 0;
+    prevComboFloor = 1;
+
+    if (Storage.isInfiniteMode()){
+      missCount++;
+      if (missCount >= MAX_MISSES){
+        updateUI();
+        finish(false);
+        return;
+      }
+    }
+    updateUI();
+  }
+
+  /* Сброс комбо без звука — для очереди AKC */
+  function resetComboSilent(){
     comboHits = 0;
     prevComboFloor = 1;
 
@@ -394,11 +658,50 @@ if (newFloor > prevComboFloor){
   function getAimGeom(){
     const r = range.getBoundingClientRect();
     const pivotX = r.width / 2, pivotY = r.height - 18;
-    const tx = aimX / 100 * r.width, ty = aimY / 100 * r.height;
+
+    let tx, ty;
+    if (ultAiming && ultAimTarget){
+      tx = ultAimTarget.x;
+      ty = ultAimTarget.y;
+    } else {
+      tx = aimX / 100 * r.width;
+      ty = aimY / 100 * r.height;
+    }
+
     const angle = Math.atan2(tx - pivotX, pivotY - ty) * 180 / Math.PI;
-    const mx = pivotX + Math.sin(angle * Math.PI / 180) * 176;
-    const my = pivotY - Math.cos(angle * Math.PI / 180) * 176;
-    return { pivotX, pivotY, tx, ty, angle, mx, my };
+    const muzzleDist = getMuzzleDistance();
+    const mx = pivotX + Math.sin(angle * Math.PI / 180) * muzzleDist;
+    const my = pivotY - Math.cos(angle * Math.PI / 180) * muzzleDist;
+
+    return { pivotX, pivotY, tx, ty, angle, mx, my, muzzleDist };
+  }
+
+  /* Реальное расстояние от пивота до дула (зависит от скина) */
+  let _cachedMuzzleDist = 0;
+  let _cachedMuzzleSkin = '';
+
+  function getMuzzleDistance(){
+    const currentSkin = Storage.getActiveSkin();
+
+    if (_cachedMuzzleSkin === currentSkin && _cachedMuzzleDist > 0){
+      return _cachedMuzzleDist;
+    }
+
+    const muzzle = rifle.querySelector('.rifle-muzzle');
+    if (!muzzle){
+      _cachedMuzzleDist = 176;
+      _cachedMuzzleSkin = currentSkin;
+      return 176;
+    }
+
+    const muzzleCX = muzzle.offsetLeft + muzzle.offsetWidth / 2;
+    const muzzleCY = muzzle.offsetTop + muzzle.offsetHeight / 2;
+    const pivotX = rifle.offsetWidth / 2;
+    const pivotY = rifle.offsetHeight * 0.9;
+
+    _cachedMuzzleDist = Math.hypot(muzzleCX - pivotX, muzzleCY - pivotY);
+    _cachedMuzzleSkin = currentSkin;
+    return _cachedMuzzleDist;
   }
 
   function updateRifle(){
@@ -426,30 +729,55 @@ if (newFloor > prevComboFloor){
   /* ═══════════════════════════════════════════════════════════════
      ПУЛЯ
      ═══════════════════════════════════════════════════════════════ */
-  function spawnBullet(){
+  function spawnBullet(offsetX, offsetY, isTracer){
     const g = getAimGeom();
-    const dx = g.tx - g.mx, dy = g.ty - g.my;
+    const dx = g.tx - g.mx + (offsetX || 0);
+    const dy = g.ty - g.my + (offsetY || 0);
     const dist = Math.hypot(dx, dy);
     const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
     const b = document.createElement('div');
-    b.className = 'bullet';
+    b.className = 'bullet pv-bullet';
+    if (isTracer) b.classList.add('pv-tracer');
     b.style.left = g.mx + 'px';
     b.style.top = g.my + 'px';
     b.style.setProperty('--dx', dx + 'px');
     b.style.setProperty('--dy', dy + 'px');
     b.style.setProperty('--angle', (angle + 90) + 'deg');
     b.style.animation = `bulletTravel ${Math.max(.09, Math.min(.28, dist/1700))}s linear forwards`;
+
     range.appendChild(b);
     bullets.push(b);
+    cutSmokeAlongBullet(b);
     setTimeout(() => { b.remove(); bullets = bullets.filter(x => x !== b); }, 320);
   }
 
+  function findHit(aimXPercent, aimYPercent){
+    const r = range.getBoundingClientRect();
+    const tx = aimXPercent / 100 * r.width;
+    const ty = aimYPercent / 100 * r.height;
+    let hit = null, best = 1e9;
+    for (const t of targets){
+      const tr = t.el.getBoundingClientRect();
+      const cx = tr.left + tr.width / 2 - r.left;
+      const cy = tr.top + tr.height / 2 - r.top;
+      const dist = Math.hypot(tx - cx, ty - cy);
+      const rad = Math.max(tr.width, tr.height) / 2;
+      if (dist <= rad && dist < best){ best = dist; hit = t; }
+    }
+    return hit;
+  }
+
   /* ═══════════════════════════════════════════════════════════════
-     ВЫСТРЕЛ
+     ВЫСТРЕЛ — ОБЫЧНЫЙ (1 пуля)
      ═══════════════════════════════════════════════════════════════ */
-  function fire(){
+  function fireSingle(){
     if (!game) return;
+
     runStats.shotCount++;
+    totalShotCount++;
+    recentShotTimestamps.push(Date.now());
+
     playSfx('shot');
 
     rifleWrap.classList.remove('recoil');
@@ -458,39 +786,136 @@ if (newFloor > prevComboFloor){
     flash.classList.remove('fire');
     void flash.offsetWidth;
     flash.classList.add('fire');
-    spawnBullet();
 
-    const r = range.getBoundingClientRect();
-    const tx = aimX / 100 * r.width, ty = aimY / 100 * r.height;
-    let hit = null, best = 1e9;
-    for (const t of targets){
-      const tr = t.el.getBoundingClientRect();
-      const cx = tr.left + tr.width / 2 - r.left, cy = tr.top + tr.height / 2 - r.top;
-      const dist = Math.hypot(tx - cx, ty - cy);
-      const rad = Math.max(tr.width, tr.height) / 2;
-      if (dist <= rad && dist < best){ best = dist; hit = t; }
-    }
+    spawnBullet(0, 0, false);
+
+    const hit = findHit(aimX, aimY);
     if (hit) hitTarget(hit); else miss();
   }
 
   /* ═══════════════════════════════════════════════════════════════
-     ULT
+     ВЫСТРЕЛ — AKC-74M (очередь из 3 пуль)
      ═══════════════════════════════════════════════════════════════ */
-  function ultimate() {
-  if (!game || ultHits < 5) return;
-  window._ultJustFired = true;
-  setTimeout(() => { window._ultJustFired = false; }, 800);
-  runStats.ultCount++;
-    playSfx('ult');
+  function fireAkc(){
+    if (!game || isFiring) return;
+    isFiring = true;
+
+    let shotsFired = 0;
+    let hitsCount = 0;
+
+    const burstInterval = setInterval(() => {
+      if (!game){
+        clearInterval(burstInterval);
+        isFiring = false;
+        return;
+      }
+
+      shotsFired++;
+      runStats.shotCount++;
+      totalShotCount++;
+      recentShotTimestamps.push(Date.now());
+
+      playSfx('shotAkc');
+
+      rifleWrap.classList.remove('recoil');
+      void rifleWrap.offsetWidth;
+      rifleWrap.classList.add('recoil');
+      flash.classList.remove('fire');
+      void flash.offsetWidth;
+      flash.classList.add('fire');
+
+      const isTracer = (totalShotCount % 5 === 0);
+
+      let offsetX = 0, offsetY = 0;
+      if (shotsFired === 2){
+        offsetX = (Math.random() < .5 ? 1 : -1) * (10 + Math.random() * 15);
+        offsetY = (Math.random() - .5) * 20;
+      } else if (shotsFired === 3){
+        offsetX = (Math.random() < .5 ? 1 : -1) * (15 + Math.random() * 20);
+        offsetY = (Math.random() - .5) * 30;
+      }
+
+      spawnBullet(offsetX, offsetY, isTracer);
+      spawnShell();
+
+      const r = range.getBoundingClientRect();
+      const bulletAimX = aimX + (offsetX / r.width) * 100;
+      const bulletAimY = aimY + (offsetY / r.height) * 100;
+
+      const hit = findHit(bulletAimX, bulletAimY);
+
+      if (hit){
+        hitsCount++;
+        hitTargetNoMiss(hit);
+      } else {
+        playSfx('miss');
+      }
+
+      updateHeat();
+
+      if (shotsFired >= 3){
+        clearInterval(burstInterval);
+        if (hitsCount === 0) resetComboSilent();
+        setTimeout(() => { isFiring = false; }, 100);
+      }
+    }, 150);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ГЛАВНЫЙ ВЫСТРЕЛ — выбирает режим
+     ═══════════════════════════════════════════════════════════════ */
+  function fire(){
+    if (!game) return;
+    if (isFiring) return;
+
+    if (isAkcActive()){
+      fireAkc();
+    } else {
+      fireSingle();
+    }
+  }
+
+/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 5 НИЖЕ ═══════════ */
+
+  /* ═══════════════════════════════════════════════════════════════
+     ULT — последовательный расстрел мишеней
+     ═══════════════════════════════════════════════════════════════ */
+  function ultimate(){
+    if (!game || ultHits < 5) return;
+
+    window._ultJustFired = true;
+    setTimeout(() => { window._ultJustFired = false; }, 1000);
+
+    runStats.ultCount++;
     ultReadySoundPlayed = false;
 
-    [...targets].forEach(t => {
-      const c = getElCenter(t.el);
-      shatterTarget(t.el, c.x, c.y);
-    });
+    // Сбор мишеней
+    const shotList = targets.map(t => ({
+      t,
+      center: getElCenter(t.el)
+    }));
 
+    // Тайминги
+    const AIM_TIME = 60;
+    const FIRE_DELAY = 30;
+    const BULLET_SPEED = 4200;
+
+    // Звук залпа + обрыв
+    playSfx('ult');
+    const soundRef = SFX.ult;
+    const totalShots = shotList.length;
+    const totalTime = totalShots * (AIM_TIME + FIRE_DELAY) + 400;
+    setTimeout(() => {
+      try {
+        soundRef.pause();
+        soundRef.currentTime = 0;
+      } catch(e){}
+    }, totalTime);
+
+    // Очки считаем сразу — механика не меняется
     let total = 0;
-    [...targets].forEach(t => { total += TYPES[t.type].base; removeTarget(t); });
+    shotList.forEach(s => total += TYPES[s.t.type].base);
+    targets = [];
     addScore(total * comboMult() * 3);
     ultHits = 0;
     updateUI();
@@ -499,6 +924,84 @@ if (newFloor > prevComboFloor){
     msg.textContent = 'ULT ×3';
     msg.className = 'pop';
     setTimeout(() => { msg.textContent = ''; msg.className = ''; }, 600);
+
+    if (shotList.length === 0) return;
+
+    // Сортировка: сверху вниз
+    shotList.sort((a, b) => a.center.y - b.center.y);
+
+    ultAiming = true;
+    rifle.classList.add('ult-aiming');
+
+    let idx = 0;
+
+    function nextShot(){
+      if (idx >= shotList.length){
+        setTimeout(() => {
+          ultAiming = false;
+          ultAimTarget = null;
+          rifle.classList.remove('ult-aiming');
+          updateRifle();
+        }, 300);
+        return;
+      }
+
+      const shot = shotList[idx];
+      idx++;
+
+      ultAimTarget = { x: shot.center.x, y: shot.center.y };
+      updateRifle();
+
+      setTimeout(() => {
+        if (!game){
+          if (shot.t && shot.t.el && shot.t.el.parentNode) shot.t.el.remove();
+          ultAiming = false;
+          ultAimTarget = null;
+          rifle.classList.remove('ult-aiming');
+          return;
+        }
+
+        // Отдача + вспышка
+        rifleWrap.classList.remove('recoil');
+        void rifleWrap.offsetWidth;
+        rifleWrap.classList.add('recoil');
+        flash.classList.remove('fire');
+        void flash.offsetWidth;
+        flash.classList.add('fire');
+
+        // Пуля от дула к цели
+        const g = getAimGeom();
+        const dx = shot.center.x - g.mx;
+        const dy = shot.center.y - g.my;
+        const dist = Math.hypot(dx, dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        const duration = Math.max(0.08, Math.min(0.3, dist / BULLET_SPEED));
+
+        const b = document.createElement('div');
+        b.className = 'bullet ult-bullet';
+        b.style.left = g.mx + 'px';
+        b.style.top = g.my + 'px';
+        b.style.setProperty('--dx', dx + 'px');
+        b.style.setProperty('--dy', dy + 'px');
+        b.style.setProperty('--angle', (angle + 90) + 'deg');
+        b.style.animation = `bulletTravel ${duration}s linear forwards`;
+        range.appendChild(b);
+
+        setTimeout(() => {
+          b.remove();
+          if (shot.t && shot.t.el && shot.t.el.parentNode){
+            const c = getElCenter(shot.t.el);
+            shatterTarget(shot.t.el, c.x, c.y);
+            shot.t.el.remove();
+          }
+        }, duration * 1000);
+
+        setTimeout(nextShot, FIRE_DELAY);
+
+      }, AIM_TIME);
+    }
+
+    nextShot();
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -527,9 +1030,16 @@ if (newFloor > prevComboFloor){
     score = 0; comboHits = 0; ultHits = 0; targets = [];
     bullets.forEach(b => b.remove()); bullets = [];
     nextId = 1; missCount = 0; prevComboFloor = 1;
-ultReadySoundPlayed = false;
-sawTenCombo = false;
-game = true;
+    ultReadySoundPlayed = false;
+    sawTenCombo = false;
+    isFiring = false;
+    totalShotCount = 0;
+    recentShotTimestamps = [];
+    stopHeat();
+    ultAiming = false;
+    ultAimTarget = null;
+    if (rifle) rifle.classList.remove('ult-aiming');
+    game = true;
 
     laserEnabled = Storage.isLaserEnabled();
     personalBest = Storage.getPersonalBest();
@@ -544,6 +1054,8 @@ game = true;
     updateUI();
     endScreen.classList.add('hidden');
     document.querySelectorAll('.target').forEach(e => e.remove());
+    document.querySelectorAll('.akc-shell').forEach(e => e.remove());
+    document.querySelectorAll('.akc-smoke-particle').forEach(e => e.remove());
     aimX = 50; aimY = 40;
     updateRifle();
 
@@ -567,8 +1079,13 @@ game = true;
      ═══════════════════════════════════════════════════════════════ */
   async function finish(win){
     game = false;
+    isFiring = false;
     clearInterval(spawnTimer);
     cancelAnimationFrame(raf);
+    stopHeat();
+    ultAiming = false;
+    ultAimTarget = null;
+    if (rifle) rifle.classList.remove('ult-aiming');
     laser.classList.add('hidden');
     homeBtn.classList.add('hidden');
     modeBadge.classList.add('hidden');
@@ -618,14 +1135,13 @@ game = true;
     const stickerBtn = document.getElementById('stickerBtn');
     if (stickerBtn) stickerBtn.classList.toggle('hidden', !win);
 
-    // ★ Картинка кошки-жены: при проигрыше в бесконечном с комбо ×10+
-const catwifeEl = document.getElementById('catwifeImage');
-if (catwifeEl) {
-  const showCatwife = !win && runStats.mode === 'infinite' && sawTenCombo;
-  catwifeEl.classList.toggle('hidden', !showCatwife);
-}
+    const catwifeEl = document.getElementById('catwifeImage');
+    if (catwifeEl){
+      const showCatwife = !win && runStats.mode === 'infinite' && sawTenCombo;
+      catwifeEl.classList.toggle('hidden', !showCatwife);
+    }
 
-endScreen.classList.remove('hidden');
+    endScreen.classList.remove('hidden');
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -650,13 +1166,20 @@ endScreen.classList.remove('hidden');
     });
 
     game = false;
+    isFiring = false;
     clearInterval(spawnTimer);
     cancelAnimationFrame(raf);
+    stopHeat();
+    ultAiming = false;
+    ultAimTarget = null;
+    if (rifle) rifle.classList.remove('ult-aiming');
 
     [...targets].forEach(t => t.el.remove());
     targets = [];
     bullets.forEach(b => b.remove());
     bullets = [];
+    document.querySelectorAll('.akc-shell').forEach(e => e.remove());
+    document.querySelectorAll('.akc-smoke-particle').forEach(e => e.remove());
 
     laser.classList.add('hidden');
     homeBtn.classList.add('hidden');
@@ -676,6 +1199,7 @@ endScreen.classList.remove('hidden');
      ═══════════════════════════════════════════════════════════════ */
   function loop(now){
     if (!game) return;
+
     for (const t of [...targets]){
       const dt = (now - t.last) / 1000;
       t.last = now;
@@ -706,13 +1230,10 @@ endScreen.classList.remove('hidden');
             t.el.style.animation = 'telegraph .42s ease-in-out';
             t.jumpAt = now + 450;
           }
-
         } else {
           t.telegraphing = false;
-
           const candidates = [0, 1, 2].filter(l => l !== t.lane);
           candidates.sort(() => Math.random() - 0.5);
-
           let newLane = null;
           for (const ln of candidates){
             const laneSlots = targets
@@ -723,35 +1244,30 @@ endScreen.classList.remove('hidden');
               break;
             }
           }
-
           if (newLane !== null){
             t.lane = newLane;
             document.querySelectorAll('.lane')[newLane].appendChild(t.el);
-
             t.el.style.animation = 'none';
             void t.el.offsetHeight;
             t.el.style.animation = 'jumpLine .34s cubic-bezier(.2,.8,.2,1)';
           }
-
           t.jumpAt = now + 1300 + Math.random() * 1500;
         }
       }
     }
 
-    // ★ Если мишеней 0 и игра идёт — срочно спавним (кроме окна после ULT)
-if (game && targets.length === 0 && !window._ultJustFired){
-  spawn();
-}
+    // Если мишеней 0 и игра идёт — срочный спавн (кроме окна после ULT)
+    if (game && targets.length === 0 && !window._ultJustFired){
+      spawn();
+    }
 
-if (!Storage.isInfiniteMode() && score >= WIN_SCORE){
-  finish(true);
-} else {
-  updateRifle();
-  raf = requestAnimationFrame(loop);
-}
-  }   // ← ЭТА СКОБКА ЗАКРЫВАЕТ ФУНКЦИЮ loop()
-
-
+    if (!Storage.isInfiniteMode() && score >= WIN_SCORE){
+      finish(true);
+    } else {
+      updateRifle();
+      raf = requestAnimationFrame(loop);
+    }
+  }
 
   /* ═══════════════════════════════════════════════════════════════
      ОБРАБОТЧИКИ

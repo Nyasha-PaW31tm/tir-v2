@@ -130,10 +130,19 @@ const API = (() => {
 
     /* ★ Промокоды — идут на tir-admin */
     redeemPromo(code){
+      
       return requestPromo('/api/redeem-promo', {
         method: 'POST',
         body: { code }
       });
-    }
+    },
+    
+    /* ★ Обратная связь — идёт на tir-admin */
+sendFeedback(text){
+  return requestPromo('/api/feedback', {
+    method: 'POST',
+    body: { text }
+  });
+}
   };
 })();
