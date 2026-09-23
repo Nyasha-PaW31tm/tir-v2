@@ -717,15 +717,20 @@ body[data-bg="confetti"] .menu-card{background:#3a1028;border-color:#7a3a6a}
 
 .bg-row .bg-btn-wide{
   grid-column: 1 / -1 !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: linear-gradient(135deg, #040818 0%, #0a0620 55%, #2a8a6a 100%) !important;
   color: #fff !important;
   padding: 14px 16px !important;
   font-size: 14px !important;
-  text-align: left !important;
+  text-align: left;
   gap: 12px;
+}
+
+/* Скрытие перебивает всё */
+.bg-row .bg-btn-wide.hidden{
+  display: none !important;
 }
 
 .bg-btn-wide .bg-name{
