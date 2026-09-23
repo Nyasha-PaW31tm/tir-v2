@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    SHOP — магазин скинов + рулетка
-   BETA 0.9.4
+   BETA 0.9.5
    ═══════════════════════════════════════════════════════════════ */
 
 const Shop = (() => {
@@ -145,22 +145,22 @@ const Shop = (() => {
   }
 
   /* Превью */
-function getPreviewHTML(skin){
-  const cat = skin.category || 'weapon';
-  if (cat === 'weapon'){
-    return `<div class="shop-preview weapon-${skin.id}"></div>`;
+  function getPreviewHTML(skin){
+    const cat = skin.category || 'weapon';
+    if (cat === 'weapon'){
+      return `<div class="shop-preview weapon-${skin.id}"></div>`;
+    }
+    if (cat === 'target'){
+      return `<div class="shop-preview target-${skin.id}"></div>`;
+    }
+    if (cat === 'ultimate'){
+      return `<div class="shop-preview ult-${skin.id}"></div>`;
+    }
+    if (cat === 'background' || skin.id.startsWith('bg_')){
+      return `<div class="shop-preview background-${skin.id}"></div>`;
+    }
+    return `<div class="shop-preview placeholder">СКОРО</div>`;
   }
-  if (cat === 'target'){
-    return `<div class="shop-preview target-${skin.id}"></div>`;
-  }
-  if (cat === 'ultimate'){
-    return `<div class="shop-preview ult-${skin.id}"></div>`;
-  }
-  if (cat === 'background' || skin.id.startsWith('bg_')){
-    return `<div class="shop-preview background-${skin.id}"></div>`;
-  }
-  return `<div class="shop-preview placeholder">СКОРО</div>`;
-}
 
   /* Цена */
   function getPriceHTML(skin){
@@ -198,8 +198,6 @@ function getPreviewHTML(skin){
     }
     return `<button class="shop-buy" data-action="buy" data-id="${skin.id}" data-price="${skin.price}">КУПИТЬ</button>`;
   }
-
-/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ */
 
   /* ─── Пересчёт active перед выводом ─── */
   function recalcActive(){
@@ -290,9 +288,9 @@ function getPreviewHTML(skin){
 
         // Флаги покупки фонов
         if (skinId === 'bg_star')      Storage.set('owned_bg_star', '1');
-if (skinId === 'bg_sunset')    Storage.set('owned_bg_sunset', '1');
-if (skinId === 'bg_aurora')    Storage.set('owned_bg_aurora', '1');
-if (skinId === 'bg_nightcity') Storage.set('owned_bg_nightcity', '1');
+        if (skinId === 'bg_sunset')    Storage.set('owned_bg_sunset', '1');
+        if (skinId === 'bg_aurora')    Storage.set('owned_bg_aurora', '1');
+        if (skinId === 'bg_nightcity') Storage.set('owned_bg_nightcity', '1');
 
         // ★ Применение по категории
         if (cat === 'background' || skinId.startsWith('bg_')){
@@ -370,6 +368,32 @@ if (skinId === 'bg_nightcity') Storage.set('owned_bg_nightcity', '1');
   }
 
   /* ═══════════════════════════════════════════════════════════════
+     ДВУСТОРОННЯЯ СИНХРОНИЗАЦИЯ ФЛАГОВ "КУПЛЕНО"
+     Если сервер вернул owned:true  — ставим флаг
+     Если сервер вернул owned:false — снимаем флаг
+     ═══════════════════════════════════════════════════════════════ */
+  function syncOwnedFlags(skins){
+    const ids = ['bg_star', 'bg_sunset', 'bg_aurora', 'bg_nightcity'];
+
+    ids.forEach(id => {
+      const skin = (skins || []).find(s => s.id === id);
+      const key = 'owned_' + id;
+
+      if (!skin){
+        // скин вообще не пришёл с сервера → снимаем
+        Storage.remove(key);
+        return;
+      }
+
+      if (skin.owned){
+        Storage.set(key, '1');
+      } else {
+        Storage.remove(key);
+      }
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
      ЗАГРУЗКА ДАННЫХ С СЕРВЕРА
      ═══════════════════════════════════════════════════════════════ */
   async function load(){
@@ -400,15 +424,8 @@ if (skinId === 'bg_nightcity') Storage.set('owned_bg_nightcity', '1');
     cachedCoins = data.coins || 0;
     lastServerData = data;
 
-    // Флаги покупки фонов
-    const bgStar = (data.skins || []).find(s => s.id === 'bg_star');
-    if (bgStar && bgStar.owned) Storage.set('owned_bg_star', '1');
-    const bgSunset = (data.skins || []).find(s => s.id === 'bg_sunset');
-    if (bgSunset && bgSunset.owned) Storage.set('owned_bg_sunset', '1');
-    const bgAurora = (data.skins || []).find(s => s.id === 'bg_aurora');
-if (bgAurora && bgAurora.owned) Storage.set('owned_bg_aurora', '1');
-const bgNightcity = (data.skins || []).find(s => s.id === 'bg_nightcity');
-if (bgNightcity && bgNightcity.owned) Storage.set('owned_bg_nightcity', '1');
+    // ★ Двусторонняя синхронизация флагов покупки фонов
+    syncOwnedFlags(data.skins || []);
 
     Storage.setCoins(cachedCoins);
 

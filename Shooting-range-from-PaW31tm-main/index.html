@@ -311,5 +311,14 @@
 <script src="js/ui/history.js"></script>
 <script src="js/ui/setting.js"></script>
 <script src="js/ui/about.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var btn = document.getElementById('bgAuroraBtn');
+  if (!btn) return;
+  var owned = false;
+  try { owned = localStorage.getItem('tir_owned_bg_aurora') === '1'; } catch(e){}
+  if (!owned) btn.classList.add('hidden');
+});
+</script>
 </body>
 </html>

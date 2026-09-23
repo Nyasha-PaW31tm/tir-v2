@@ -36,96 +36,114 @@ const Settings = (() => {
     };
   }
 
-  /* ─── Фоны ─── */
-  function renderBackgrounds() {
-  const buttons = document.querySelectorAll('.bg-btn');
-  if (!buttons.length) return;
-  
-  /* ─── Видимость кнопок ─── */
-  const chinaBtn = document.getElementById('bgChinaBtn');
-  if (chinaBtn) chinaBtn.classList.toggle('hidden', !Storage.isChinaUnlocked());
-  
-  const starBtn = document.getElementById('bgStarBtn');
-  if (starBtn) {
-    const owned = Storage.get('owned_bg_star', '0') === '1';
-    starBtn.classList.toggle('hidden', !owned);
-  }
-  
-  const sunsetBtn = document.getElementById('bgSunsetBtn');
-  if (sunsetBtn) {
-    const owned = Storage.get('owned_bg_sunset', '0') === '1';
-    sunsetBtn.classList.toggle('hidden', !owned);
-  }
-  
-  const auroraBtn = document.getElementById('bgAuroraBtn');
-  const snowToggle = document.getElementById('auroraSnowToggle');
-  const ownedAurora = Storage.get('owned_bg_aurora', '0') === '1';
-  
-  if (auroraBtn) {
-    auroraBtn.classList.toggle('hidden', !ownedAurora);
-  }
-  
-  /* ─── Тумблер снега ─── */
-  if (snowToggle && auroraBtn) {
-    const snowOn = Storage.getAuroraSnow();
-    snowToggle.textContent = '❄ Снег ' + (snowOn ? 'ВКЛ' : 'ВЫКЛ');
-    snowToggle.classList.toggle('on', snowOn);
-    
-    snowToggle.onclick = (e) => {
-      e.stopPropagation();
-      const newState = !snowToggle.classList.contains('on');
-      Storage.setAuroraSnow(newState);
-      snowToggle.textContent = '❄ Снег ' + (newState ? 'ВКЛ' : 'ВЫКЛ');
-      snowToggle.classList.toggle('on', newState);
-      
-      /* Если Аврора активна — переключаем вживую */
-      const cur = document.body.dataset.bg;
-      if (cur === 'aurora' || cur === 'aurora-winter') {
-        const target = newState ? 'aurora-winter' : 'aurora';
-        document.body.dataset.bg = target;
-        Storage.setBackground(target);
+  /* ═══════════════════════════════════════════════════════════════
+     ФОНЫ
+     ═══════════════════════════════════════════════════════════════ */
+  function renderBackgrounds(){
+    const buttons = document.querySelectorAll('.bg-btn');
+    if (!buttons.length) return;
+
+    /* ─── Показ/скрытие по флагам покупки ─── */
+
+    // Пасхалка: Конфети
+    const confettiBtn = document.getElementById('bgConfettiBtn');
+    if (confettiBtn){
+      confettiBtn.classList.toggle('hidden', !Storage.isEasterEggFound());
+    }
+
+    // Пасхалка: Китай
+    const chinaBtn = document.getElementById('bgChinaBtn');
+    if (chinaBtn){
+      chinaBtn.classList.toggle('hidden', !Storage.isChinaUnlocked());
+    }
+
+    // Платные: Космос
+    const starBtn = document.getElementById('bgStarBtn');
+    if (starBtn){
+      const owned = Storage.get('owned_bg_star', '0') === '1';
+      starBtn.classList.toggle('hidden', !owned);
+    }
+
+    // Платные: Закат
+    const sunsetBtn = document.getElementById('bgSunsetBtn');
+    if (sunsetBtn){
+      const owned = Storage.get('owned_bg_sunset', '0') === '1';
+      sunsetBtn.classList.toggle('hidden', !owned);
+    }
+
+    // Платные: Аврора (с тумблером снега)
+    const auroraBtn   = document.getElementById('bgAuroraBtn');
+    const snowToggle  = document.getElementById('auroraSnowToggle');
+    const ownedAurora = Storage.get('owned_bg_aurora', '0') === '1';
+
+    if (auroraBtn){
+      auroraBtn.classList.toggle('hidden', !ownedAurora);
+    }
+
+    if (snowToggle && auroraBtn){
+      const snowOn = Storage.getAuroraSnow();
+      snowToggle.textContent = '❄ Снег ' + (snowOn ? 'ВКЛ' : 'ВЫКЛ');
+      snowToggle.classList.toggle('on', snowOn);
+
+      snowToggle.onclick = (e) => {
+        e.stopPropagation();
+        const newState = !snowToggle.classList.contains('on');
+        Storage.setAuroraSnow(newState);
+        snowToggle.textContent = '❄ Снег ' + (newState ? 'ВКЛ' : 'ВЫКЛ');
+        snowToggle.classList.toggle('on', newState);
+
+        // Если Аврора активна — переключаем её вживую
+        const cur = document.body.dataset.bg;
+        if (cur === 'aurora' || cur === 'aurora-winter'){
+          const target = newState ? 'aurora-winter' : 'aurora';
+          document.body.dataset.bg = target;
+          Storage.setBackground(target);
+          buttons.forEach(b => {
+            b.classList.toggle('active', b.dataset.bg === 'aurora');
+          });
+        }
+      };
+    }
+
+    // Платные: Ночной город
+    const nightcityBtn = document.getElementById('bgNightcityBtn');
+    if (nightcityBtn){
+      const owned = Storage.get('owned_bg_nightcity', '0') === '1';
+      nightcityBtn.classList.toggle('hidden', !owned);
+    }
+
+    /* ─── Применяем текущий фон к body ─── */
+    const current = Storage.getBackground();
+    document.body.dataset.bg = current;
+
+    /* ─── Подсветка активной кнопки ─── */
+    buttons.forEach(b => {
+      const btnBg = b.dataset.bg;
+      const isActive = (btnBg === current)
+        || (btnBg === 'aurora' && current === 'aurora-winter');
+      b.classList.toggle('active', isActive);
+    });
+
+    /* ─── Клик по кнопке фона ─── */
+    buttons.forEach(btn => {
+      btn.onclick = () => {
+        const name = btn.dataset.bg;
+
+        // Для Авроры учитываем флаг снега
+        const effective = (name === 'aurora' && Storage.getAuroraSnow())
+          ? 'aurora-winter' : name;
+
+        document.body.dataset.bg = effective;
+        Storage.setBackground(effective);
+
         buttons.forEach(b => {
-          b.classList.toggle('active', b.dataset.bg === 'aurora');
+          const isActive = (b.dataset.bg === effective)
+            || (b.dataset.bg === 'aurora' && effective === 'aurora-winter');
+          b.classList.toggle('active', isActive);
         });
-      }
-    };
+      };
+    });
   }
-  
-  const nightcityBtn = document.getElementById('bgNightcityBtn');
-  if (nightcityBtn) {
-    const owned = Storage.get('owned_bg_nightcity', '0') === '1';
-    nightcityBtn.classList.toggle('hidden', !owned);
-  }
-  
-  /* ─── Применяем текущий фон ─── */
-  const current = Storage.getBackground();
-  document.body.dataset.bg = current;
-  
-  buttons.forEach(b => {
-    const btnBg = b.dataset.bg;
-    const isActive = (btnBg === current) ||
-      (btnBg === 'aurora' && current === 'aurora-winter');
-    b.classList.toggle('active', isActive);
-  });
-  
-  /* ─── Клик по кнопке фона ─── */
-  buttons.forEach(btn => {
-    btn.onclick = () => {
-      const name = btn.dataset.bg;
-      const effective = (name === 'aurora' && Storage.getAuroraSnow()) ?
-        'aurora-winter' : name;
-      
-      document.body.dataset.bg = effective;
-      Storage.setBackground(effective);
-      
-      buttons.forEach(b => {
-        const isActive = (b.dataset.bg === effective) ||
-          (b.dataset.bg === 'aurora' && effective === 'aurora-winter');
-        b.classList.toggle('active', isActive);
-      });
-    };
-  });
-}
 
   /* ─── Пасхалка конфети ─── */
   function renderEasterEgg(){
@@ -229,11 +247,11 @@ const Settings = (() => {
 
   /* ─── Промокоды ─── */
   function renderPromo(){
-    const promoBtn = document.getElementById('promoBtn');
-    const promoModal = document.getElementById('promoModal');
-    const promoInput = document.getElementById('promoInput');
+    const promoBtn    = document.getElementById('promoBtn');
+    const promoModal  = document.getElementById('promoModal');
+    const promoInput  = document.getElementById('promoInput');
     const promoSubmit = document.getElementById('promoSubmit');
-    const promoClose = document.getElementById('promoClose');
+    const promoClose  = document.getElementById('promoClose');
     const promoResult = document.getElementById('promoResult');
 
     if (!promoBtn || !promoModal) return;
@@ -313,9 +331,7 @@ const Settings = (() => {
       if (promoInput) promoInput.value = '';
     }
 
-    if (promoSubmit){
-      promoSubmit.onclick = submitCode;
-    }
+    if (promoSubmit) promoSubmit.onclick = submitCode;
 
     if (promoInput){
       promoInput.addEventListener('keydown', e => {
@@ -451,9 +467,7 @@ const Settings = (() => {
       }
     }
 
-    if (feedbackSubmit){
-      feedbackSubmit.onclick = submitFeedback;
-    }
+    if (feedbackSubmit) feedbackSubmit.onclick = submitFeedback;
   }
 
   /* ─── INIT ─── */
