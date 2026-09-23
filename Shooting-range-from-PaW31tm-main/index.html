@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Тир — BETA 0.9.3</title>
+<title>Тир — BETA 0.9.5</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <link rel="stylesheet" href="style.css">
@@ -23,6 +23,8 @@
 <link rel="stylesheet" href="skins/target-neon.css">
 <link rel="stylesheet" href="skins/akc74m.css">
 <link rel="stylesheet" href="skins/bg-star.css">
+<link rel="stylesheet" href="skins/bg-aurora.css">
+<link rel="stylesheet" href="skins/bg-nightcity.css">
 <link rel="stylesheet" href="skins/bg-china.css">
 <link rel="stylesheet" href="skins/bg-sunset.css">
 <link rel="stylesheet" href="skins/skins.css">
@@ -42,7 +44,7 @@
   </header>
 
   <main id="range">
-    <button id="homeBtn" class="home-btn hidden" title="Выйти в меню">🏠</button>
+    <button id="pauseBtn" class="home-btn hidden" title="Пауза">⏸</button>
     <div id="modeBadge" class="mode-badge hidden">♾ БЕСКОНЕЧНЫЙ</div>
 
     <div class="lane" data-lane="0"></div>
@@ -67,6 +69,12 @@
 
     <div id="muzzleFlash"></div>
     <div id="message"></div>
+    <div id="ncScene">
+  <div class="nc-lane nc-a"></div>
+  <div class="nc-lane nc-b"></div>
+  <div class="nc-lane nc-c"></div>
+  <div class="nc-lane nc-d"></div>
+</div>
   </main>
 
   <footer class="controls">
@@ -95,7 +103,7 @@
     <div class="menu-card">
       <div class="logo-mark">ТИР</div>
       <h1>Стрельбище</h1>
-      <p class="beta">BETA 0.9.2</p>
+      <p class="beta">BETA 0.9.5</p>
 
       <div class="menu-coins">🪙 <span id="menuCoins">0</span></div>
 
@@ -135,16 +143,27 @@
       <div class="setting-block">
         <h3>🎨 Фон</h3>
         <div class="bg-row">
-          <button class="bg-btn color-dark" data-bg="dark">Тёмный</button>
-          <button class="bg-btn color-black" data-bg="black">Чёрный</button>
-          <button class="bg-btn color-gray" data-bg="gray">Серый</button>
-          <button class="bg-btn color-light" data-bg="light">Светлый</button>
-          <button class="bg-btn color-confetti hidden" id="bgConfettiBtn" data-bg="confetti">🌸 Конфети</button>
-          <button class="bg-btn hidden" id="bgStarBtn" data-bg="star" style="background:linear-gradient(135deg,#0a0a1f,#5a3c9a);color:#fff">🌟 Космос</button>
-          <button class="bg-btn hidden" id="bgChinaBtn" data-bg="china" style="background:linear-gradient(135deg,#de2910,#a01008);color:#ffde00">🚩 Китай</button>
-          <button class="bg-btn hidden" id="bgSunsetBtn" data-bg="sunset" style="background:linear-gradient(135deg,#ff8c42,#c4384a);color:#fff">🌅 Закат</button>
-        </div>
+  <button class="bg-btn color-dark" data-bg="dark">Тёмный</button>
+  <button class="bg-btn color-black" data-bg="black">Чёрный</button>
+  <button class="bg-btn color-gray" data-bg="gray">Серый</button>
+  <button class="bg-btn color-light" data-bg="light">Светлый</button>
+  <button class="bg-btn color-confetti hidden" id="bgConfettiBtn" data-bg="confetti">🌸 Конфети</button>
+  <button class="bg-btn hidden" id="bgStarBtn" data-bg="star" style="background:linear-gradient(135deg,#0a0a1f,#5a3c9a);color:#fff">🌟 Космос</button>
+  <button class="bg-btn hidden" id="bgChinaBtn" data-bg="china" style="background:linear-gradient(135deg,#de2910,#a01008);color:#ffde00">🚩 Китай</button>
+  <button class="bg-btn hidden" id="bgSunsetBtn" data-bg="sunset" style="background:linear-gradient(135deg,#ff8c42,#c4384a);color:#fff">🌅 Закат</button>
+
+  <button class="bg-btn bg-btn-wide hidden" id="bgAuroraBtn" data-bg="aurora">
+    <span class="bg-name">🌌 Аврора</span>
+    <span class="bg-snow" id="auroraSnowToggle">❄ Снег ВЫКЛ</span>
+  </button>
+
+  <button class="bg-btn hidden" id="bgNightcityBtn" data-bg="nightcity" style="background:linear-gradient(135deg,#0a0c1a,#ffd23c);color:#fff">🌃 Ночной город</button> </div>
       </div>
+      
+      <div class="setting">
+  <span>📊 Счётчик FPS<br><small>Для отладки — реальный FPS раз в секунду</small></span>
+  <button class="toggle off" data-fps-toggle>ВЫКЛ</button>
+</div>
 
       <button id="promoBtn" class="promo-btn">🎁 ПРОМОКОД</button>
       <button id="feedbackBtn" class="feedback-btn">💬 ОБРАТНАЯ СВЯЗЬ</button>
@@ -252,6 +271,30 @@
   </div>
 </section>
 
+<!-- ═══════════════ ПАУЗА ═══════════════ -->
+<section id="pauseScreen" class="overlay hidden">
+  <div class="menu-card">
+    <h1>⏸ Пауза</h1>
+    <p class="beta">Игра заморожена</p>
+
+    <div class="setting-block">
+      <h3>🔊 Звук</h3>
+      <div class="vol-row">
+        <input type="range" id="pauseVolSlider" min="0" max="100" value="70">
+        <span class="vol-val" id="pauseVolVal">70%</span>
+      </div>
+    </div>
+    
+    <div class="setting">
+  <span>📊 Счётчик FPS</span>
+  <button class="toggle off" data-fps-toggle>ВЫКЛ</button>
+</div>
+
+    <button id="pauseResume">ПРОДОЛЖИТЬ</button>
+    <button id="pauseExit" class="secondary">ВЫЙТИ В МЕНЮ</button>
+  </div>
+</section>
+
 </div>
 
 <!-- ═══════════════ СКРИПТЫ ═══════════════ -->
@@ -259,6 +302,7 @@
 <script src="js/api.js"></script>
 <script src="js/skins.js"></script>
 <script src="js/sync.js"></script>
+<script src="js/fps.js"></script>
 <script src="js/game.js"></script>
 <script src="js/ui/menu.js"></script>
 <script src="js/ui/shop.js"></script>

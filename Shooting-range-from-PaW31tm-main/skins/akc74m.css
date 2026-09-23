@@ -16,8 +16,8 @@ body.skin-akc74m{
   --r-glow: none;
 }
 
-body.skin-akc74m #rifleWrap{
-  filter: drop-shadow(2px 3px 4px rgba(0,0,0,.6));
+body.skin-akc74m #rifleWrap {
+  /* drop-shadow убран — дорого при вращении ствола */
 }
 
 /* ═══════════════════════════════════════════════════════════════

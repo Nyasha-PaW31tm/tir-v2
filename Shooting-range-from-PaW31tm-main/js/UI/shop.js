@@ -145,28 +145,22 @@ const Shop = (() => {
   }
 
   /* Превью */
-  function getPreviewHTML(skin){
-    const cat = skin.category || 'weapon';
-    if (cat === 'weapon'){
-      return `<div class="shop-preview weapon-${skin.id}"></div>`;
-    }
-    if (cat === 'target'){
-      return `<div class="shop-preview target-${skin.id}"></div>`;
-    }
-    if (cat === 'ultimate'){
-      return `<div class="shop-preview ult-${skin.id}"></div>`;
-    }
-    if (skin.id === 'bg_star'){
-      return `<div class="shop-preview background-bg_star"></div>`;
-    }
-    if (skin.id === 'bg_sunset'){
-      return `<div class="shop-preview background-bg_sunset"></div>`;
-    }
-    if (skin.id === 'bg_china'){
-      return `<div class="shop-preview background-bg_china"></div>`;
-    }
-    return `<div class="shop-preview placeholder">СКОРО</div>`;
+function getPreviewHTML(skin){
+  const cat = skin.category || 'weapon';
+  if (cat === 'weapon'){
+    return `<div class="shop-preview weapon-${skin.id}"></div>`;
   }
+  if (cat === 'target'){
+    return `<div class="shop-preview target-${skin.id}"></div>`;
+  }
+  if (cat === 'ultimate'){
+    return `<div class="shop-preview ult-${skin.id}"></div>`;
+  }
+  if (cat === 'background' || skin.id.startsWith('bg_')){
+    return `<div class="shop-preview background-${skin.id}"></div>`;
+  }
+  return `<div class="shop-preview placeholder">СКОРО</div>`;
+}
 
   /* Цена */
   function getPriceHTML(skin){
@@ -295,8 +289,10 @@ const Shop = (() => {
         toast('🎉 Куплено!');
 
         // Флаги покупки фонов
-        if (skinId === 'bg_star')  Storage.set('owned_bg_star', '1');
-        if (skinId === 'bg_sunset') Storage.set('owned_bg_sunset', '1');
+        if (skinId === 'bg_star')      Storage.set('owned_bg_star', '1');
+if (skinId === 'bg_sunset')    Storage.set('owned_bg_sunset', '1');
+if (skinId === 'bg_aurora')    Storage.set('owned_bg_aurora', '1');
+if (skinId === 'bg_nightcity') Storage.set('owned_bg_nightcity', '1');
 
         // ★ Применение по категории
         if (cat === 'background' || skinId.startsWith('bg_')){
@@ -409,6 +405,10 @@ const Shop = (() => {
     if (bgStar && bgStar.owned) Storage.set('owned_bg_star', '1');
     const bgSunset = (data.skins || []).find(s => s.id === 'bg_sunset');
     if (bgSunset && bgSunset.owned) Storage.set('owned_bg_sunset', '1');
+    const bgAurora = (data.skins || []).find(s => s.id === 'bg_aurora');
+if (bgAurora && bgAurora.owned) Storage.set('owned_bg_aurora', '1');
+const bgNightcity = (data.skins || []).find(s => s.id === 'bg_nightcity');
+if (bgNightcity && bgNightcity.owned) Storage.set('owned_bg_nightcity', '1');
 
     Storage.setCoins(cachedCoins);
 

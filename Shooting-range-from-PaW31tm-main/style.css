@@ -393,10 +393,8 @@ body[data-bg="confetti"] #range{
   padding:0;margin:0;
   font-size:22px;
   line-height:1;
-  background:rgba(20,25,32,.85);
+  background:rgba(20,25,32,.92);
   border:1px solid rgba(255,255,255,.18);
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
   border-radius:12px;
   display:flex;align-items:center;justify-content:center;
   transition:transform .1s ease,background .2s ease;
@@ -684,4 +682,77 @@ body[data-bg="confetti"] .menu-card{background:#3a1028;border-color:#7a3a6a}
 
 #rifle.ult-aiming{
   transition: transform 0.06s cubic-bezier(.3,.8,.4,1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FPS СЧЁТЧИК — для отладки
+   ═══════════════════════════════════════════════════════════════ */
+.fps-counter{
+  position: fixed;
+  top: 84px;              /* под топ-баром (76px) + 8px отступ */
+  left: 8px;
+  z-index: 9999;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, .65);
+  color: #4ade80;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .6px;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: color .25s ease;
+}
+
+.fps-counter.hidden{
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   АВРОРА — широкая кнопка с тумблером снега
+   ═══════════════════════════════════════════════════════════════ */
+
+.bg-row .bg-btn-wide{
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  background: linear-gradient(135deg, #040818 0%, #0a0620 55%, #2a8a6a 100%) !important;
+  color: #fff !important;
+  padding: 14px 16px !important;
+  font-size: 14px !important;
+  text-align: left !important;
+  gap: 12px;
+}
+
+.bg-btn-wide .bg-name{
+  font-weight: 800;
+  letter-spacing: .5px;
+  flex: 1;
+}
+
+.bg-btn-wide .bg-snow{
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.5);
+  color: #8893a3;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  transition: background .2s ease, color .2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  flex-shrink: 0;
+}
+
+.bg-btn-wide .bg-snow.on{
+  background: #4a7c3a;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(74,124,58,.6);
 }

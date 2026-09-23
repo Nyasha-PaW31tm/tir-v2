@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   ФОН: Космос — финальная версия
-   Фон и мерцание живут в ::before, мишени не трогает.
+   ФОН: Космос
+   Мерцание на GPU-слое, мишени не трогает.
    ═══════════════════════════════════════════════════════════════ */
 
 body[data-bg="star"]{
@@ -14,7 +14,7 @@ body[data-bg="star"] #range{
   background: #050510 !important;
 }
 
-/* Фон в псевдоэлементе — под всеми мишенями, ружьём и т.д. */
+/* Фон в псевдоэлементе — под мишенями и ружьём */
 body[data-bg="star"] #range::before{
   content: "";
   position: absolute;
@@ -63,7 +63,9 @@ body[data-bg="star"] #range::before{
 
   background-position: 0 0;
 
-  /* ★ Мерцание — только на фоне, не на мишенях */
+  /* ★ Мерцание сохранено, но поднято на GPU-слой */
+  will-change: filter;
+  transform: translateZ(0);
   animation: starTwinkle 5s ease-in-out infinite;
 }
 
@@ -82,19 +84,19 @@ body[data-bg="star"] .target.gold{
 
 /* Топ и кнопки */
 body[data-bg="star"] .top{
-  background:#0a0a22;
-  border-bottom-color:#2a2a5a;
+  background: #0a0a22;
+  border-bottom-color: #2a2a5a;
 }
 body[data-bg="star"] .controls{
-  background:#0a0a22;
+  background: #0a0a22;
 }
 
 /* Лазер */
 body[data-bg="star"] #laser{
-  background:rgba(120,200,255,.95);
-  box-shadow:0 0 8px rgba(120,200,255,1);
+  background: rgba(120,200,255,.95);
+  box-shadow: 0 0 8px rgba(120,200,255,1);
 }
 body[data-bg="star"] #laser:after{
-  background:#7ec8ff;
-  box-shadow:0 0 12px #7ec8ff;
+  background: #7ec8ff;
+  box-shadow: 0 0 12px #7ec8ff;
 }

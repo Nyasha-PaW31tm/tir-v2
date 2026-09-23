@@ -121,3 +121,115 @@
 #rifle .rifle-muzzle{
   transition: background .35s ease, box-shadow .35s ease, border-color .35s ease;
 }
+/* ═══════════════════════════════════════════════════════════════
+   ПРЕВЬЮ ФОНА: СЕВЕРНОЕ СИЯНИЕ
+   ═══════════════════════════════════════════════════════════════ */
+.shop-preview.background-bg_aurora{
+  background:
+    radial-gradient(ellipse 70% 20% at 40% 40%, rgba(80,255,180,.6), transparent 70%),
+    radial-gradient(ellipse 60% 18% at 75% 55%, rgba(120,220,255,.5), transparent 70%),
+    radial-gradient(circle at 20% 15%, #fff 1px, transparent 1.5px),
+    radial-gradient(circle at 60% 20%, #fff 1px, transparent 1.5px),
+    radial-gradient(circle at 85% 12%, #fff 0.8px, transparent 1.3px),
+    linear-gradient(180deg, #040818, #0a0620);
+  border-color: #78ffdc;
+  box-shadow: 0 0 14px rgba(120,255,220,.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПРЕВЬЮ ФОНА: НОЧНОЙ ГОРОД
+   ═══════════════════════════════════════════════════════════════ */
+.shop-preview.background-bg_nightcity{
+  background:
+    radial-gradient(circle 6px at 80% 15%, rgba(255,250,220,1) 0%, rgba(255,240,180,.6) 60%, transparent 100%),
+    radial-gradient(circle at 15% 10%, #fff 0.8px, transparent 1.3px),
+    radial-gradient(circle at 40% 8%, #cfe0ff 1px, transparent 1.5px),
+    radial-gradient(circle at 60% 12%, #fff 0.8px, transparent 1.3px),
+    linear-gradient(180deg, transparent 60%, #0a0a18 60%, #0a0a18 78%, #050508 78%, #050508 100%),
+    linear-gradient(180deg, #05070f, #141628);
+  border-color: #ffd23c;
+  box-shadow: 0 0 14px rgba(255,210,60,.5);
+  position: relative;
+  overflow: hidden;
+}
+.shop-preview.background-bg_nightcity::after{
+  content: "";
+  position: absolute;
+  bottom: 14%;
+  left: 12%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ff5050;
+  box-shadow:
+    14px 2px 0 #ffb450,
+    30px -1px 0 #78c8ff,
+    46px 2px 0 #ff5050,
+    62px 0 0 #fff08c,
+    0 0 6px #ff5050;
+}
+/* ═══════════════════════════════════════════════════════════════
+   ПРЕВЬЮ ФОНА: СЕВЕРНОЕ СИЯНИЕ
+   ═══════════════════════════════════════════════════════════════ */
+.shop-preview.background-bg_aurora{
+  background:
+    radial-gradient(ellipse 70% 22% at 30% 38%, rgba(80,255,180,.7), transparent 70%),
+    radial-gradient(ellipse 55% 18% at 75% 55%, rgba(120,220,255,.6), transparent 70%),
+    radial-gradient(circle at 15% 12%, #fff 1.2px, transparent 1.8px),
+    radial-gradient(circle at 45% 18%, #cfe0ff 1px, transparent 1.6px),
+    radial-gradient(circle at 80% 10%, #fff 1.2px, transparent 1.8px),
+    radial-gradient(circle at 25% 25%, #fff 1px, transparent 1.6px),
+    radial-gradient(circle at 65% 22%, #cfe0ff 1px, transparent 1.6px),
+    linear-gradient(180deg, #040818 0%, #0a0620 100%);
+  border-color: #78ffdc;
+  box-shadow: 0 0 14px rgba(120,255,220,.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПРЕВЬЮ ФОНА: НОЧНОЙ ГОРОД
+   ═══════════════════════════════════════════════════════════════ */
+.shop-preview.background-bg_nightcity{
+  background:
+    /* Луна */
+    radial-gradient(circle 5px at 78% 18%,
+      #fffdf0 0%, #fff5d0 55%, transparent 100%),
+    radial-gradient(circle 14px at 78% 18%,
+      rgba(255,245,200,.4) 0%, transparent 100%),
+    /* Звёзды */
+    radial-gradient(circle at 15% 12%, #fff 0.9px, transparent 1.4px),
+    radial-gradient(circle at 40% 8%, #cfe0ff 1px, transparent 1.5px),
+    radial-gradient(circle at 55% 15%, #fff 0.8px, transparent 1.3px),
+    radial-gradient(circle at 25% 20%, #fff 0.9px, transparent 1.4px),
+    /* Силуэты зданий с окнами */
+    linear-gradient(180deg, transparent 55%, #182040 55%, #182040 68%, transparent 68%),
+    linear-gradient(180deg, transparent 62%, #0e1020 62%, #0e1020 78%, transparent 78%),
+    linear-gradient(180deg, transparent 70%, #182040 70%, #182040 88%, transparent 88%),
+    /* Огни машин */
+    linear-gradient(180deg, transparent 88%, #0a0c18 88%, #0a0c18 100%),
+    /* Небо */
+    linear-gradient(180deg, #0a0e22 0%, #131834 45%, #1e2248 100%);
+  border-color: #ffd23c;
+  box-shadow: 0 0 14px rgba(255,210,60,.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Красные и белые точки-машины внизу превью */
+.shop-preview.background-bg_nightcity::after{
+  content: "";
+  position: absolute;
+  bottom: 8%;
+  left: 12%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ff5050;
+  box-shadow:
+    14px 1px 0 #fff8e0,
+    30px -1px 0 #ffe8a0,
+    46px 1px 0 #ff5050,
+    62px 0 0 #fff8e0,
+    0 0 5px #ff5050,
+    14px 1px 4px rgba(255,248,224,.8),
+    30px -1px 4px rgba(255,232,160,.8);
+}

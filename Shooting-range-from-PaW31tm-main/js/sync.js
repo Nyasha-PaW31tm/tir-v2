@@ -1,106 +1,147 @@
 /* ═══════════════════════════════════════════════════════════════
-   SYNC — синхронизация профиля игрока с сервером
-   Тянет монеты, скин, рекорд, статистику. Обновляет UI.
+   SYNC — синхронизация с сервером + очередь на повтор
+   BETA 0.9.5
    ═══════════════════════════════════════════════════════════════ */
 
 const Sync = (() => {
 
-  /* ─── Обновление UI монет (шапка игры + меню + магазин) ─── */
+  const QUEUE_KEY = 'pendingRuns';
+  const MAX_QUEUE = 10;
+  const MAX_TRIES = 5;
+
   function updateCoinsUI(){
     const coins = Storage.getCoins();
-
-    const el1 = document.getElementById('coins');       // шапка игры
-    const el2 = document.getElementById('menuCoins');    // главное меню
-    const el3 = document.getElementById('shopCoins');    // магазин
-
+    const el1 = document.getElementById('coins');
+    const el2 = document.getElementById('menuCoins');
+    const el3 = document.getElementById('shopCoins');
     if (el1) el1.textContent = coins;
     if (el2) el2.textContent = coins;
     if (el3) el3.textContent = coins;
   }
 
-  /* ─── Обновить UI всех остальных данных (рекорд и т.д.) ─── */
-  function updateProfileUI(){
-    // пока ничего — задел на будущее
+  function updateProfileUI(){ /* задел */ }
+
+  /* ─── Очередь ─── */
+  function getQueue(){
+    try { return JSON.parse(localStorage.getItem('tir_' + QUEUE_KEY) || '[]'); }
+    catch(e){ return []; }
+  }
+  function saveQueue(q){
+    try { localStorage.setItem('tir_' + QUEUE_KEY, JSON.stringify(q.slice(-MAX_QUEUE))); }
+    catch(e){}
+  }
+  function addToQueue(payload){
+    const q = getQueue();
+    q.push(payload);
+    saveQueue(q);
+  }
+  function removeFromQueue(id){
+    if (!id) return;
+    saveQueue(getQueue().filter(p => p.__queueId !== id));
   }
 
-  /* ─── Главный метод: синхронизация с сервером ─── */
+  /* ─── Профиль с сервера ─── */
   async function fromServer(){
-    if (!API.isTelegramReady()){
-      console.log('[sync] Telegram context not ready, skipping');
-      return null;
-    }
+    if (!API.isTelegramReady()) return null;
 
     const data = await API.getProfile();
-    if (!data || !data.ok){
-      console.warn('[sync] server error:', data?.error);
-      return null;
-    }
+    if (!data || !data.ok) return null;
 
-    // Обновляем локальный кэш из сервера (сервер — источник истины)
-    if (typeof data.coins === 'number'){
-      Storage.setCoins(data.coins);
-    }
- const localActive = Storage.getActiveSkin();
-const isEasterSkin = (localActive === 'china');
+    if (typeof data.coins === 'number') Storage.setCoins(data.coins);
 
-if (data.active_skin && !isEasterSkin){
-  Storage.setActiveSkin(data.active_skin);
-  Skins.apply(data.active_skin);
-} else if (isEasterSkin){
-  Skins.apply(localActive);
-}
-    if (typeof data.personal_best === 'number'){
-      Storage.setPersonalBest(data.personal_best);
+    const localActive = Storage.getActiveSkin();
+    const isEasterSkin = (localActive === 'china');
+    if (data.active_skin && !isEasterSkin){
+      Storage.setActiveSkin(data.active_skin);
+      Skins.apply(data.active_skin);
+    } else if (isEasterSkin){
+      Skins.apply(localActive);
     }
+    if (typeof data.personal_best === 'number') Storage.setPersonalBest(data.personal_best);
 
-    // Обновляем UI
     updateCoinsUI();
     updateProfileUI();
 
-    console.log('[sync] profile synced:', data);
+    // Фоном пробуем отправить висящие забеги
+    retryPending().catch(() => {});
+
     return data;
   }
 
-  /* ─── Отправить результат забега на сервер ─── */
-  async function submitRun({ score, duration, shots, ults, maxCombo, isWin, mode, laser }){
-    if (!API.isTelegramReady()){
-      console.log('[sync] Telegram context not ready, skipping submit');
-      return null;
-    }
+  /* ─── Отправка забега ─── */
+  async function submitRun(payloadIn){
+    if (!API.isTelegramReady()) return null;
 
     const payload = {
-      score: Math.floor(score),
-      duration: Math.floor(duration),
-      shots: Math.floor(shots),
-      ults: Math.floor(ults),
-      max_combo: Number(maxCombo),
-      is_win: !!isWin,
-      mode: mode || 'normal',
-      laser: laser ? 1 : 0
+      score: Math.floor(payloadIn.score),
+      duration: Math.floor(payloadIn.duration),
+      shots: Math.floor(payloadIn.shots),
+      ults: Math.floor(payloadIn.ults),
+      max_combo: Number(payloadIn.maxCombo),
+      is_win: !!payloadIn.isWin,
+      mode: payloadIn.mode || 'normal',
+      laser: payloadIn.laser ? 1 : 0
     };
 
     const data = await API.submitRun(payload);
-    if (!data || !data.ok){
-      console.warn('[sync] submit failed:', data?.error);
-      return null;
+
+    if (data && data.ok){
+      if (typeof data.total_coins === 'number'){
+        Storage.setCoins(data.total_coins);
+        updateCoinsUI();
+      }
+      if (typeof data.personal_best === 'number'){
+        Storage.setPersonalBest(data.personal_best);
+      }
+      return data;
     }
 
-    // Обновляем монеты из ответа сервера (авторитет)
-    if (typeof data.total_coins === 'number'){
-      Storage.setCoins(data.total_coins);
-      updateCoinsUI();
-    }
-    if (typeof data.personal_best === 'number'){
-      Storage.setPersonalBest(data.personal_best);
-    }
+    // Провал — кладём в очередь
+    payload.__queueId = Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    payload.__tries = 1;
+    addToQueue(payload);
 
-    console.log('[sync] run submitted:', data);
-    return data;
+    return {
+      ok: false,
+      error: (data && data.error) || 'unknown',
+      status: data && data.__status,
+      details: data && data.details,
+      __queued: true
+    };
+  }
+
+  /* ─── Повторная отправка висящих ─── */
+  async function retryPending(){
+    if (!API.isTelegramReady()) return;
+    let q = getQueue();
+    if (!q.length) return;
+
+    const remaining = [];
+    for (const payload of q){
+      if (payload.__tries >= MAX_TRIES) continue;
+
+      const data = await API.submitRun(payload);
+      if (data && data.ok){
+        if (typeof data.total_coins === 'number'){
+          Storage.setCoins(data.total_coins);
+        }
+        if (typeof data.personal_best === 'number'){
+          Storage.setPersonalBest(data.personal_best);
+        }
+        // успех — не сохраняем в remaining
+      } else {
+        payload.__tries = (payload.__tries || 0) + 1;
+        remaining.push(payload);
+      }
+    }
+    saveQueue(remaining);
+    updateCoinsUI();
   }
 
   return {
     fromServer,
     submitRun,
+    retryPending,
     updateCoinsUI,
     updateProfileUI
   };

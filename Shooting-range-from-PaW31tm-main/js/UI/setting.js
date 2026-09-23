@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    SETTINGS — настройки + пасхалки + промокоды + обратная связь
-   BETA 0.9.4
+   BETA 0.9.5
    ═══════════════════════════════════════════════════════════════ */
 
 const Settings = (() => {
@@ -37,38 +37,95 @@ const Settings = (() => {
   }
 
   /* ─── Фоны ─── */
-  function renderBackgrounds(){
-    const buttons = document.querySelectorAll('.bg-btn');
-    if (!buttons.length) return;
-
-    const chinaBtn = document.getElementById('bgChinaBtn');
-    if (chinaBtn) chinaBtn.classList.toggle('hidden', !Storage.isChinaUnlocked());
-
-    const starBtn = document.getElementById('bgStarBtn');
-    if (starBtn){
-      const ownedBgStar = Storage.get('owned_bg_star', '0') === '1';
-      starBtn.classList.toggle('hidden', !ownedBgStar);
-    }
-
-    const sunsetBtn = document.getElementById('bgSunsetBtn');
-    if (sunsetBtn){
-      const ownedBgSunset = Storage.get('owned_bg_sunset', '0') === '1';
-      sunsetBtn.classList.toggle('hidden', !ownedBgSunset);
-    }
-
-    const current = Storage.getBackground();
-    document.body.dataset.bg = current;
-    buttons.forEach(b => b.classList.toggle('active', b.dataset.bg === current));
-
-    buttons.forEach(btn => {
-      btn.onclick = () => {
-        const name = btn.dataset.bg;
-        document.body.dataset.bg = name;
-        Storage.setBackground(name);
-        buttons.forEach(b => b.classList.toggle('active', b.dataset.bg === name));
-      };
-    });
+  function renderBackgrounds() {
+  const buttons = document.querySelectorAll('.bg-btn');
+  if (!buttons.length) return;
+  
+  /* ─── Видимость кнопок ─── */
+  const chinaBtn = document.getElementById('bgChinaBtn');
+  if (chinaBtn) chinaBtn.classList.toggle('hidden', !Storage.isChinaUnlocked());
+  
+  const starBtn = document.getElementById('bgStarBtn');
+  if (starBtn) {
+    const owned = Storage.get('owned_bg_star', '0') === '1';
+    starBtn.classList.toggle('hidden', !owned);
   }
+  
+  const sunsetBtn = document.getElementById('bgSunsetBtn');
+  if (sunsetBtn) {
+    const owned = Storage.get('owned_bg_sunset', '0') === '1';
+    sunsetBtn.classList.toggle('hidden', !owned);
+  }
+  
+  const auroraBtn = document.getElementById('bgAuroraBtn');
+  const snowToggle = document.getElementById('auroraSnowToggle');
+  const ownedAurora = Storage.get('owned_bg_aurora', '0') === '1';
+  
+  if (auroraBtn) {
+    auroraBtn.classList.toggle('hidden', !ownedAurora);
+  }
+  
+  /* ─── Тумблер снега ─── */
+  if (snowToggle && auroraBtn) {
+    const snowOn = Storage.getAuroraSnow();
+    snowToggle.textContent = '❄ Снег ' + (snowOn ? 'ВКЛ' : 'ВЫКЛ');
+    snowToggle.classList.toggle('on', snowOn);
+    
+    snowToggle.onclick = (e) => {
+      e.stopPropagation();
+      const newState = !snowToggle.classList.contains('on');
+      Storage.setAuroraSnow(newState);
+      snowToggle.textContent = '❄ Снег ' + (newState ? 'ВКЛ' : 'ВЫКЛ');
+      snowToggle.classList.toggle('on', newState);
+      
+      /* Если Аврора активна — переключаем вживую */
+      const cur = document.body.dataset.bg;
+      if (cur === 'aurora' || cur === 'aurora-winter') {
+        const target = newState ? 'aurora-winter' : 'aurora';
+        document.body.dataset.bg = target;
+        Storage.setBackground(target);
+        buttons.forEach(b => {
+          b.classList.toggle('active', b.dataset.bg === 'aurora');
+        });
+      }
+    };
+  }
+  
+  const nightcityBtn = document.getElementById('bgNightcityBtn');
+  if (nightcityBtn) {
+    const owned = Storage.get('owned_bg_nightcity', '0') === '1';
+    nightcityBtn.classList.toggle('hidden', !owned);
+  }
+  
+  /* ─── Применяем текущий фон ─── */
+  const current = Storage.getBackground();
+  document.body.dataset.bg = current;
+  
+  buttons.forEach(b => {
+    const btnBg = b.dataset.bg;
+    const isActive = (btnBg === current) ||
+      (btnBg === 'aurora' && current === 'aurora-winter');
+    b.classList.toggle('active', isActive);
+  });
+  
+  /* ─── Клик по кнопке фона ─── */
+  buttons.forEach(btn => {
+    btn.onclick = () => {
+      const name = btn.dataset.bg;
+      const effective = (name === 'aurora' && Storage.getAuroraSnow()) ?
+        'aurora-winter' : name;
+      
+      document.body.dataset.bg = effective;
+      Storage.setBackground(effective);
+      
+      buttons.forEach(b => {
+        const isActive = (b.dataset.bg === effective) ||
+          (b.dataset.bg === 'aurora' && effective === 'aurora-winter');
+        b.classList.toggle('active', isActive);
+      });
+    };
+  });
+}
 
   /* ─── Пасхалка конфети ─── */
   function renderEasterEgg(){
@@ -95,9 +152,7 @@ const Settings = (() => {
     };
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ★ КИТАЙСКИЙ ТРИГГЕР
-     ═══════════════════════════════════════════════════════════════ */
+  /* ─── Китайский триггер ─── */
   function renderChinaTrigger(){
     const logo = document.querySelector('#screenMain .logo-mark');
     if (!logo) return;
@@ -172,11 +227,7 @@ const Settings = (() => {
     }
   }
 
-/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ */
-
-  /* ═══════════════════════════════════════════════════════════════
-     ★ ПРОМОКОДЫ
-     ═══════════════════════════════════════════════════════════════ */
+  /* ─── Промокоды ─── */
   function renderPromo(){
     const promoBtn = document.getElementById('promoBtn');
     const promoModal = document.getElementById('promoModal');
@@ -204,6 +255,13 @@ const Settings = (() => {
       promoClose.onclick = () => {
         promoModal.classList.add('hidden');
       };
+    }
+
+    function showPromoResult(text, type){
+      if (!promoResult) return;
+      promoResult.textContent = text;
+      promoResult.className = 'promo-result ' + (type === 'success' ? 'success' : 'error');
+      promoResult.classList.remove('hidden');
     }
 
     async function submitCode(){
@@ -255,13 +313,6 @@ const Settings = (() => {
       if (promoInput) promoInput.value = '';
     }
 
-    function showPromoResult(text, type){
-      if (!promoResult) return;
-      promoResult.textContent = text;
-      promoResult.className = 'promo-result ' + (type === 'success' ? 'success' : 'error');
-      promoResult.classList.remove('hidden');
-    }
-
     if (promoSubmit){
       promoSubmit.onclick = submitCode;
     }
@@ -273,10 +324,7 @@ const Settings = (() => {
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ★ ОБРАТНАЯ СВЯЗЬ
-     КД 4 часа после успешной отправки
-     ═══════════════════════════════════════════════════════════════ */
+  /* ─── Обратная связь ─── */
   const FEEDBACK_COOLDOWN = 4 * 60 * 60 * 1000;
   const FEEDBACK_KEY = 'tir_feedback_lastSent';
 
@@ -353,6 +401,13 @@ const Settings = (() => {
       };
     }
 
+    function showResult(text, type){
+      if (!feedbackResult) return;
+      feedbackResult.textContent = text;
+      feedbackResult.className = 'feedback-result ' + type;
+      feedbackResult.classList.remove('hidden');
+    }
+
     async function submitFeedback(){
       if (!feedbackInput || !feedbackResult) return;
 
@@ -396,21 +451,12 @@ const Settings = (() => {
       }
     }
 
-    function showResult(text, type){
-      if (!feedbackResult) return;
-      feedbackResult.textContent = text;
-      feedbackResult.className = 'feedback-result ' + type;
-      feedbackResult.classList.remove('hidden');
-    }
-
     if (feedbackSubmit){
       feedbackSubmit.onclick = submitFeedback;
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     INIT
-     ═══════════════════════════════════════════════════════════════ */
+  /* ─── INIT ─── */
   function init(){
     renderVolume();
     renderBackgrounds();

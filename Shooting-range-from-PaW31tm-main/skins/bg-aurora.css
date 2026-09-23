@@ -1,0 +1,141 @@
+/* ═══════════════════════════════════════════════════════════════
+   ФОН: Северное сияние
+   ═══════════════════════════════════════════════════════════════ */
+
+body[data-bg="aurora"],
+body[data-bg="aurora-winter"]{
+  --bg-top: #040818;
+  --bg-bottom: #0a0620;
+  --body-bg: #040818;
+}
+
+/* ═══ НЕБО + ЗВЁЗДЫ ═══ */
+body[data-bg="aurora"] #range,
+body[data-bg="aurora-winter"] #range{
+  background:
+    radial-gradient(circle at 15% 8%,  #fff 1px, transparent 1.6px),
+    radial-gradient(circle at 42% 6%,  #b0d4ff 1.2px, transparent 1.8px),
+    radial-gradient(circle at 68% 11%, #fff 1px, transparent 1.6px),
+    radial-gradient(circle at 88% 14%, #ffe4b0 1px, transparent 1.6px),
+    radial-gradient(circle at 25% 20%, #fff 0.8px, transparent 1.4px),
+    radial-gradient(circle at 78% 19%, #b0d4ff 1px, transparent 1.6px),
+    radial-gradient(circle at 55% 14%, #fff 1px, transparent 1.6px),
+    radial-gradient(circle at 10% 18%, #d0e4ff 0.9px, transparent 1.4px),
+    radial-gradient(circle at 33% 26%, #fff 0.9px, transparent 1.4px),
+    radial-gradient(circle at 92% 28%, #fff 0.8px, transparent 1.4px),
+    radial-gradient(ellipse 80% 25% at 30% 32%, rgba(80,255,180,.18), transparent 72%),
+    radial-gradient(ellipse 70% 22% at 75% 42%, rgba(120,220,255,.14), transparent 72%),
+    linear-gradient(180deg, #040818 0%, #060828 55%, #0f0630 100%) !important;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* ═══ ПОЛОСЫ АВРОРЫ ═══
+   Облака только в середине тайла (1200px) — на стыке двух тайлов чисто. */
+body[data-bg="aurora"] #range::before,
+body[data-bg="aurora-winter"] #range::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% + 1200px);
+  height: 62%;
+  z-index: 0;
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(ellipse 380px 110px at 380px 28%,
+      rgba(80,255,180,.55) 0%,
+      rgba(80,255,180,.20) 40%,
+      transparent 78%),
+    radial-gradient(ellipse 320px 90px at 660px 48%,
+      rgba(120,220,255,.50) 0%,
+      rgba(120,220,255,.18) 40%,
+      transparent 78%),
+    radial-gradient(ellipse 300px 80px at 900px 22%,
+      rgba(180,120,255,.45) 0%,
+      rgba(180,120,255,.15) 40%,
+      transparent 78%);
+
+  background-size: 1200px 100%;
+  background-repeat: repeat-x;
+  background-position: 0 0;
+
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  animation: auroraDrift 55s linear infinite;
+}
+
+@keyframes auroraDrift{
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-1200px, 0, 0); }
+}
+
+/* ═══ СНЕГ (только aurora-winter) ═══
+   Слой торчит за верхний и нижний край.
+   Сдвиг анимации = ровно размеру тайла (200px) → идеальная петля, без рывков. */
+body[data-bg="aurora-winter"] #range::after{
+  content: "";
+  position: absolute;
+  top: -220px;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 440px);
+  z-index: 1;
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(circle at 8px 12px,  #fff 2px, transparent 3px),
+    radial-gradient(circle at 45px 30px, rgba(255,255,255,.9) 1.5px, transparent 2.5px),
+    radial-gradient(circle at 120px 8px, #fff 2.2px, transparent 3.2px),
+    radial-gradient(circle at 160px 55px, rgba(255,255,255,.85) 1.6px, transparent 2.6px),
+    radial-gradient(circle at 25px 80px, #fff 1.8px, transparent 2.8px),
+    radial-gradient(circle at 90px 100px, rgba(255,255,255,.9) 1.6px, transparent 2.6px),
+    radial-gradient(circle at 150px 130px, #fff 2px, transparent 3px),
+    radial-gradient(circle at 60px 160px, rgba(255,255,255,.85) 1.5px, transparent 2.5px),
+    radial-gradient(circle at 130px 175px, #fff 1.8px, transparent 2.8px),
+    radial-gradient(circle at 20px 195px, rgba(255,255,255,.9) 1.6px, transparent 2.6px),
+    radial-gradient(circle at 105px 45px, #fff 1.4px, transparent 2.4px),
+    radial-gradient(circle at 175px 90px, rgba(255,255,255,.85) 1.8px, transparent 2.8px);
+
+  background-size: 200px 200px;
+  background-repeat: repeat;
+
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  animation: snowFall 6s linear infinite;
+}
+
+@keyframes snowFall{
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(0, 200px, 0); }   /* = размер тайла, шва нет */
+}
+
+/* ═══ МИШЕНИ / ТОП / ЛАЗЕР ═══ */
+body[data-bg="aurora"] .target,
+body[data-bg="aurora-winter"] .target{
+  box-shadow: 0 0 0 3px #000, 0 0 22px rgba(180,220,255,.55);
+}
+body[data-bg="aurora"] .target.gold,
+body[data-bg="aurora-winter"] .target.gold{
+  box-shadow: 0 0 0 3px #000, 0 0 30px rgba(255,210,60,1);
+}
+body[data-bg="aurora"] .top,
+body[data-bg="aurora-winter"] .top{
+  background: #06082a;
+  border-bottom-color: #1e2a5a;
+}
+body[data-bg="aurora"] .controls,
+body[data-bg="aurora-winter"] .controls{
+  background: #06082a;
+}
+body[data-bg="aurora"] #laser,
+body[data-bg="aurora-winter"] #laser{
+  background: rgba(120,255,220,.95);
+  box-shadow: 0 0 10px rgba(120,255,220,1);
+}
+body[data-bg="aurora"] #laser:after,
+body[data-bg="aurora-winter"] #laser:after{
+  background: #78ffdc;
+  box-shadow: 0 0 14px #78ffdc;
+}

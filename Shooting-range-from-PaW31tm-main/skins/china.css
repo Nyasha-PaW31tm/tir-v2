@@ -18,8 +18,8 @@ body.skin-china{
   --r-glow: 0 0 16px rgba(255, 40, 40, .9);
 }
 
-body.skin-china #rifleWrap{
-  filter: drop-shadow(0 0 12px rgba(255, 40, 40, .6));
+body.skin-china #rifleWrap {
+  /* без drop-shadow — оптимизация */
 }
 
 /* Звезда на прикладе */

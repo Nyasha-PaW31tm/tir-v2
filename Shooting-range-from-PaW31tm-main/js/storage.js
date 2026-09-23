@@ -35,6 +35,12 @@ const Storage = (() => {
 
     isLaserEnabled: () => get('laser', '0') === '1',
     setLaserEnabled: (v) => set('laser', v ? '1' : '0'),
+    
+    isFpsEnabled: () => get('fps', '0') === '1',
+setFpsEnabled: (v) => set('fps', v ? '1' : '0'),
+
+getAuroraSnow: () => get('auroraSnow', '0') === '1',
+setAuroraSnow: (v) => set('auroraSnow', v ? '1' : '0'),
 
     isInfiniteUnlocked: () => get('infiniteUnlocked', '0') === '1',
     unlockInfinite: () => set('infiniteUnlocked', '1'),

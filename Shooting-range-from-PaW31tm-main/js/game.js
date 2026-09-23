@@ -8,7 +8,7 @@ const Game = (() => {
   const MAX_MISSES = 8;
   const LASER_PENALTY = 0.65;
   const COINS_PER_POINTS = 250;
-  const MAX_SHELLS = 30;
+  const MAX_SHELLS = 12;
 
   const TYPES = {
     normal:   {base: 25, hp:1, speed:  0, color:'normal'},
@@ -115,7 +115,8 @@ const Game = (() => {
     ultEl       = document.getElementById('ult');
     ultBtn      = document.getElementById('ultimate');
     endScreen   = document.getElementById('endScreen');
-    homeBtn     = document.getElementById('homeBtn');
+    const pb = document.getElementById('pauseBtn');
+homeBtn = pb; // оставляем то же имя переменной, чтобы не переписывать весь файл
     modeBadge   = document.getElementById('modeBadge');
     missesBlock = document.getElementById('missesBlock');
     missesEl    = document.getElementById('misses');
@@ -381,7 +382,7 @@ const Game = (() => {
       y += vy * dt;
       rot += rotSpeed * dt;
 
-      shell.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+      shell.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg)`;
 
       if (y >= fallY || (now - startTime) > maxTime){
         landed = true;
@@ -399,35 +400,34 @@ const Game = (() => {
     setTimeout(() => { if (shell.parentNode) shell.remove(); }, 5000);
   }
 
-  function cutSmokeAlongBullet(bullet){
-    if (!range) return;
-
-    const checkInterval = setInterval(() => {
-      if (!bullet.parentNode){
-        clearInterval(checkInterval);
-        return;
+  function cutSmokeAlongBullet(bullet) {
+  if (!range) return;
+  
+  const checkInterval = setInterval(() => {
+    if (!bullet.parentNode) { clearInterval(checkInterval); return; }
+    
+    const particles = range.querySelectorAll('.akc-smoke-particle');
+    if (particles.length === 0) return;
+    
+    const rect = bullet.getBoundingClientRect();
+    if (!rect) { clearInterval(checkInterval); return; }
+    
+    const stageRect = range.getBoundingClientRect();
+    const bulletX = rect.left + rect.width / 2 - stageRect.left;
+    const bulletY = rect.top + rect.height / 2 - stageRect.top;
+    
+    particles.forEach(p => {
+      const pRect = p.getBoundingClientRect();
+      const pX = pRect.left + pRect.width / 2 - stageRect.left;
+      const pY = pRect.top + pRect.height / 2 - stageRect.top;
+      
+      if (Math.abs(bulletX - pX) < 25 && Math.abs(bulletY - pY) < 25) {
+        cutSmokeParticle(pX, pY, bulletX < pX ? 1 : -1);
+        p.remove();
       }
-
-      const rect = bullet.getBoundingClientRect();
-      if (!rect){ clearInterval(checkInterval); return; }
-
-      const stageRect = range.getBoundingClientRect();
-      const bulletX = rect.left + rect.width / 2 - stageRect.left;
-      const bulletY = rect.top + rect.height / 2 - stageRect.top;
-
-      const particles = range.querySelectorAll('.akc-smoke-particle');
-      particles.forEach(p => {
-        const pRect = p.getBoundingClientRect();
-        const pX = pRect.left + pRect.width / 2 - stageRect.left;
-        const pY = pRect.top + pRect.height / 2 - stageRect.top;
-
-        if (Math.abs(bulletX - pX) < 25 && Math.abs(bulletY - pY) < 25){
-          cutSmokeParticle(pX, pY, bulletX < pX ? 1 : -1);
-          p.remove();
-        }
-      });
-    }, 40);
-  }
+    });
+  }, 70); /* было 40 — теперь 70 */
+}
 
   function cutSmokeParticle(px, py, direction){
     const piecesCount = 3 + Math.floor(Math.random() * 2);
@@ -466,7 +466,7 @@ const Game = (() => {
     const px = mRect.left + mRect.width / 2 - stageRect.left;
     const py = mRect.top + mRect.height / 2 - stageRect.top;
 
-    const count = 1 + Math.floor(Math.random() * 2);
+    const count = 1 + (Math.random() < 0.4 ? 1 : 0);
     for (let i = 0; i < count; i++){
       const p = document.createElement('div');
       p.className = 'akc-smoke-particle';
@@ -649,7 +649,8 @@ const Game = (() => {
      ПРИЦЕЛ
      ═══════════════════════════════════════════════════════════════ */
   function setAim(clientX, clientY){
-    const r = range.getBoundingClientRect();
+  if (paused) return;
+  const r = range.getBoundingClientRect();
     aimX = Math.max(8, Math.min(92, (clientX - r.left) / r.width * 100));
     aimY = Math.max(5, Math.min(62, (clientY - r.top) / r.height * 100));
     updateRifle();
@@ -1059,7 +1060,9 @@ const Game = (() => {
     aimX = 50; aimY = 40;
     updateRifle();
 
-    homeBtn.classList.remove('hidden');
+    const pb = document.getElementById('pauseBtn');
+if (pb) pb.classList.remove('hidden');
+paused = false;
     modeBadge.classList.toggle('hidden', !Storage.isInfiniteMode());
 
     const stickerBtn = document.getElementById('stickerBtn');
@@ -1078,34 +1081,58 @@ const Game = (() => {
      ФИНИШ
      ═══════════════════════════════════════════════════════════════ */
   async function finish(win){
-    game = false;
-    isFiring = false;
-    clearInterval(spawnTimer);
-    cancelAnimationFrame(raf);
-    stopHeat();
-    ultAiming = false;
-    ultAimTarget = null;
-    if (rifle) rifle.classList.remove('ult-aiming');
-    laser.classList.add('hidden');
-    homeBtn.classList.add('hidden');
-    modeBadge.classList.add('hidden');
+  game = false;
+  isFiring = false;
+  clearInterval(spawnTimer);
+  cancelAnimationFrame(raf);
+  stopHeat();
+  ultAiming = false;
+  ultAimTarget = null;
+  if (rifle) rifle.classList.remove('ult-aiming');
+  laser.classList.add('hidden');
+  const pb = document.getElementById('pauseBtn');
+  if (pb) pb.classList.add('hidden');
+  modeBadge.classList.add('hidden');
 
-    if (win) playSfx('win');
+  if (win) playSfx('win');
 
-    runStats.duration = Math.round((performance.now() - runStats.startTime) / 1000);
-    const coinsEarnedLocal = Math.floor(score / COINS_PER_POINTS);
+  runStats.duration = Math.round((performance.now() - runStats.startTime) / 1000);
+  const coinsEarnedLocal = Math.floor(score / COINS_PER_POINTS);
 
-    if (score > personalBest){
-      personalBest = Math.floor(score);
-      Storage.setPersonalBest(personalBest);
-    }
+  if (score > personalBest){
+    personalBest = Math.floor(score);
+    Storage.setPersonalBest(personalBest);
+  }
+  if (win && !Storage.isInfiniteUnlocked()) Storage.unlockInfinite();
 
-    if (win && !Storage.isInfiniteUnlocked()){
-      Storage.unlockInfinite();
-    }
+  saveToHistory(win);
 
-    saveToHistory(win);
+  // ── 1) РИСУЕМ ЭКРАН СРАЗУ
+  document.getElementById('endTitle').textContent = win ? 'ПОБЕДА!' : 'ИГРА ОКОНЧЕНА';
+  document.getElementById('endReason').textContent = win
+    ? '10 000 очков достигнуто. Забери награду!'
+    : (runStats.mode === 'infinite' ? MAX_MISSES + ' промахов исчерпано.' : 'Игра завершена.');
+  document.getElementById('finalScore').textContent = Math.floor(score);
 
+  const ce = document.getElementById('coinsEarned');
+  if (coinsEarnedLocal > 0){
+    ce.textContent = '🪙 +' + coinsEarnedLocal + ' монет';
+    ce.classList.remove('hidden');
+  }
+
+  const stickerBtn = document.getElementById('stickerBtn');
+  if (stickerBtn) stickerBtn.classList.toggle('hidden', !win);
+
+  const catwifeEl = document.getElementById('catwifeImage');
+  if (catwifeEl){
+    const showCatwife = !win && runStats.mode === 'infinite' && sawTenCombo;
+    catwifeEl.classList.toggle('hidden', !showCatwife);
+  }
+
+  endScreen.classList.remove('hidden');
+
+  // ── 2) Фоново отправляем на сервер
+  try {
     const serverResp = await Sync.submitRun({
       score: Math.floor(score),
       duration: runStats.duration,
@@ -1116,33 +1143,60 @@ const Game = (() => {
       mode: runStats.mode,
       laser: runStats.laser
     });
-
-    const finalCoins = (serverResp && typeof serverResp.coins_earned === 'number')
-      ? serverResp.coins_earned : coinsEarnedLocal;
-
-    document.getElementById('endTitle').textContent = win ? 'ПОБЕДА!' : 'ИГРА ОКОНЧЕНА';
-    document.getElementById('endReason').textContent = win
-      ? '10 000 очков достигнуто. Забери награду!'
-      : (runStats.mode === 'infinite' ? MAX_MISSES + ' промахов исчерпано.' : 'Игра завершена.');
-    document.getElementById('finalScore').textContent = Math.floor(score);
-
-    if (finalCoins > 0){
-      const ce = document.getElementById('coinsEarned');
-      ce.textContent = '🪙 +' + finalCoins + ' монет';
+    if (serverResp && typeof serverResp.coins_earned === 'number'){
+      ce.textContent = '🪙 +' + serverResp.coins_earned + ' монет';
       ce.classList.remove('hidden');
     }
-
-    const stickerBtn = document.getElementById('stickerBtn');
-    if (stickerBtn) stickerBtn.classList.toggle('hidden', !win);
-
-    const catwifeEl = document.getElementById('catwifeImage');
-    if (catwifeEl){
-      const showCatwife = !win && runStats.mode === 'infinite' && sawTenCombo;
-      catwifeEl.classList.toggle('hidden', !showCatwife);
-    }
-
-    endScreen.classList.remove('hidden');
+  } catch(e){
+    console.warn('[finish] submit failed:', e);
   }
+}
+/* ═══════════════════════════════════════════════════════════════
+   ПАУЗА
+   ═══════════════════════════════════════════════════════════════ */
+let paused = false;
+
+function pause(){
+  if (!game || paused) return;
+  paused = true;
+  cancelAnimationFrame(raf);
+  clearInterval(spawnTimer);
+  stopHeat();
+
+  const screen = document.getElementById('pauseScreen');
+  if (screen) screen.classList.remove('hidden');
+
+  const sl = document.getElementById('pauseVolSlider');
+  const vl = document.getElementById('pauseVolVal');
+  if (sl){
+    sl.value = Storage.getVolume();
+    if (vl) vl.textContent = Storage.getVolume() + '%';
+    sl.oninput = () => {
+      const v = parseInt(sl.value, 10);
+      if (vl) vl.textContent = v + '%';
+      Storage.setVolume(v);
+      setVolume(v / 100);
+    };
+  }
+}
+
+function resume(){
+  if (!game || !paused) return;
+  paused = false;
+  const screen = document.getElementById('pauseScreen');
+  if (screen) screen.classList.add('hidden');
+  spawnTimer = setInterval(() => { if (game) spawn(); }, 1000);
+  raf = requestAnimationFrame(loop);
+  updateHeat();
+}
+
+function exitFromPause(){
+  if (!paused) return;
+  paused = false;
+  const screen = document.getElementById('pauseScreen');
+  if (screen) screen.classList.add('hidden');
+  exitToMenu();
+}
 
   /* ═══════════════════════════════════════════════════════════════
      ВЫХОД В МЕНЮ
@@ -1182,7 +1236,8 @@ const Game = (() => {
     document.querySelectorAll('.akc-smoke-particle').forEach(e => e.remove());
 
     laser.classList.add('hidden');
-    homeBtn.classList.add('hidden');
+    const pb = document.getElementById('pauseBtn');
+if (pb) pb.classList.add('hidden');
     modeBadge.classList.add('hidden');
 
     if (typeof Menu !== 'undefined' && Menu.showMain){
@@ -1198,7 +1253,7 @@ const Game = (() => {
      ГЛАВНЫЙ ЦИКЛ
      ═══════════════════════════════════════════════════════════════ */
   function loop(now){
-    if (!game) return;
+  if (!game || paused) return;
 
     for (const t of [...targets]){
       const dt = (now - t.last) / 1000;
@@ -1274,7 +1329,7 @@ const Game = (() => {
      ═══════════════════════════════════════════════════════════════ */
   function bindEvents(){
     range.addEventListener('pointerdown', e => {
-      if (!game) return;
+  if (!game || paused) return;
       if (isOnHomeBtn(e)) return;
       range.setPointerCapture(e.pointerId);
       setAim(e.clientX, e.clientY);
@@ -1294,13 +1349,20 @@ const Game = (() => {
       start();
     };
 
-    homeBtn.addEventListener('pointerdown', e => e.stopPropagation(), true);
-    homeBtn.addEventListener('pointerup', e => {
-      e.stopPropagation(); e.preventDefault(); exitToMenu();
-    });
-    homeBtn.addEventListener('click', e => {
-      e.stopPropagation(); e.preventDefault(); exitToMenu();
-    });
+    if (homeBtn){
+  homeBtn.addEventListener('pointerdown', e => e.stopPropagation(), true);
+  homeBtn.addEventListener('pointerup', e => {
+    e.stopPropagation(); e.preventDefault(); pause();
+  });
+  homeBtn.addEventListener('click', e => {
+    e.stopPropagation(); e.preventDefault(); pause();
+  });
+}
+
+const pauseResume = document.getElementById('pauseResume');
+if (pauseResume) pauseResume.onclick = resume;
+const pauseExit = document.getElementById('pauseExit');
+if (pauseExit) pauseExit.onclick = exitFromPause;
 
     const stickerBtn = document.getElementById('stickerBtn');
     if (stickerBtn) stickerBtn.onclick = async () => {
@@ -1329,27 +1391,91 @@ const Game = (() => {
   }
 
   /* ═══════════════════════════════════════════════════════════════
+   ОТЛАДКА — спавн мишени нужного типа вручную
+   Использовать только из консоли: Game._devSpawn('fastgold')
+   ═══════════════════════════════════════════════════════════════ */
+function _devSpawn(typeName){
+  if (!game) return 'no game';
+  if (targets.length >= 5) return 'full (5 targets)';
+
+  const type = typeName || 'normal';
+  const d = TYPES[type];
+  if (!d) return 'bad type: ' + type;
+
+  const gold = (type === 'gold' || type === 'fastgold');
+  if (gold && targets.filter(t => t.gold).length >= 2){
+    return 'gold cap (max 2)';
+  }
+
+  const lane = Math.floor(Math.random() * 3);
+  const laneSlots = targets
+    .filter(t => t.lane === lane)
+    .reduce((n, t) => n + t.slots, 0);
+  if (laneSlots + 1 > 2) return 'lane ' + lane + ' full';
+
+  const el = document.createElement('div');
+  el.className = 'target ' + d.color;
+
+  const t = {
+    id: nextId++, type, lane,
+    x: 12 + Math.random() * 76,
+    y: 50,
+    hp: d.hp, slots: 1, gold, el,
+    dx: (type === 'fast' || type === 'fastgold')
+      ? (Math.random() < .5 ? 1 : -1) * d.speed
+      : type === 'maneuver'
+        ? (Math.random() < .5 ? 1 : -1) * d.speed
+        : 0,
+    last: performance.now(),
+    jumpAt: performance.now() + 1200 + Math.random() * 1500,
+    telegraphing: false
+  };
+
+  el.style.left = t.x + '%';
+  el.style.top  = t.y + '%';
+  el.dataset.id = t.id;
+
+  if (t.hp > 1){
+    const hp = document.createElement('div');
+    hp.className = 'hp';
+    hp.textContent = 'HP 2/2';
+    el.appendChild(hp);
+  }
+
+  document.querySelectorAll('.lane')[lane].appendChild(el);
+  targets.push(t);
+
+  return 'ok: ' + type + ' in lane ' + lane;
+}
+  
+  /* ═══════════════════════════════════════════════════════════════
      ИНИЦИАЛИЗАЦИЯ
      ═══════════════════════════════════════════════════════════════ */
   function init(){
-    bindDom();
-    bindEvents();
-    Skins.loadFromStorage();
-    updateRifle();
-    updateUI();
-    Sync.updateCoinsUI();
-    Sync.fromServer();
-  }
+  bindDom();
+  bindEvents();
+  Skins.loadFromStorage();
+  updateRifle();
+  updateUI();
+  Sync.updateCoinsUI();
+  Sync.fromServer();
+
+  window._devSpawn = _devSpawn;   /* ← добавь ЭТУ строку */
+}
 
   return {
-    init,
-    start,
-    fire,
-    ultimate,
-    exitToMenu,
-    setVolume,
-    isRunning: () => game
-  };
+  init,
+  start,
+  fire,
+  ultimate,
+  exitToMenu,
+  setVolume,
+  isRunning: () => game,
+  pause,
+  resume,
+  exitFromPause
+  
+};
 })();
 
 if (document.readyState === 'loading'){
