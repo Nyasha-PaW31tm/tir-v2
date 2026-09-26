@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    SHOP — магазин скинов + рулетка
-   BETA 0.9.5
+   BETA 0.10.0
    ═══════════════════════════════════════════════════════════════ */
 
 const Shop = (() => {
@@ -164,6 +164,8 @@ const Shop = (() => {
 
   /* Цена */
   function getPriceHTML(skin){
+    /* ★ Для ульт цену показывает кнопка, не отдельный блок */
+if (skin.category === 'ultimate') return '';
     if (skin.owned) return '';
 
     if (typeof skin.price === 'string' && skin.price.indexOf('?') !== -1){
@@ -182,21 +184,103 @@ const Shop = (() => {
     return `<div class="shop-price-block"><span class="shop-price">🪙 ${skin.price}</span></div>`;
   }
 
-  /* Кнопка */
+  /* Кнопка покупки/экипировки */
   function getButtonHTML(skin){
-    if (skin.active){
-      return `<button class="shop-buy active" disabled>✅ НАДЕТ</button>`;
+  /* ★ УЛЬТЫ — особая логика */
+  if (skin.category === 'ultimate'){
+    return getUltButtonHTML(skin);
+  }
+
+  /* Обычные товары */
+  if (skin.active){
+    return `<button class="shop-buy active" disabled>✅ НАДЕТ</button>`;
+  }
+  if (skin.owned){
+    return `<button class="shop-buy owned" data-action="equip" data-id="${skin.id}">НАДЕТЬ</button>`;
+  }
+  if (typeof skin.price === 'string' && skin.price.indexOf('?') !== -1){
+    return `<button class="shop-buy" disabled style="opacity:.5">СКОРО</button>`;
+  }
+  if (skin.price === 0){
+    return `<button class="shop-buy owned" data-action="equip" data-id="${skin.id}">БЕСПЛАТНО</button>`;
+  }
+  return `<button class="shop-buy" data-action="buy" data-id="${skin.id}" data-price="${skin.price}">КУПИТЬ</button>`;
+}
+
+/* ★ Логика кнопок для ульт */
+function getUltButtonHTML(skin){
+  const activeUlt = Storage.getActiveUlt();
+  const isActive = (activeUlt === skin.id.replace('ult_', '') ||
+                    (skin.id === 'ult_classic' && activeUlt === 'classic') ||
+                    (skin.id === 'ult_laser' && activeUlt === 'laser') ||
+                    (skin.id === 'ult_MLRS' && activeUlt === 'MLRS'));
+
+  // Классика — всегда бесплатна
+  if (skin.id === 'ult_classic'){
+    if (isActive) return `<button class="shop-buy active" disabled>✅ АКТИВНА</button>`;
+    return `<button class="shop-buy owned" data-action="equip-ult" data-id="classic">ВЫБРАТЬ</button>`;
+  }
+
+  // Лазер
+  if (skin.id === 'ult_laser'){
+    const owned = skin.owned || Storage.get('owned_ult_laser', '0') === '1';
+    const record = Storage.getPersonalBest();
+    const RECORD_REQ = 210000;
+    const canClaimByRecord = record >= RECORD_REQ;
+
+    if (owned){
+      if (isActive) return `<button class="shop-buy active" disabled>✅ АКТИВНА</button>`;
+      return `<button class="shop-buy owned" data-action="equip-ult" data-id="laser">ВЫБРАТЬ</button>`;
     }
-    if (skin.owned){
-      return `<button class="shop-buy owned" data-action="equip" data-id="${skin.id}">НАДЕТЬ</button>`;
+
+    if (canClaimByRecord){
+      return `
+        <button class="shop-buy ult-record" data-action="claim-record" data-id="ult_laser">
+          🎖 ЗАБРАТЬ
+        </button>
+        <div class="ult-hint">Открыт рекордом ${Math.floor(record/1000)}к</div>
+      `;
     }
-    if (typeof skin.price === 'string' && skin.price.indexOf('?') !== -1){
-      return `<button class="shop-buy" disabled style="opacity:.5">СКОРО</button>`;
+
+    return `
+      <button class="shop-buy" data-action="buy" data-id="ult_laser" data-price="6000">
+        🪙 6000
+      </button>
+      <div class="ult-hint">Или рекорд ${RECORD_REQ/1000}к</div>
+    `;
+  }
+
+  // МЛРС
+  /*if (skin.id === 'ult_MLRS'){
+    const owned = skin.owned || Storage.get('owned_ult_MLRS', '0') === '1';
+    if (owned){
+      if (isActive) return `<button class="shop-buy active" disabled>✅ АКТИВНА</button>`;
+      return `<button class="shop-buy owned" data-action="equip-ult" data-id="MLRS">ВЫБРАТЬ</button>`;
     }
-    if (skin.price === 0){
-      return `<button class="shop-buy owned" data-action="equip" data-id="${skin.id}">БЕСПЛАТНО</button>`;
-    }
-    return `<button class="shop-buy" data-action="buy" data-id="${skin.id}" data-price="${skin.price}">КУПИТЬ</button>`;
+    return `<button class="shop-buy" data-action="buy" data-id="ult_MLRS" data-price="12333">🪙 12333</button>`;
+  }*/
+  // МЛРС — пока недоступен
+if (skin.id === 'ult_MLRS'){
+  return `
+    <button class="shop-buy" disabled style="opacity:.45;cursor:not-allowed">
+      🚧 0.11.0
+    </button>
+    <div class="ult-hint">Скоро в обновлении</div>
+  `;
+}
+
+  return '';
+}
+
+  /* ★ Тумблер снега — только для купленной Авроры */
+  function getSnowToggleHTML(skin){
+    if (skin.id !== 'bg_aurora') return '';
+    if (!skin.owned) return '';
+
+    const snowOn = Storage.getAuroraSnow();
+    return `<button class="shop-snow-toggle ${snowOn ? 'on' : 'off'}" data-snow-toggle="1">
+      ❄ ${snowOn ? 'ВКЛ' : 'ВЫКЛ'}
+    </button>`;
   }
 
   /* ─── Пересчёт active перед выводом ─── */
@@ -248,150 +332,208 @@ const Shop = (() => {
         <div class="shop-action">
           ${getKindBadge(skin)}
           ${getButtonHTML(skin)}
+          ${getSnowToggleHTML(skin)}
         </div>
       </div>
     `).join('');
 
+    /* Кнопки покупки/экипировки */
     list.querySelectorAll('.shop-buy').forEach(btn => {
       btn.onclick = () => handleAction(btn);
+    });
+
+    /* ★ Тумблер снега в магазине */
+    list.querySelectorAll('[data-snow-toggle]').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const newState = !btn.classList.contains('on');
+        Storage.setAuroraSnow(newState);
+        btn.textContent = '❄ ' + (newState ? 'ВКЛ' : 'ВЫКЛ');
+        btn.classList.toggle('on', newState);
+        btn.classList.toggle('off', !newState);
+
+        /* Если Аврора сейчас активна — переключаем вживую */
+        const cur = document.body.dataset.bg;
+        if (cur === 'aurora' || cur === 'aurora-winter'){
+          const target = newState ? 'aurora-winter' : 'aurora';
+          document.body.dataset.bg = target;
+          Storage.setBackground(target);
+        }
+      };
     });
   }
 
   /* ═══════════════════════════════════════════════════════════════
      ДЕЙСТВИЯ: покупка / экипировка
      ═══════════════════════════════════════════════════════════════ */
-  async function handleAction(btn){
-    const action = btn.dataset.action;
-    const skinId = btn.dataset.id;
-    const price = parseInt(btn.dataset.price || '0', 10);
-
-    const skinData = cachedSkins.find(s => s.id === skinId) || {};
-    const cat = skinData.category || 'weapon';
-
-    /* ─── ПОКУПКА ─── */
-    if (action === 'buy'){
-      const current = Storage.getCoins();
-      if (current < price){
-        toast('🪙 Не хватает монет');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = '⏳...';
-      const resp = await API.buySkin(skinId);
-
-      if (resp.ok){
-        Storage.setCoins(resp.new_balance || current - price);
-        Sync.updateCoinsUI();
-        updateCoins();
-        toast('🎉 Куплено!');
-
-        // Флаги покупки фонов
-        if (skinId === 'bg_star')      Storage.set('owned_bg_star', '1');
-        if (skinId === 'bg_sunset')    Storage.set('owned_bg_sunset', '1');
-        if (skinId === 'bg_aurora')    Storage.set('owned_bg_aurora', '1');
-        if (skinId === 'bg_nightcity') Storage.set('owned_bg_nightcity', '1');
-
-        // ★ Применение по категории
-        if (cat === 'background' || skinId.startsWith('bg_')){
-          const bgName = skinId.replace(/^bg_/, '');
-          document.body.dataset.bg = bgName;
-          Storage.setBackground(bgName);
-        } else if (cat === 'target' || skinId.startsWith('tg_')){
-          Skins.applyTargetSkin(skinId);
-        } else {
-          const eq = await API.setSkin(skinId);
-          if (eq.ok){
-            Storage.setActiveSkin(skinId);
-            Skins.apply(skinId);
-          }
-        }
-        await load();
-      } else if (resp.error === 'not enough coins'){
-        toast('🪙 Не хватает монет');
-        btn.disabled = false;
-        renderList();
-      } else if (resp.error === 'already owned'){
-        toast('Уже куплено');
-        await load();
-      } else {
-        toast('Ошибка покупки');
-        btn.disabled = false;
-      }
+  async function handleAction(btn) {
+  const action = btn.dataset.action;
+  const skinId = btn.dataset.id;
+  const price = parseInt(btn.dataset.price || '0', 10);
+  
+  const skinData = cachedSkins.find(s => s.id === skinId) || {};
+  const cat = skinData.category || 'weapon';
+  
+  /* ─── БЫСТРЫЕ ЭКШЕНЫ БЕЗ ПОКУПКИ ─── */
+  /* ★ МЛРС пока недоступен */
+if (skinId === 'ult_MLRS'){
+  toast('🚧 МЛРС появится в 0.11.0');
+  return;
+}
+  if (action === 'equip-ult') {
+    Storage.setActiveUlt(skinId);
+    toast('✅ Ульта выбрана');
+    renderList();
+    return;
+  }
+  
+  if (action === 'claim-record') {
+    const record = Storage.getPersonalBest();
+    if (record < 210000) {
+      toast('🎖 Нужен рекорд 210 000');
       return;
     }
-
-    /* ─── ЭКИПИРОВКА ─── */
-    if (action === 'equip'){
-      btn.disabled = true;
-      btn.textContent = '⏳...';
-
-      // ★ ФОН
-      if (cat === 'background' || skinId.startsWith('bg_')){
+    Storage.set('owned_ult_laser', '1');
+    Storage.setActiveUlt('laser');
+    toast('🎖 Лазер открыт!');
+    await load();
+    return;
+  }
+  
+  /* ─── ПОКУПКА ─── */
+  if (action === 'buy') {
+    const current = Storage.getCoins();
+    if (current < price) {
+      toast('🪙 Не хватает монет');
+      return;
+    }
+    
+    btn.disabled = true;
+    btn.textContent = '⏳...';
+    const resp = await API.buySkin(skinId);
+    
+    if (resp.ok) {
+      Storage.setCoins(resp.new_balance || current - price);
+      Sync.updateCoinsUI();
+      updateCoins();
+      toast('🎉 Куплено!');
+      
+      // Флаги покупки фонов
+      if (skinId === 'bg_star') Storage.set('owned_bg_star', '1');
+      if (skinId === 'bg_sunset') Storage.set('owned_bg_sunset', '1');
+      if (skinId === 'bg_aurora') Storage.set('owned_bg_aurora', '1');
+      if (skinId === 'bg_nightcity') Storage.set('owned_bg_nightcity', '1');
+      
+      // ★ Флаги покупки ульт
+      if (skinId === 'ult_laser') {
+        Storage.set('owned_ult_laser', '1');
+        Storage.setActiveUlt('laser');
+      }
+      if (skinId === 'ult_MLRS') {
+        Storage.set('owned_ult_MLRS', '1');
+        Storage.setActiveUlt('MLRS');
+      }
+      
+      // Применение по категории
+      if (cat === 'background' || skinId.startsWith('bg_')) {
         const bgName = skinId.replace(/^bg_/, '');
         document.body.dataset.bg = bgName;
         Storage.setBackground(bgName);
-        toast('✅ Фон надет');
-        await load();
-        return;
-      }
-
-      // ★ МИШЕНИ
-      if (cat === 'target' || skinId.startsWith('tg_')){
+      } else if (cat === 'target' || skinId.startsWith('tg_')) {
         Skins.applyTargetSkin(skinId);
-        toast('✅ Мишени надеты');
-        await load();
-        return;
+      } else if (cat === 'weapon') {
+        const eq = await API.setSkin(skinId);
+        if (eq.ok) {
+          Storage.setActiveSkin(skinId);
+          Skins.apply(skinId);
+        }
       }
-
-      // ★ ПАСХАЛЬНЫЙ СКИН ОРУЖИЯ
-      if (skinId === 'china'){
-        Storage.setActiveSkin(skinId);
-        Skins.apply(skinId);
-        toast('✅ Надето');
-        await load();
-        return;
-      }
-
-      // ★ ОБЫЧНЫЙ СКИН ОРУЖИЯ
-      const resp = await API.setSkin(skinId);
-      if (resp.ok){
-        Storage.setActiveSkin(skinId);
-        Skins.apply(skinId);
-        toast('✅ Надето');
-        await load();
-      } else {
-        toast('Ошибка');
-        btn.disabled = false;
-      }
+      await load();
+    } else if (resp.error === 'not enough coins') {
+      toast('🪙 Не хватает монет');
+      btn.disabled = false;
+      renderList();
+    } else if (resp.error === 'already owned') {
+      toast('Уже куплено');
+      await load();
+    } else {
+      toast('Ошибка покупки');
+      btn.disabled = false;
+    }
+    return;
+  }
+  
+  /* ─── ЭКИПИРОВКА ─── */
+  if (action === 'equip') {
+    btn.disabled = true;
+    btn.textContent = '⏳...';
+    
+    // ФОН
+    if (cat === 'background' || skinId.startsWith('bg_')) {
+      const bgName = skinId.replace(/^bg_/, '');
+      document.body.dataset.bg = bgName;
+      Storage.setBackground(bgName);
+      toast('✅ Фон надет');
+      await load();
+      return;
+    }
+    
+    // МИШЕНИ
+    if (cat === 'target' || skinId.startsWith('tg_')) {
+      Skins.applyTargetSkin(skinId);
+      toast('✅ Мишени надеты');
+      await load();
+      return;
+    }
+    
+    // ПАСХАЛЬНЫЙ СКИН ОРУЖИЯ
+    if (skinId === 'china') {
+      Storage.setActiveSkin(skinId);
+      Skins.apply(skinId);
+      toast('✅ Надето');
+      await load();
+      return;
+    }
+    
+    // ОБЫЧНЫЙ СКИН ОРУЖИЯ
+    const resp = await API.setSkin(skinId);
+    if (resp.ok) {
+      Storage.setActiveSkin(skinId);
+      Skins.apply(skinId);
+      toast('✅ Надето');
+      await load();
+    } else {
+      toast('Ошибка');
+      btn.disabled = false;
     }
   }
+}
 
   /* ═══════════════════════════════════════════════════════════════
      ДВУСТОРОННЯЯ СИНХРОНИЗАЦИЯ ФЛАГОВ "КУПЛЕНО"
-     Если сервер вернул owned:true  — ставим флаг
-     Если сервер вернул owned:false — снимаем флаг
      ═══════════════════════════════════════════════════════════════ */
-  function syncOwnedFlags(skins){
-    const ids = ['bg_star', 'bg_sunset', 'bg_aurora', 'bg_nightcity'];
-
-    ids.forEach(id => {
-      const skin = (skins || []).find(s => s.id === id);
-      const key = 'owned_' + id;
-
-      if (!skin){
-        // скин вообще не пришёл с сервера → снимаем
-        Storage.remove(key);
-        return;
-      }
-
-      if (skin.owned){
-        Storage.set(key, '1');
-      } else {
-        Storage.remove(key);
-      }
-    });
-  }
+  function syncOwnedFlags(skins) {
+  /* Фоны — двусторонняя синхронизация */
+  const bgIds = ['bg_star', 'bg_sunset', 'bg_aurora', 'bg_nightcity'];
+  bgIds.forEach(id => {
+    const skin = (skins || []).find(s => s.id === id);
+    const key = 'owned_' + id;
+    if (!skin) { Storage.remove(key); return; }
+    if (skin.owned) Storage.set(key, '1');
+    else Storage.remove(key);
+  });
+  
+  /* ★ Ульты — синхронизация (не сбрасываем если открыт по рекорду) */
+  ['ult_laser', 'ult_MLRS'].forEach(id => {
+    const skin = (skins || []).find(s => s.id === id);
+    const key = 'owned_' + id;
+    if (!skin) return;
+    if (skin.owned) Storage.set(key, '1');
+    // ★ НЕ сбрасываем флаг, если он был установлен локально (рекорд / покупка)
+  });
+}
 
   /* ═══════════════════════════════════════════════════════════════
      ЗАГРУЗКА ДАННЫХ С СЕРВЕРА
@@ -424,12 +566,12 @@ const Shop = (() => {
     cachedCoins = data.coins || 0;
     lastServerData = data;
 
-    // ★ Двусторонняя синхронизация флагов покупки фонов
+    /* Синхронизация флагов покупки */
     syncOwnedFlags(data.skins || []);
 
     Storage.setCoins(cachedCoins);
 
-    // Фикс: не сбрасываем пасхальный скин "Товарищ"
+    /* Фикс: не сбрасываем пасхальный скин "Товарищ" */
     const localActive = Storage.getActiveSkin();
     const isEasterSkin = (localActive === 'china');
 
@@ -440,7 +582,7 @@ const Shop = (() => {
       Skins.apply(localActive);
     }
 
-    // Мишени из localStorage
+    /* Мишени из localStorage */
     if (Skins.loadTargetFromStorage){
       Skins.loadTargetFromStorage();
     }

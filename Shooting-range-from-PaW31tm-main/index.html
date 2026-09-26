@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Тир — BETA 0.9.5</title>
+<title>Тир — BETA 0.10.0</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="styles/ui.css">
 <link rel="stylesheet" href="styles/menu.css">
 <link rel="stylesheet" href="styles/shop.css">
+<link rel="stylesheet" href="styles/roulette.css">
 <link rel="stylesheet" href="styles/rating.css">
 <link rel="stylesheet" href="styles/history.css">
 <link rel="stylesheet" href="styles/setting.css">
@@ -75,6 +76,10 @@
   <div class="nc-lane nc-c"></div>
   <div class="nc-lane nc-d"></div>
 </div>
+<div id="auroraSnow">
+  <div class="snow-layer snow-a"></div>
+  <div class="snow-layer snow-b"></div>
+</div>
   </main>
 
   <footer class="controls">
@@ -98,34 +103,95 @@
 
 <!-- ═══════════ СТОП. НЕ УДАЛЯЙ. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ -->
 
-  <!-- ═══════════════ ГЛАВНОЕ МЕНЮ ═══════════════ -->
-  <section id="screenMain" class="overlay">
-    <div class="menu-card">
-      <div class="logo-mark">ТИР</div>
-      <h1>Стрельбище</h1>
-      <p class="beta">BETA 0.9.5</p>
+<!-- ═══════════════ ГЛАВНОЕ МЕНЮ ═══════════════ -->
+<section id="screenMain" class="overlay">
+  <div class="menu-card">
+    <div class="logo-mark">ТИР</div>
+    <h1>Стрельбище</h1>
+    <p class="beta">BETA 0.10.0</p>
 
-      <div class="menu-coins">🪙 <span id="menuCoins">0</span></div>
+    <div class="menu-coins">🪙 <span id="menuCoins">0</span></div>
 
-      <button id="playBtn">ИГРАТЬ</button>
+    <button id="playBtn" class="menu-play">
+      <span class="menu-play-icon">🎯</span>
+      <span class="menu-play-text">ИГРАТЬ</span>
+    </button>
 
-      <div id="infiniteBlock" class="infinite-toggle hidden">
-        <span>♾ Бесконечный<br><small>8 промахов — конец. Без лимита очков.</small></span>
-        <button id="infiniteToggle" class="toggle off">ВЫКЛ</button>
-      </div>
-
-      <button id="ratingBtn" class="secondary">🏆 РЕЙТИНГ</button>
-      <button id="shopBtn" class="secondary">🛒 МАГАЗИН</button>
-      <button id="historyBtn" class="secondary">ИСТОРИЯ</button>
-      <button id="aboutBtn" class="secondary">ОБ ИГРЕ</button>
-      <button id="settingsBtn" class="secondary">НАСТРОЙКИ</button>
-
-      <div class="setting">
-        <span>Лазерный целеуказатель<br><small>−35% к очкам при включении</small></span>
-        <button id="laserToggle" class="toggle off">ВЫКЛ</button>
-      </div>
+    <div class="menu-grid">
+      <button id="profileBtn"  class="menu-btn">👤 Профиль</button>
+      <button id="historyBtn"  class="menu-btn">📜 История</button>
+      <button id="ratingBtn"   class="menu-btn">🏆 Рейтинг</button>
+      <button id="shopBtn"     class="menu-btn">🛒 Магазин</button>
+      <button id="settingsBtn" class="menu-btn">⚙️ Настройки</button>
+      <button id="aboutBtn"    class="menu-btn">ℹ️ Об игре</button>
     </div>
-  </section>
+  </div>
+</section>
+
+<!-- ═══════════════ ПОДГОТОВКА К ЗАБЕГУ ═══════════════ -->
+<section id="screenPreGame" class="overlay hidden">
+  <div class="menu-card">
+    <h2 class="pregame-title">Подготовка к забегу</h2>
+    <p class="beta">Настрой забег перед стартом</p>
+
+    <div class="setting-block">
+      <h3>🎮 Режим</h3>
+      <div class="pregame-modes">
+        <button class="mode-tab active" data-mode="normal">Обычный</button>
+        <button class="mode-tab" data-mode="infinite" id="modeInfiniteTab">♾ Бесконечный</button>
+      </div>
+      <p class="pregame-hint" id="modeHint">Цель — 10 000 очков. Победа открывает бесконечный режим.</p>
+    </div>
+
+    <div class="setting">
+      <span>🎯 Лазерный указатель<br><small>−35% к очкам при включении</small></span>
+      <button id="laserToggle" class="toggle off">ВЫКЛ</button>
+    </div>
+    
+    <!-- ═══ УЛЬТА ═══ -->
+<div class="setting-block">
+  <h3>⚡ Ульта</h3>
+  <div class="ult-tabs">
+    <button class="ult-tab active" data-ult="classic">
+      <span class="ult-icon">⚡</span>
+      <span class="ult-name">Classic</span>
+    </button>
+    <button class="ult-tab locked" data-ult="laser">
+      <span class="ult-icon">🎯</span>
+      <span class="ult-name">Лазер</span>
+      <span class="ult-lock">🔒</span>
+    </button>
+    <button class="ult-tab locked" data-ult="MLRS">
+      <span class="ult-icon">🚀</span>
+      <span class="ult-name">МЛРС</span>
+      <span class="ult-lock">🔒</span>
+    </button>
+  </div>
+  <p class="pregame-hint" id="ultHint">Стандартный залп ×3. Доступна всем.</p>
+</div>
+
+<!-- ═══ БОССЫ / ЕЖЕДНЕВКА ═══ -->
+<div class="pregame-extras">
+  <button class="pregame-extra" id="bossBtn" disabled>
+    <span class="pregame-extra-icon">👹</span>
+    <span class="pregame-extra-name">Боссы</span>
+    <span class="pregame-extra-lock">🔒 0.13.0</span>
+  </button>
+  <button class="pregame-extra" id="dailyBtn" disabled>
+    <span class="pregame-extra-icon">📅</span>
+    <span class="pregame-extra-name">Ежедневка</span>
+    <span class="pregame-extra-lock">🔒 0.11.0</span>
+  </button>
+</div>
+
+    <button id="startRunBtn" class="menu-play" style="margin-top:18px">
+      <span class="menu-play-icon">▶</span>
+      <span class="menu-play-text">НАЧАТЬ ЗАБЕГ</span>
+    </button>
+
+    <button id="backFromPreGame" class="secondary" style="margin-top:12px">← НАЗАД</button>
+  </div>
+</section>
 
   <!-- ═══════════════ НАСТРОЙКИ ═══════════════ -->
   <section id="screenSettings" class="overlay hidden">
@@ -177,7 +243,7 @@
   <section id="screenAbout" class="overlay hidden">
     <div class="menu-card">
       <h1>О игре</h1>
-      <p class="beta">BETA 0.9.2</p>
+      <p class="beta">BETA 0.10.0</p>
       <p>Тир / Стрельбище — браузерная игра на чистом HTML/CSS/JS</p>
       <button id="backFromAbout" class="secondary">← НАЗАД</button>
     </div>
@@ -304,6 +370,8 @@
 <script src="js/sync.js"></script>
 <script src="js/fps.js"></script>
 <script src="js/game.js"></script>
+<link rel="stylesheet" href="styles/ult.css">
+<script src="js/ult.laser.js"></script>
 <script src="js/ui/menu.js"></script>
 <script src="js/ui/shop.js"></script>
 <script src="js/ui/roulette.js"></script>

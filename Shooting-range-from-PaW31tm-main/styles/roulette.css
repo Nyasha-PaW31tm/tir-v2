@@ -1,0 +1,785 @@
+/* ═══════════════════════════════════════════════════════════════
+   ROULETTE — рулетка с редкостями
+   BETA 0.10.0
+   ═══════════════════════════════════════════════════════════════ */
+
+#rouletteOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(5,7,10,.92);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 60;
+  animation: rouletteFadeIn .25s ease-out;
+}
+
+@keyframes rouletteFadeIn{
+  0%{ opacity: 0; }
+  100%{ opacity: 1; }
+}
+
+.roulette-card{
+  width: min(400px, 92vw);
+  padding: 22px 20px 24px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #1e1424, #150a14);
+  border: 1px solid #c43a3a;
+  box-shadow: 0 22px 80px rgba(196,58,58,.4);
+  text-align: center;
+  color: #fff;
+  animation: roulettePop .4s cubic-bezier(.2,.8,.3,1);
+}
+
+@keyframes roulettePop{
+  0%{ transform: scale(.85); opacity: 0; }
+  100%{ transform: scale(1); opacity: 1; }
+}
+
+.roulette-card h2{
+  margin: 0 0 6px;
+  font-size: 22px;
+  color: #ffd23c;
+  letter-spacing: 1px;
+  text-shadow: 0 0 12px rgba(255,210,60,.6);
+}
+
+.roulette-card .subtitle{
+  color: #aeb7c5;
+  font-size: 12px;
+  margin: 0 0 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ★ ЛАМПОЧКИ ИГРОВОГО АВТОМАТА
+   Ряд из 15 круглых точек. Свет «бежит» по кругу с задержкой.
+   ═══════════════════════════════════════════════════════════════ */
+.roulette-lights{
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #2a1420, #1a0a12);
+  border: 1px solid #4a2030;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.6);
+}
+
+.roulette-light{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3a1a20;
+  box-shadow: inset 0 0 3px rgba(0,0,0,.8);
+  animation: lightBlink 1.5s ease-in-out infinite;
+}
+
+/* Бегущая волна: задержка растёт с каждой лампочкой */
+.roulette-light:nth-child(1)  { animation-delay: 0.00s; }
+.roulette-light:nth-child(2)  { animation-delay: 0.06s; }
+.roulette-light:nth-child(3)  { animation-delay: 0.12s; }
+.roulette-light:nth-child(4)  { animation-delay: 0.18s; }
+.roulette-light:nth-child(5)  { animation-delay: 0.24s; }
+.roulette-light:nth-child(6)  { animation-delay: 0.30s; }
+.roulette-light:nth-child(7)  { animation-delay: 0.36s; }
+.roulette-light:nth-child(8)  { animation-delay: 0.42s; }
+.roulette-light:nth-child(9)  { animation-delay: 0.48s; }
+.roulette-light:nth-child(10) { animation-delay: 0.54s; }
+.roulette-light:nth-child(11) { animation-delay: 0.60s; }
+.roulette-light:nth-child(12) { animation-delay: 0.66s; }
+.roulette-light:nth-child(13) { animation-delay: 0.72s; }
+.roulette-light:nth-child(14) { animation-delay: 0.78s; }
+.roulette-light:nth-child(15) { animation-delay: 0.84s; }
+
+@keyframes lightBlink{
+  0%, 60%, 100%{
+    background: #3a1a20;
+    box-shadow: inset 0 0 3px rgba(0,0,0,.8);
+  }
+  20%{
+    background: #ffd23c;
+    box-shadow:
+      0 0 8px #ffd23c,
+      0 0 16px rgba(255,210,60,.7),
+      inset 0 0 3px rgba(255,255,255,.6);
+  }
+}
+
+/* Лента */
+.roulette-strip-wrap{
+  position: relative;
+  width: 100%;
+  height: 90px;
+  margin: 0 0 14px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #0a0a12;
+  border: 2px solid #c43a3a;
+  box-shadow: inset 0 0 30px rgba(0,0,0,.9);
+}
+
+.roulette-pointer{
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  color: #ffd23c;
+  z-index: 10;
+  text-shadow: 0 0 12px #ffd23c, 0 0 4px #000;
+  pointer-events: none;
+}
+
+.roulette-strip{
+  display: block;
+  white-space: nowrap;
+  height: 100%;
+  font-size: 0;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* ★ Ячейка с редкостями */
+.roulette-cell{
+  display: inline-block;
+  vertical-align: middle;
+  width: 90px;
+  height: 90px;
+  line-height: 90px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+  box-sizing: border-box;
+  white-space: nowrap;
+  position: relative;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: background .2s ease;
+}
+
+/* ─── Цвета редкостей ─── */
+.roulette-cell.rarity-common{
+  color: #d0d6de;
+  background: rgba(180,190,200,.08);
+  border-color: rgba(180,190,200,.25);
+}
+.roulette-cell.rarity-uncommon{
+  color: #7bff9c;
+  background: rgba(80,255,120,.1);
+  border-color: rgba(80,255,120,.35);
+  text-shadow: 0 0 6px rgba(80,255,120,.5);
+}
+.roulette-cell.rarity-rare{
+  color: #6bb8ff;
+  background: rgba(80,160,255,.12);
+  border-color: rgba(80,160,255,.4);
+  text-shadow: 0 0 6px rgba(80,160,255,.5);
+}
+.roulette-cell.rarity-epic{
+  color: #c58cff;
+  background: rgba(180,100,255,.14);
+  border-color: rgba(180,100,255,.45);
+  text-shadow: 0 0 8px rgba(180,100,255,.6);
+}
+.roulette-cell.rarity-legendary{
+  color: #ffd23c;
+  background: rgba(255,210,60,.15);
+  border-color: rgba(255,210,60,.55);
+  text-shadow: 0 0 10px rgba(255,210,60,.8);
+}
+.roulette-cell.rarity-mythic{
+  color: #ff5050;
+  background: rgba(255,60,60,.18);
+  border-color: rgba(255,60,60,.6);
+  text-shadow: 0 0 12px rgba(255,60,60,.85);
+}
+
+/* Призовая ячейка (на которой остановилась лента) — ярче */
+.roulette-cell.is-picked.rarity-common{ box-shadow: inset 0 0 18px rgba(200,210,220,.25); }
+.roulette-cell.is-picked.rarity-uncommon{ box-shadow: inset 0 0 22px rgba(80,255,120,.4), 0 0 12px rgba(80,255,120,.4); }
+.roulette-cell.is-picked.rarity-rare{ box-shadow: inset 0 0 22px rgba(80,160,255,.4), 0 0 14px rgba(80,160,255,.5); }
+.roulette-cell.is-picked.rarity-epic{ box-shadow: inset 0 0 24px rgba(180,100,255,.45), 0 0 16px rgba(180,100,255,.55); }
+.roulette-cell.is-picked.rarity-legendary{ box-shadow: inset 0 0 26px rgba(255,210,60,.5), 0 0 20px rgba(255,210,60,.7); }
+.roulette-cell.is-picked.rarity-mythic{ box-shadow: inset 0 0 28px rgba(255,60,60,.55), 0 0 24px rgba(255,60,60,.85); }
+
+/* Кнопки рулетки */
+.roulette-btn-spin,
+.roulette-btn-close{
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px;
+  border: 0;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 15px;
+  color: #fff;
+  cursor: pointer;
+}
+.roulette-btn-spin{
+  background: linear-gradient(135deg, #c43a3a, #8a1e1e);
+  box-shadow: 0 4px 14px rgba(196,58,58,.5);
+}
+.roulette-btn-spin:disabled{
+  opacity: .5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.roulette-btn-close{
+  background: #242b36;
+}
+
+.roulette-timer{
+  color: #8893a3;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+.roulette-chances{
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #11161e;
+  text-align: left;
+  font-size: 10px;
+  color: #8893a3;
+  line-height: 1.6;
+}
+.roulette-chances b{ color: #ffd23c; }
+.roulette-chances .chance-item{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+}
+.roulette-chances .chance-color{
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.roulette-preview-note{
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255,210,60,.12);
+  border: 1px solid rgba(255,210,60,.4);
+  color: #ffd23c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ★ ОВЕРЛЕЙ «ПОЗДРАВЛЯЕМ» — с эффектами по редкости
+   Эффекты работают БЕСКОНЕЧНО, пока не нажмут «Забрать».
+   ═══════════════════════════════════════════════════════════════ */
+
+.roulette-win-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(5,7,10,.94);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 70;
+  animation: winFadeIn .3s ease-out;
+}
+
+@keyframes winFadeIn{
+  0%{ opacity: 0; }
+  100%{ opacity: 1; }
+}
+
+.roulette-win-card{
+  position: relative;
+  width: min(340px, 88vw);
+  padding: 32px 24px 24px;
+  border-radius: 24px;
+  background: #171c25;
+  border: 3px solid #8893a3;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 22px 80px rgba(0,0,0,.6);
+  animation: winPop .5s cubic-bezier(.2,.8,.3,1);
+  overflow: visible;   /* важно — иначе лучи обрежутся */
+}
+
+@keyframes winPop{
+  0%{ transform: scale(.7); opacity: 0; }
+  60%{ transform: scale(1.05); }
+  100%{ transform: scale(1); opacity: 1; }
+}
+
+/* ═══ Базовые цвета рамок ═══ */
+.roulette-win-card.rarity-common{
+  border-color: #b8bec6;
+}
+
+.roulette-win-card.rarity-uncommon{
+  border-color: #7bff9c;
+  box-shadow: 0 0 30px rgba(80,255,120,.4), 0 22px 80px rgba(0,0,0,.6);
+}
+
+.roulette-win-card.rarity-rare{
+  border-color: #6bb8ff;
+  box-shadow: 0 0 35px rgba(80,160,255,.5), 0 22px 80px rgba(0,0,0,.6);
+}
+
+.roulette-win-card.rarity-epic{
+  border-color: #c58cff;
+  box-shadow: 0 0 40px rgba(180,100,255,.55), 0 22px 80px rgba(0,0,0,.6);
+  animation: winPop .5s cubic-bezier(.2,.8,.3,1), glowEpic 2s ease-in-out infinite;
+}
+
+.roulette-win-card.rarity-legendary{
+  border-color: #ffd23c;
+  box-shadow: 0 0 50px rgba(255,210,60,.7), 0 22px 80px rgba(0,0,0,.6);
+  animation: winPop .5s cubic-bezier(.2,.8,.3,1), glowLegendary 1.6s ease-in-out infinite, shakeSoft 3s ease-in-out infinite;
+}
+
+.roulette-win-card.rarity-mythic{
+  border-color: #ff5050;
+  box-shadow: 0 0 60px rgba(255,60,60,.85), 0 22px 80px rgba(0,0,0,.6);
+  animation: winPop .5s cubic-bezier(.2,.8,.3,1), glowMythic 1.2s ease-in-out infinite, shakeHard 2.2s ease-in-out infinite;
+}
+
+/* ─── Пульсация свечения ─── */
+@keyframes glowEpic{
+  0%, 100%{ box-shadow: 0 0 40px rgba(180,100,255,.55), 0 22px 80px rgba(0,0,0,.6); }
+  50%     { box-shadow: 0 0 60px rgba(180,100,255,.9),  0 22px 80px rgba(0,0,0,.6); }
+}
+
+@keyframes glowLegendary{
+  0%, 100%{ box-shadow: 0 0 50px rgba(255,210,60,.7), 0 22px 80px rgba(0,0,0,.6); }
+  50%     { box-shadow: 0 0 80px rgba(255,210,60,1),  0 22px 80px rgba(0,0,0,.6); }
+}
+
+@keyframes glowMythic{
+  0%, 100%{ box-shadow: 0 0 60px rgba(255,60,60,.85), 0 22px 80px rgba(0,0,0,.6); }
+  50%     { box-shadow: 0 0 100px rgba(255,60,60,1),  0 22px 80px rgba(0,0,0,.6); }
+}
+
+/* ─── Тряска (очень мягкая, чтобы не бесила) ─── */
+@keyframes shakeSoft{
+  0%, 100%{ transform: translate(0, 0); }
+  25%     { transform: translate(-1px, 1px); }
+  50%     { transform: translate(1px, -1px); }
+  75%     { transform: translate(-1px, -1px); }
+}
+
+@keyframes shakeHard{
+  0%, 100%{ transform: translate(0, 0) rotate(0); }
+  20%     { transform: translate(-2px, 1px) rotate(-0.3deg); }
+  40%     { transform: translate(2px, -2px) rotate(0.3deg); }
+  60%     { transform: translate(-1px, 2px) rotate(-0.2deg); }
+  80%     { transform: translate(2px, 1px) rotate(0.2deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ★ ЛУЧИ ЗА КАРТОЧКОЙ — разные скорости по редкости
+   Работают БЕСКОНЕЧНО пока оверлей открыт.
+   ═══════════════════════════════════════════════════════════════ */
+.roulette-win-card::before{
+  content: "";
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255,255,255,.5) 5deg,
+    transparent 12deg,
+    transparent 30deg,
+    rgba(255,255,255,.5) 35deg,
+    transparent 42deg,
+    transparent 60deg,
+    rgba(255,255,255,.5) 65deg,
+    transparent 72deg,
+    transparent 90deg,
+    rgba(255,255,255,.5) 95deg,
+    transparent 102deg,
+    transparent 120deg,
+    rgba(255,255,255,.5) 125deg,
+    transparent 132deg,
+    transparent 150deg,
+    rgba(255,255,255,.5) 155deg,
+    transparent 162deg,
+    transparent 180deg,
+    rgba(255,255,255,.5) 185deg,
+    transparent 192deg,
+    transparent 210deg,
+    rgba(255,255,255,.5) 215deg,
+    transparent 222deg,
+    transparent 240deg,
+    rgba(255,255,255,.5) 245deg,
+    transparent 252deg,
+    transparent 270deg,
+    rgba(255,255,255,.5) 275deg,
+    transparent 282deg,
+    transparent 300deg,
+    rgba(255,255,255,.5) 305deg,
+    transparent 312deg,
+    transparent 330deg,
+    rgba(255,255,255,.5) 335deg,
+    transparent 342deg
+  );
+  opacity: 0;
+  animation: winRaysSpin 12s linear infinite;
+  pointer-events: none;
+  filter: blur(1.5px);   /* ★ мягкость — лучи не режут глаз */
+}
+
+@keyframes winRaysSpin{
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Показываем лучи и задаём скорость + интенсивность по редкости */
+.roulette-win-card.rarity-uncommon::before{
+  opacity: .15;
+  animation-duration: 18s;
+}
+.roulette-win-card.rarity-rare::before{
+  opacity: .3;
+  animation-duration: 14s;
+}
+.roulette-win-card.rarity-epic::before{
+  opacity: .45;
+  animation-duration: 10s;
+}
+.roulette-win-card.rarity-legendary::before{
+  opacity: .6;
+  animation-duration: 7s;
+}
+.roulette-win-card.rarity-mythic::before{
+  opacity: .8;
+  animation-duration: 4.5s;
+}
+
+/* Цвет лучей по редкости (для мифика — красный, для легендарки — золотой) */
+.roulette-win-card.rarity-legendary::before{
+  opacity: .85;
+  animation-duration: 6s;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255,230,100,.95) 5deg,
+    transparent 12deg,
+    transparent 30deg,
+    rgba(255,230,100,.95) 35deg,
+    transparent 42deg,
+    transparent 60deg,
+    rgba(255,230,100,.95) 65deg,
+    transparent 72deg,
+    transparent 90deg,
+    rgba(255,230,100,.95) 95deg,
+    transparent 102deg,
+    transparent 120deg,
+    rgba(255,230,100,.95) 125deg,
+    transparent 132deg,
+    transparent 150deg,
+    rgba(255,230,100,.95) 155deg,
+    transparent 162deg,
+    transparent 180deg,
+    rgba(255,230,100,.95) 185deg,
+    transparent 192deg,
+    transparent 210deg,
+    rgba(255,230,100,.95) 215deg,
+    transparent 222deg,
+    transparent 240deg,
+    rgba(255,230,100,.95) 245deg,
+    transparent 252deg,
+    transparent 270deg,
+    rgba(255,230,100,.95) 275deg,
+    transparent 282deg,
+    transparent 300deg,
+    rgba(255,230,100,.95) 305deg,
+    transparent 312deg,
+    transparent 330deg,
+    rgba(255,230,100,.95) 335deg,
+    transparent 342deg
+  );
+}
+
+.roulette-win-card.rarity-mythic::before{
+  opacity: 1;
+  animation-duration: 3.5s;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255,140,140,1) 5deg,
+    transparent 12deg,
+    transparent 30deg,
+    rgba(255,140,140,1) 35deg,
+    transparent 42deg,
+    transparent 60deg,
+    rgba(255,140,140,1) 65deg,
+    transparent 72deg,
+    transparent 90deg,
+    rgba(255,140,140,1) 95deg,
+    transparent 102deg,
+    transparent 120deg,
+    rgba(255,140,140,1) 125deg,
+    transparent 132deg,
+    transparent 150deg,
+    rgba(255,140,140,1) 155deg,
+    transparent 162deg,
+    transparent 180deg,
+    rgba(255,140,140,1) 185deg,
+    transparent 192deg,
+    transparent 210deg,
+    rgba(255,140,140,1) 215deg,
+    transparent 222deg,
+    transparent 240deg,
+    rgba(255,140,140,1) 245deg,
+    transparent 252deg,
+    transparent 270deg,
+    rgba(255,140,140,1) 275deg,
+    transparent 282deg,
+    transparent 300deg,
+    rgba(255,140,140,1) 305deg,
+    transparent 312deg,
+    transparent 330deg,
+    rgba(255,140,140,1) 335deg,
+    transparent 342deg
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ★ ИСКРЫ — для epic+ (появляются вокруг карточки)
+   ═══════════════════════════════════════════════════════════════ */
+.roulette-win-card.rarity-epic::after,
+.roulette-win-card.rarity-legendary::after,
+.roulette-win-card.rarity-mythic::after{
+  content: "";
+  position: absolute;
+  inset: -30px;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle 3px at 15% 20%, #fff, transparent 100%),
+    radial-gradient(circle 4px at 80% 15%, #ffd23c, transparent 100%),
+    radial-gradient(circle 3px at 90% 70%, #fff, transparent 100%),
+    radial-gradient(circle 4px at 25% 85%, #ffd23c, transparent 100%),
+    radial-gradient(circle 3px at 50% 5%,  #fff, transparent 100%),
+    radial-gradient(circle 4px at 5% 55%,  #ffd23c, transparent 100%),
+    radial-gradient(circle 3px at 70% 95%, #fff, transparent 100%);
+  opacity: 0;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.roulette-win-card.rarity-epic::after{
+  animation-delay: 0.2s;
+}
+.roulette-win-card.rarity-legendary::after{
+  animation-duration: 1.6s;
+}
+.roulette-win-card.rarity-mythic::after{
+  animation-duration: 1s;
+  background-image:
+    radial-gradient(circle 4px at 15% 20%, #fff, transparent 100%),
+    radial-gradient(circle 5px at 80% 15%, #ff5050, transparent 100%),
+    radial-gradient(circle 4px at 90% 70%, #fff, transparent 100%),
+    radial-gradient(circle 5px at 25% 85%, #ff5050, transparent 100%),
+    radial-gradient(circle 4px at 50% 5%,  #fff, transparent 100%),
+    radial-gradient(circle 5px at 5% 55%,  #ff5050, transparent 100%),
+    radial-gradient(circle 4px at 70% 95%, #fff, transparent 100%),
+    radial-gradient(circle 4px at 40% 60%, #ffd23c, transparent 100%);
+}
+
+@keyframes sparkle{
+  0%, 100%{ opacity: 0;   transform: scale(0.9); }
+  50%     { opacity: 1;   transform: scale(1.05); }
+}
+
+/* ═══ Тексты ═══ */
+.roulette-win-title{
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: #8893a3;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+  position: relative;
+  z-index: 2;
+}
+
+.roulette-win-card.rarity-legendary .roulette-win-title,
+.roulette-win-card.rarity-mythic .roulette-win-title{
+  animation: titlePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes titlePulse{
+  0%, 100%{ opacity: .8; }
+  50%     { opacity: 1; }
+}
+
+.roulette-win-icon{
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+.roulette-win-card.rarity-epic .roulette-win-icon{
+  filter: drop-shadow(0 0 12px rgba(180,100,255,.8));
+}
+.roulette-win-card.rarity-legendary .roulette-win-icon{
+  animation: iconBounce 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 14px rgba(255,210,60,.9));
+}
+.roulette-win-card.rarity-mythic .roulette-win-icon{
+  animation: iconBounce 1s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(255,60,60,1));
+}
+
+@keyframes iconBounce{
+  0%, 100%{ transform: translateY(0) scale(1); }
+  50%     { transform: translateY(-6px) scale(1.08); }
+}
+
+.roulette-win-value{
+  font-size: 40px;
+  font-weight: 900;
+  color: #ffd23c;
+  text-shadow: 0 0 20px rgba(255,210,60,.8);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 2;
+}
+
+.roulette-win-card.rarity-legendary .roulette-win-value{
+  animation: valuePulse 1.2s ease-in-out infinite;
+}
+.roulette-win-card.rarity-mythic .roulette-win-value{
+  color: #ff5050;
+  text-shadow: 0 0 24px rgba(255,60,60,1);
+  animation: valuePulse 0.9s ease-in-out infinite;
+}
+
+@keyframes valuePulse{
+  0%, 100%{ transform: scale(1); }
+  50%     { transform: scale(1.05); }
+}
+
+.roulette-win-rarity{
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 800;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.roulette-win-rarity.rarity-common{ color: #b8bec6; }
+.roulette-win-rarity.rarity-uncommon{ color: #7bff9c; }
+.roulette-win-rarity.rarity-rare{ color: #6bb8ff; }
+.roulette-win-rarity.rarity-epic{ color: #c58cff; }
+.roulette-win-rarity.rarity-legendary{ color: #ffd23c; }
+.roulette-win-rarity.rarity-mythic{ color: #ff5050; }
+
+.roulette-win-claim{
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #4ea341, #2f7a25);
+  color: #fff;
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(74,163,65,.5);
+  transition: transform .12s ease;
+  position: relative;
+  z-index: 2;
+}
+.roulette-win-claim:active{ transform: scale(.97); }
+
+/* ═══════════════════════════════════════════════════════════════
+   ★ МИФИК — ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ
+   Второй слой пульсирующего ореола + вспышка при появлении
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Двойной пульсирующий ореол вокруг карточки */
+.roulette-win-card.rarity-mythic{
+  box-shadow:
+    0 0 60px rgba(255,60,60,.85),
+    0 0 120px rgba(255,60,60,.5),
+    0 22px 80px rgba(0,0,0,.6);
+  animation:
+    winPop .5s cubic-bezier(.2,.8,.3,1),
+    glowMythic 1.2s ease-in-out infinite,
+    shakeHard 2.2s ease-in-out infinite;
+}
+
+/* Вспышка при появлении — белый круг, быстро исчезает */
+.roulette-win-overlay::after{
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255,255,255,.9) 0%,
+    rgba(255,200,200,.5) 40%,
+    transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  opacity: 0;
+  animation: flashBurst .8s ease-out;
+}
+
+@keyframes flashBurst{
+  0%{
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  15%{
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(3);
+  }
+  100%{
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(8);
+  }
+}
+
+/* Усиленные искры для мифика — больше точек */
+.roulette-win-card.rarity-mythic::after{
+  inset: -50px;
+  background-image:
+    radial-gradient(circle 4px at 8% 12%,  #fff, transparent 100%),
+    radial-gradient(circle 5px at 25% 8%,  #ff5050, transparent 100%),
+    radial-gradient(circle 4px at 78% 15%, #fff, transparent 100%),
+    radial-gradient(circle 5px at 92% 30%, #ff5050, transparent 100%),
+    radial-gradient(circle 4px at 88% 68%, #fff, transparent 100%),
+    radial-gradient(circle 5px at 72% 88%, #ff5050, transparent 100%),
+    radial-gradient(circle 4px at 40% 92%, #fff, transparent 100%),
+    radial-gradient(circle 5px at 12% 78%, #ff5050, transparent 100%),
+    radial-gradient(circle 4px at 5% 45%,  #fff, transparent 100%),
+    radial-gradient(circle 5px at 48% 3%,  #ffd23c, transparent 100%),
+    radial-gradient(circle 4px at 55% 96%, #ffd23c, transparent 100%),
+    radial-gradient(circle 5px at 95% 50%, #fff, transparent 100%);
+  animation: sparkleMythic 0.7s ease-in-out infinite;
+}
+
+@keyframes sparkleMythic{
+  0%, 100%{ opacity: .3; transform: scale(0.95); }
+  50%     { opacity: 1;  transform: scale(1.08); }
+}
+
+/* Для легендарки — чуть скромнее, но тоже заметно */
+.roulette-win-card.rarity-legendary::after{
+  inset: -40px;
+  animation-duration: 1.2s;
+}

@@ -42,6 +42,9 @@ setFpsEnabled: (v) => set('fps', v ? '1' : '0'),
 getAuroraSnow: () => get('auroraSnow', '0') === '1',
 setAuroraSnow: (v) => set('auroraSnow', v ? '1' : '0'),
 
+getActiveUlt: () => get('activeUlt', 'classic'),
+setActiveUlt: (v) => set('activeUlt', v),
+
     isInfiniteUnlocked: () => get('infiniteUnlocked', '0') === '1',
     unlockInfinite: () => set('infiniteUnlocked', '1'),
     isInfiniteMode: () => get('infiniteMode', '0') === '1',

@@ -1,11 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════
-   ROULETTE — ежедневная рулетка
-   Лента через inline-block, прокрутка через offsetLeft + двойной RAF
+   ROULETTE — ежедневная рулетка с редкостями
+   BETA 0.10.0
    ═══════════════════════════════════════════════════════════════ */
 
 const Roulette = (() => {
 
   let overlay = null;
+  let winOverlay = null;
   let spinAvailable = true;
   let nextSpinIn = 0;
   let spinning = false;
@@ -15,6 +16,29 @@ const Roulette = (() => {
 
   function rnd(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
 
+  /* ─── Определение редкости по значению ─── */
+  function getRarity(value){
+    if (value <= 50)  return 'common';
+    if (value <= 100) return 'uncommon';
+    if (value <= 200) return 'rare';
+    if (value <= 500) return 'epic';
+    if (value <= 800) return 'legendary';
+    return 'mythic';
+  }
+
+  function getRarityName(rarity){
+    const names = {
+      common: 'Обычный',
+      uncommon: 'Необычный',
+      rare: 'Редкий',
+      epic: 'Эпический',
+      legendary: 'Легендарный',
+      mythic: 'Мифический'
+    };
+    return names[rarity] || rarity;
+  }
+
+  /* ─── Локальный ролл (для preview вне Telegram) ─── */
   function rollLocalReward(){
     const r = Math.random() * 100;
     if (r < 50)    return 10  + Math.floor(Math.random() * 41);
@@ -25,6 +49,7 @@ const Roulette = (() => {
     return 800 + Math.floor(Math.random() * 201);
   }
 
+  /* ─── Создать оверлей ─── */
   function ensureOverlay(){
     const existing = document.getElementById('rouletteOverlay');
     if (existing) existing.remove();
@@ -36,6 +61,9 @@ const Roulette = (() => {
       <div class="roulette-card">
         <h2>🎁 Ежедневная рулетка</h2>
         <p class="subtitle">Крути раз в 24 часа и получай монеты</p>
+
+        <!-- ★ ЛАМПОЧКИ -->
+        <div class="roulette-lights" id="rouletteLights"></div>
 
         <div class="roulette-strip-wrap" id="rouletteWrap">
           <div class="roulette-pointer">▼</div>
@@ -50,17 +78,25 @@ const Roulette = (() => {
         <div class="roulette-timer" id="rouletteTimer"></div>
 
         <div class="roulette-chances">
-          <b>Шансы:</b><br>
-          🪙 10–50 монет — 50%<br>
-          🪙 50–100 монет — 25%<br>
-          🪙 100–200 монет — 15%<br>
-          🪙 200–500 монет — 8%<br>
-          🪙 500–800 монет — 1.5%<br>
-          💎 800–1000 монет — 0.5%
+          <b>Шансы:</b>
+          <div class="chance-item"><span><span class="chance-color" style="background:#b8bec6"></span>Обычный (10–50)</span><span>50%</span></div>
+          <div class="chance-item"><span><span class="chance-color" style="background:#7bff9c"></span>Необычный (50–100)</span><span>25%</span></div>
+          <div class="chance-item"><span><span class="chance-color" style="background:#6bb8ff"></span>Редкий (100–200)</span><span>15%</span></div>
+          <div class="chance-item"><span><span class="chance-color" style="background:#c58cff"></span>Эпический (200–500)</span><span>8%</span></div>
+          <div class="chance-item"><span><span class="chance-color" style="background:#ffd23c"></span>Легендарный (500–800)</span><span>1.5%</span></div>
+          <div class="chance-item"><span><span class="chance-color" style="background:#ff5050"></span>Мифический (800–1000)</span><span>0.5%</span></div>
         </div>
       </div>
     `;
     document.body.appendChild(overlay);
+
+    /* ЛАМПОЧКИ — 15 штук */
+    const lights = document.getElementById('rouletteLights');
+    for (let i = 0; i < 15; i++){
+      const l = document.createElement('div');
+      l.className = 'roulette-light';
+      lights.appendChild(l);
+    }
 
     document.getElementById('rouletteCloseBtn').onclick = close;
     document.getElementById('rouletteSpinBtn').onclick = spin;
@@ -68,6 +104,7 @@ const Roulette = (() => {
     return overlay;
   }
 
+  /* ─── Заполнить ленту ─── */
   function fillStrip(targetReward){
     const strip = document.getElementById('rouletteStrip');
     if (!strip) return { targetCell: null };
@@ -84,9 +121,10 @@ const Roulette = (() => {
       }
     }
 
-strip.innerHTML = cells.map(c => `
-  <div class="roulette-cell ${c.isTarget ? 'is-picked' : ''}">🪙 ${c.value}</div>
-`).join('');
+    strip.innerHTML = cells.map(c => {
+      const rarity = getRarity(c.value);
+      return `<div class="roulette-cell rarity-${rarity} ${c.isTarget ? 'is-picked' : ''}">🪙 ${c.value}</div>`;
+    }).join('');
 
     return { targetCell: strip.children[TARGET_INDEX] };
   }
@@ -101,28 +139,20 @@ strip.innerHTML = cells.map(c => `
         return resolve();
       }
 
-      const CELL_WIDTH = 90;             // совпадает с CSS
-      const TARGET_INDEX = 45;           // совпадает с fillStrip
+      const CELL_WIDTH = 90;
+      const TARGET_INDEX = 45;
 
-      // ★ Считаем смещение явно, не полагаясь на offsetLeft
       const wrapWidth = wrap.clientWidth;
       const offset = (TARGET_INDEX * CELL_WIDTH) + (CELL_WIDTH / 2) - (wrapWidth / 2);
 
-      console.log('[roulette] wrapWidth:', wrapWidth, 'CELL:', CELL_WIDTH, '→ offset:', offset);
-
-      // ★ Сброс позиции
       strip.style.transition = 'none';
       strip.style.transform = 'translate3d(0, 0, 0)';
-
-      // ★ Форсим reflow
       void strip.offsetHeight;
 
-      // ★ Двойной RAF → гарантирует, что браузер увидел сброс
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           strip.style.transition = 'transform 4s cubic-bezier(.15,.85,.25,1)';
           strip.style.transform = `translate3d(-${offset}px, 0, 0)`;
-          console.log('[roulette] поехали, transform:', strip.style.transform);
         });
       });
 
@@ -130,6 +160,34 @@ strip.innerHTML = cells.map(c => `
     });
   }
 
+  /* ─── Показать оверлей «Поздравляем» ─── */
+  function showWinModal(reward, callback){
+    const rarity = getRarity(reward);
+
+    if (winOverlay && winOverlay.parentNode) winOverlay.remove();
+
+    winOverlay = document.createElement('div');
+    winOverlay.className = 'roulette-win-overlay';
+    winOverlay.innerHTML = `
+      <div class="roulette-win-card rarity-${rarity}">
+        <p class="roulette-win-title">Поздравляем!</p>
+        <div class="roulette-win-icon">🪙</div>
+        <div class="roulette-win-value">+${reward}</div>
+        <div class="roulette-win-rarity rarity-${rarity}">${getRarityName(rarity)}</div>
+        <button class="roulette-win-claim" id="rouletteWinClaim">ЗАБРАТЬ</button>
+      </div>
+    `;
+    document.body.appendChild(winOverlay);
+
+    const btn = document.getElementById('rouletteWinClaim');
+    btn.onclick = () => {
+      winOverlay.remove();
+      winOverlay = null;
+      if (typeof callback === 'function') callback();
+    };
+  }
+
+  /* ─── Статус ─── */
   function updateStatus(data){
     spinAvailable = !!data.spin_available;
     nextSpinIn = data.spin_next_in || 0;
@@ -176,6 +234,7 @@ strip.innerHTML = cells.map(c => `
     timerInterval = setInterval(tick, 1000);
   }
 
+  /* ─── Открыть / закрыть ─── */
   function open(data){
     ensureOverlay();
     overlay.classList.remove('hidden');
@@ -200,6 +259,7 @@ strip.innerHTML = cells.map(c => `
     clearInterval(timerInterval);
   }
 
+  /* ─── Крутить ─── */
   async function spin(){
     if (spinning || !spinAvailable) return;
     spinning = true;
@@ -242,43 +302,37 @@ strip.innerHTML = cells.map(c => `
       preview = true;
     }
 
-    // Заполняем ленту
+    /* Заполняем ленту */
     const info = fillStrip(data.reward);
-
-    // Даём браузеру отрисовать DOM
     await new Promise(r => setTimeout(r, 100));
 
-    // Прокрутка
+    /* Прокрутка */
     await animateStrip(info.targetCell);
 
-    // Результат
-    if (preview){
-      result.innerHTML = `
-        <div class="roulette-reward">🪙 +${data.reward} монет</div>
-        <div class="roulette-preview-note">
-          📱 Получить можно только в Telegram
-        </div>`;
+    /* ★ ПОКАЗЫВАЕМ ОВЕРЛЕЙ «ПОЗДРАВЛЯЕМ» */
+    showWinModal(data.reward, () => {
+      /* Колбэк после «Забрать» */
+      if (preview){
+        result.innerHTML = `
+          <div class="roulette-preview-note">📱 Получить можно только в Telegram</div>`;
+        Storage.setCoins(data.total_coins);
+        Sync.updateCoinsUI();
+        if (typeof Shop !== 'undefined' && Shop.updateCoins) Shop.updateCoins();
 
-      Storage.setCoins(data.total_coins);
-      Sync.updateCoinsUI();
-      if (typeof Shop !== 'undefined' && Shop.updateCoins) Shop.updateCoins();
+        btn.disabled = false;
+        btn.textContent = 'КРУТИТЬ';
+      } else {
+        Storage.setCoins(data.total_coins);
+        Sync.updateCoinsUI();
+        if (typeof Shop !== 'undefined' && Shop.updateCoins) Shop.updateCoins();
 
-      btn.disabled = false;
-      btn.textContent = 'КРУТИТЬ';
-    } else {
-      result.innerHTML = `<div class="roulette-reward">🪙 +${data.reward} монет</div>`;
-
-      Storage.setCoins(data.total_coins);
-      Sync.updateCoinsUI();
-      if (typeof Shop !== 'undefined' && Shop.updateCoins) Shop.updateCoins();
-
-      spinAvailable = false;
-      nextSpinIn = data.next_spin_in || 86400;
-      startCountdown(nextSpinIn);
-      btn.textContent = '⏳ ЖДИ';
-    }
-
-    spinning = false;
+        spinAvailable = false;
+        nextSpinIn = data.next_spin_in || 86400;
+        startCountdown(nextSpinIn);
+        btn.textContent = '⏳ ЖДИ';
+      }
+      spinning = false;
+    });
   }
 
   return { open, close, updateStatus };

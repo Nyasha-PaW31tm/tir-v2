@@ -287,10 +287,10 @@ body[data-bg="light"] .shop-row{background:#d0d6de;border-color:#a8b0ba;color:#1
   font-weight: 900;
   font-size: 15px;
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   margin-bottom: 2px;
+  line-height: 1.2;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 .shop-desc{
   font-size: 11px;
@@ -374,203 +374,7 @@ body[data-bg="light"] .shop-empty{background:#d0d6de;border-color:#a8b0ba}
   display:block;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ★ РУЛЕТКА — модальное окно
-   ═══════════════════════════════════════════════════════════════ */
-#rouletteOverlay{
-  position:fixed;
-  inset:0;
-  background:rgba(5,7,10,.92);
-  display:grid;
-  place-items:center;
-  padding:20px;
-  z-index:60;
-  animation:rouletteFadeIn .25s ease-out;
-}
 
-@keyframes rouletteFadeIn{
-  0%{opacity:0}
-  100%{opacity:1}
-}
-
-.roulette-card{
-  width:min(400px,92vw);
-  padding:28px 24px;
-  border-radius:24px;
-  background:linear-gradient(180deg,#1e1424,#150a14);
-  border:1px solid #c43a3a;
-  box-shadow:0 22px 80px rgba(196,58,58,.4);
-  text-align:center;
-  color:#fff;
-  animation:roulettePop .4s cubic-bezier(.2,.8,.3,1);
-}
-@keyframes roulettePop{
-  0%{ transform:scale(.85); opacity:0; }
-  100%{ transform:scale(1); opacity:1; }
-}
-
-.roulette-card h2{
-  margin:0 0 8px;
-  font-size:24px;
-  color:#ffd23c;
-  letter-spacing:1px;
-  text-shadow:0 0 12px rgba(255,210,60,.6);
-}
-
-.roulette-card .subtitle{
-  color:#aeb7c5;
-  font-size:13px;
-  margin:0 0 24px;
-}
-
-/* Колесо-подарок */
-/* ═══════════════════════════════════════════════════════════════
-   ЛЕНТА РУЛЕТКИ
-   ═══════════════════════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════════════════════
-   ЛЕНТА РУЛЕТКИ (inline-block, чтобы не сжималась)
-   ═══════════════════════════════════════════════════════════════ */
-.roulette-strip-wrap{
-  position: relative;
-  width: 100%;
-  height: 90px;
-  margin: 20px 0;
-  overflow: hidden;
-  border-radius: 14px;
-  background: #0a0a12;
-  border: 2px solid #c43a3a;
-  box-shadow: inset 0 0 30px rgba(0,0,0,.9);
-}
-
-.roulette-pointer{
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 20px;
-  color: #ffd23c;
-  z-index: 10;
-  text-shadow: 0 0 12px #ffd23c, 0 0 4px #000;
-  pointer-events: none;
-}
-
-/* Лента — строчная, без flex */
-.roulette-strip{
-  display: block;
-  white-space: nowrap;
-  height: 100%;
-  font-size: 0;                 /* убираем пробелы между inline-block */
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-}
-
-/* Ячейка — inline-block, фиксированные 90px */
-.roulette-cell{
-  display: inline-block;
-  vertical-align: middle;
-  width: 90px;
-  height: 90px;
-  line-height: 90px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 900;
-  color: #ffd23c;
-  text-shadow: 0 0 8px rgba(255,210,60,.5);
-  box-sizing: border-box;
-  white-space: nowrap;
-}
-
-.roulette-cell.is-picked{
-  background: linear-gradient(180deg, rgba(255,210,60,.22), rgba(255,210,60,.05));
-  border-radius: 8px;
-  box-shadow: inset 0 0 20px rgba(255,210,60,.25);
-}
-
-/* Результат */
-.roulette-result{
-  font-size:32px;
-  font-weight:900;
-  color:#ffd23c;
-  margin:16px 0;
-  text-shadow:0 0 20px rgba(255,210,60,.8);
-  min-height:40px;
-}
-
-.roulette-reward{
-  display:inline-block;
-  padding:12px 24px;
-  border-radius:14px;
-  background:linear-gradient(135deg, #3a3010, #1f1508);
-  border:2px solid #ffd23c;
-  font-size:22px;
-  font-weight:900;
-  color:#ffd23c;
-  margin:16px 0;
-  animation:rewardPop .5s cubic-bezier(.2,.8,.3,1);
-}
-@keyframes rewardPop{
-  0%{ transform:scale(.5); opacity:0; }
-  60%{ transform:scale(1.15); }
-  100%{ transform:scale(1); opacity:1; }
-}
-
-/* Кнопки рулетки */
-.roulette-btn-close,
-.roulette-btn-spin{
-  display:block;
-  width:100%;
-  margin-top:12px;
-  padding:16px;
-  border:0;
-  border-radius:14px;
-  font-weight:800;
-  font-size:16px;
-  color:#fff;
-  cursor:pointer;
-}
-.roulette-btn-spin{
-  background:linear-gradient(135deg, #c43a3a, #8a1e1e);
-  box-shadow:0 4px 14px rgba(196,58,58,.5);
-}
-.roulette-btn-spin:disabled{
-  opacity:.5;
-  cursor:not-allowed;
-  box-shadow:none;
-}
-.roulette-btn-close{
-  background:#242b36;
-}
-
-/* Таймер до следующего спина */
-.roulette-timer{
-  color:#8893a3;
-  font-size:13px;
-  margin-top:16px;
-}
-
-/* Список шансов */
-.roulette-chances{
-  margin-top:20px;
-  padding:14px;
-  border-radius:12px;
-  background:#11161e;
-  text-align:left;
-  font-size:11px;
-  color:#8893a3;
-}
-.roulette-chances b{color:#ffd23c}
-
-/* Заметка для preview-режима (не в Telegram) */
-.roulette-preview-note{
-  margin-top: 10px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: rgba(255, 210, 60, .12);
-  border: 1px solid rgba(255, 210, 60, .4);
-  color: #ffd23c;
-  font-size: 13px;
-  font-weight: 700;
-}
 
 /* Превью скина "Товарищ" (пасхалка) */
 .shop-preview.weapon-china{
@@ -849,4 +653,62 @@ body[data-bg="light"] .shop-kind.skin{
   padding: 4px 8px;
   font-size: 10px;
   letter-spacing: 1px;
+}
+/* ═══════════════════════════════════════════════════════════════
+   ТУМБЛЕР СНЕГА В МАГАЗИНЕ (только Аврора)
+   ═══════════════════════════════════════════════════════════════ */
+.shop-snow-toggle{
+  padding: 6px 12px;
+  margin: 4px 0 0 !important;
+  border: 1px solid #2a3039;
+  border-radius: 8px;
+  background: #1a1f27;
+  color: #8893a3;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.shop-snow-toggle:active{
+  transform: scale(.94);
+}
+
+.shop-snow-toggle.on{
+  background: #4a7c3a;
+  border-color: #6ba84a;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(107,168,74,.55);
+}
+
+/* Светлая тема */
+body[data-bg="light"] .shop-snow-toggle{
+  background: #d0d6de;
+  border-color: #a8b0ba;
+  color: #5a6470;
+}
+body[data-bg="light"] .shop-snow-toggle.on{
+  background: #4a7c3a;
+  border-color: #6ba84a;
+  color: #fff;
+}
+/* ═══════════════════════════════════════════════════════════════
+   УЛЬТЫ В МАГАЗИНЕ
+   ═══════════════════════════════════════════════════════════════ */
+.shop-buy.ult-record{
+  background: linear-gradient(135deg, #8a6a14, #4a3a08) !important;
+  color: #ffd23c !important;
+  border: 1px solid #ffd23c !important;
+  box-shadow: 0 0 12px rgba(255,210,60,.5);
+}
+
+.ult-hint{
+  font-size: 10px;
+  color: #8893a3;
+  margin-top: 4px;
+  text-align: center;
+  line-height: 1.3;
+  letter-spacing: .2px;
 }

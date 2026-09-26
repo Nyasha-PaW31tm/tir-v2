@@ -1,8 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════
-   MENU — стили главного меню и его элементов
+   MENU — главное меню + подготовка к забегу
+   BETA 0.10.0
    ═══════════════════════════════════════════════════════════════ */
 
-/* Логотип и версия */
+/* ─── Логотип и версия ─── */
 #screenMain .logo-mark{
   font-size:52px;
   font-weight:900;
@@ -21,7 +22,8 @@
   letter-spacing:2px;
 }
 
-#screenMain .beta{
+#screenMain .beta,
+#screenPreGame .beta{
   color:#8893a3;
   font-size:12px;
   letter-spacing:2px;
@@ -29,35 +31,362 @@
   text-transform:uppercase;
 }
 
-/* Кнопки меню — отступы ровнее */
-#screenMain .menu-card button{
-  padding:15px;
-  font-size:15px;
-  letter-spacing:.5px;
+/* ═══════════════════════════════════════════════════════════════
+   КНОПКА «ИГРАТЬ» — большая, с пульсацией
+   ═══════════════════════════════════════════════════════════════ */
+.menu-play{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:100%;
+  padding:20px 24px;
+  margin:8px 0 18px;
+  border:0;
+  border-radius:18px;
+  background:linear-gradient(135deg, #4ea341 0%, #2f7a25 55%, #1e5a18 100%);
+  color:#fff;
+  font-weight:900;
+  font-size:22px;
+  letter-spacing:3px;
+  cursor:pointer;
+  box-shadow:
+    0 6px 20px rgba(74,163,65,.45),
+    inset 0 1px 0 rgba(255,255,255,.2),
+    inset 0 -3px 0 rgba(0,0,0,.25);
+  overflow:hidden;
+  transition:transform .12s ease, box-shadow .25s ease;
+  animation:playPulse 2.4s ease-in-out infinite;
 }
 
-/* Кнопка ИГРАТЬ — акцентная, зелёная */
-#screenMain #playBtn{
-  background:linear-gradient(135deg, #4a7c3a, #2f5a25);
-  box-shadow:0 4px 14px rgba(74,124,58,.35);
-  margin-bottom:6px;
-}
-#screenMain #playBtn:active{
-  transform:scale(.98);
-  box-shadow:0 2px 6px rgba(74,124,58,.35);
+.menu-play::before{
+  content:"";
+  position:absolute;
+  top:-50%;
+  left:0;
+  width:60%;
+  height:200%;
+  background:linear-gradient(115deg,
+    transparent 0%,
+    rgba(255,255,255,.25) 50%,
+    transparent 100%);
+  pointer-events:none;
+  will-change:transform, opacity;
+  animation:playShine 3.5s ease-in-out infinite;
 }
 
-/* Лёгкая анимация появления карточки */
+.menu-play .menu-play-icon{
+  font-size:28px;
+  line-height:1;
+  filter:drop-shadow(0 0 8px rgba(255,220,100,.7));
+}
+
+.menu-play .menu-play-text{
+  position:relative;
+  z-index:1;
+  text-shadow:0 2px 4px rgba(0,0,0,.35);
+}
+
+.menu-play:active{
+  transform:scale(.97);
+  box-shadow:
+    0 3px 10px rgba(74,163,65,.4),
+    inset 0 1px 0 rgba(255,255,255,.2);
+  animation:none;
+}
+
+@keyframes playPulse{
+  0%, 100%{
+    box-shadow:
+      0 6px 20px rgba(74,163,65,.45),
+      0 0 0 0 rgba(120,255,120,.35),
+      inset 0 1px 0 rgba(255,255,255,.2),
+      inset 0 -3px 0 rgba(0,0,0,.25);
+  }
+  50%{
+    box-shadow:
+      0 6px 24px rgba(74,163,65,.6),
+      0 0 24px 4px rgba(120,255,120,.35),
+      inset 0 1px 0 rgba(255,255,255,.2),
+      inset 0 -3px 0 rgba(0,0,0,.25);
+  }
+}
+
+@keyframes playShine{
+  0%   { transform: translateX(-200%) rotate(20deg); opacity: 0; }
+  10%  { opacity: 1; }
+  30%  { transform: translateX(200%) rotate(20deg); opacity: 1; }
+  38%  { transform: translateX(200%) rotate(20deg); opacity: 0; }
+  100% { transform: translateX(-200%) rotate(20deg); opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   СЕТКА КНОПОК — 2 колонки
+   ═══════════════════════════════════════════════════════════════ */
+.menu-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:6px;
+}
+
+.menu-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:14px 8px;
+  margin:0;
+  border:1px solid #2a3039;
+  border-radius:12px;
+  background:#242b36;
+  color:#e6eaf0;
+  font-weight:800;
+  font-size:13px;
+  letter-spacing:.3px;
+  cursor:pointer;
+  transition:transform .1s ease, background .2s ease, border-color .2s ease;
+  white-space:nowrap;
+}
+
+.menu-btn:active{
+  transform:scale(.96);
+  background:#303948;
+  border-color:#3a4555;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRE-GAME — подготовка к забегу
+   ═══════════════════════════════════════════════════════════════ */
+.pregame-title{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:1px;
+  margin:8px 0 4px;
+  text-align:center;
+}
+
+#screenPreGame .setting-block{
+  margin-top:10px;
+}
+
+.pregame-modes{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:8px;
+}
+
+.mode-tab{
+  padding:14px 8px;
+  border:2px solid transparent;
+  border-radius:12px;
+  background:#1a1f27;
+  color:#aeb7c5;
+  font-weight:800;
+  font-size:13px;
+  letter-spacing:.3px;
+  cursor:pointer;
+  transition:all .2s ease;
+  margin:0;
+}
+
+.mode-tab.active{
+  background:#2a3a4a;
+  border-color:#4a90d4;
+  color:#fff;
+  box-shadow:0 0 14px rgba(74,144,212,.35);
+}
+
+.mode-tab:disabled,
+.mode-tab.locked{
+  opacity:.4;
+  cursor:not-allowed;
+  position:relative;
+}
+
+.mode-tab.locked::after{
+  content:"🔒";
+  position:absolute;
+  top:4px;
+  right:6px;
+  font-size:11px;
+  opacity:.7;
+}
+
+.pregame-hint{
+  margin:10px 0 0;
+  font-size:11px;
+  color:#8893a3;
+  line-height:1.5;
+  text-align:left;
+}
+
+/* ─── Анимация появления карточки ─── */
 @keyframes menuCardAppear{
   0%  { opacity:0; transform:translateY(12px) scale(.98); }
   100%{ opacity:1; transform:translateY(0) scale(1); }
 }
-#screenMain .menu-card{
+#screenMain .menu-card,
+#screenPreGame .menu-card{
   animation:menuCardAppear .35s cubic-bezier(.2,.8,.3,1);
 }
 
-/* В бесконечном режиме — фиолетовый акцент на кнопке ИГРАТЬ */
-body.infinite-active #playBtn{
-  background:linear-gradient(135deg, #7a2a5a, #4a1a3a);
-  box-shadow:0 4px 14px rgba(122,42,90,.45);
+/* ─── Светлая тема ─── */
+body[data-bg="light"] .menu-btn{
+  background:#d0d6de;
+  border-color:#a8b0ba;
+  color:#111;
+}
+body[data-bg="light"] .menu-btn:active{
+  background:#b8bec6;
+}
+body[data-bg="light"] .mode-tab{
+  background:#d0d6de;
+  color:#5a6470;
+}
+body[data-bg="light"] .mode-tab.active{
+  background:#a8c4dc;
+  border-color:#4a90d4;
+  color:#111;
+}
+body[data-bg="light"] .pregame-hint{
+  color:#5a6470;
+}
+
+/* ─── В бесконечном режиме — фиолетовый акцент на кнопке Играть ─── */
+body.infinite-active .menu-play{
+  background:linear-gradient(135deg, #8a2a6a 0%, #5a1a4a 55%, #3a0f30 100%);
+  box-shadow:
+    0 6px 20px rgba(138,42,106,.5),
+    inset 0 1px 0 rgba(255,255,255,.2),
+    inset 0 -3px 0 rgba(0,0,0,.25);
+}
+/* ═══════════════════════════════════════════════════════════════
+   УЛЬТЫ — табы выбора
+   ═══════════════════════════════════════════════════════════════ */
+.ult-tabs{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:6px;
+  margin-top:8px;
+}
+
+.ult-tab{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:12px 6px;
+  border:2px solid transparent;
+  border-radius:12px;
+  background:#1a1f27;
+  color:#aeb7c5;
+  font-weight:800;
+  font-size:11px;
+  cursor:pointer;
+  transition:all .2s ease;
+  margin:0;
+}
+
+.ult-tab .ult-icon{
+  font-size:20px;
+  line-height:1;
+}
+
+.ult-tab .ult-name{
+  letter-spacing:.3px;
+}
+
+.ult-tab.active{
+  background:#2a3a4a;
+  border-color:#4a90d4;
+  color:#fff;
+  box-shadow:0 0 14px rgba(74,144,212,.35);
+}
+
+.ult-tab.locked{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+/* Замок по умолчанию скрыт, показывается только в locked */
+.ult-tab .ult-lock{
+  display: none;
+}
+
+.ult-tab.locked .ult-lock{
+  display: inline;
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 11px;
+  opacity: .85;
+}
+
+.ult-tab.locked .ult-lock{
+  position:absolute;
+  top:4px;
+  right:6px;
+  font-size:11px;
+  opacity:.85;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   БОССЫ / ЕЖЕДНЕВКА — заглушки
+   ═══════════════════════════════════════════════════════════════ */
+.pregame-extras{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:14px;
+}
+
+.pregame-extra{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:14px 8px;
+  border:1px dashed #3a4149;
+  border-radius:12px;
+  background:#15191f;
+  color:#5a6470;
+  font-weight:800;
+  font-size:12px;
+  cursor:not-allowed;
+  margin:0;
+}
+
+.pregame-extra-icon{
+  font-size:22px;
+  line-height:1;
+  filter:grayscale(1);
+  opacity:.6;
+}
+
+.pregame-extra-lock{
+  font-size:9px;
+  letter-spacing:.5px;
+  color:#4a5260;
+  text-transform:uppercase;
+}
+
+/* ─── Светлая тема ─── */
+body[data-bg="light"] .ult-tab{
+  background:#d0d6de;
+  color:#5a6470;
+}
+body[data-bg="light"] .ult-tab.active{
+  background:#a8c4dc;
+  border-color:#4a90d4;
+  color:#111;
+}
+body[data-bg="light"] .pregame-extra{
+  background:#e2e6eb;
+  border-color:#b8bec6;
+  color:#8893a3;
 }

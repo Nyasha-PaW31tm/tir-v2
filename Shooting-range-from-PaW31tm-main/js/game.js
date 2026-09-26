@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   ТИР — BETA 0.9.4 — ядро игры
+   ТИР — BETA 0.10.0 — ядро игры
    ═══════════════════════════════════════════════════════════════ */
 
 const Game = (() => {
@@ -9,6 +9,18 @@ const Game = (() => {
   const LASER_PENALTY = 0.65;
   const COINS_PER_POINTS = 250;
   const MAX_SHELLS = 12;
+
+  /* ★ ULT_REQ зависит от активной ульты */
+  const ULT_REQ_MAP = {
+    classic: 5,
+    laser:   15,
+    MLRS:    20
+  };
+
+  function getUltReq(){
+    const active = Storage.getActiveUlt();
+    return ULT_REQ_MAP[active] || 5;
+  }
 
   const TYPES = {
     normal:   {base: 25, hp:1, speed:  0, color:'normal'},
@@ -116,7 +128,7 @@ const Game = (() => {
     ultBtn      = document.getElementById('ultimate');
     endScreen   = document.getElementById('endScreen');
     const pb = document.getElementById('pauseBtn');
-homeBtn = pb; // оставляем то же имя переменной, чтобы не переписывать весь файл
+    homeBtn = pb;
     modeBadge   = document.getElementById('modeBadge');
     missesBlock = document.getElementById('missesBlock');
     missesEl    = document.getElementById('misses');
@@ -131,8 +143,10 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     return document.body.classList.contains('skin-akc74m');
   }
 
-/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ */ 
-  /* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
+   СТОП. ВСТАВЬ ЧАСТЬ 2 НИЖЕ
+   ═══════════════════════════════════════════════════════════════ */
+     /* ═══════════════════════════════════════════════════════════════
      СЛОЖНОСТЬ
      ═══════════════════════════════════════════════════════════════ */
   function difficulty(){
@@ -152,7 +166,11 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     return {normal:.40-.30*t, fast:.35+.11*t, maneuver:.15+.12*t, armored:.09+.07*t, gold:.008, fastgold:.002};
   }
 
-  function comboMult(){ return 1 + Math.max(0, comboHits - 1) * 0.1; }
+  /* ★ Шаг комбо: 0.1 обычно, 0.15 во время лазера */
+  function comboMult(stepOverride){
+    const step = stepOverride || (window._laserActive ? 0.15 : 0.1);
+    return 1 + Math.max(0, comboHits - 1) * step;
+  }
 
   /* ═══════════════════════════════════════════════════════════════
      UI
@@ -160,8 +178,7 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
   function updateUI(){
     scoreEl.textContent = Math.floor(score);
     comboEl.textContent = '×' + comboMult().toFixed(1);
-    ultEl.textContent = ultHits + '/5';
-    ultBtn.classList.toggle('ready', ultHits >= 5);
+    updateUltCounter();
     missesEl.textContent = missCount + '/' + MAX_MISSES;
     missesBlock.classList.toggle('hidden', !Storage.isInfiniteMode());
 
@@ -169,6 +186,35 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
 
     const isRecord = Storage.isInfiniteMode() && personalBest > 0 && score > personalBest;
     if (scoreBox) scoreBox.classList.toggle('gold-record', isRecord);
+  }
+
+  /* ★ Отдельная функция: показывает либо счётчик, либо КД лазера */
+  function updateUltCounter(){
+    if (!ultEl || !ultBtn) return;
+
+    const activeUlt = Storage.getActiveUlt();
+
+    /* Лазер активен прямо сейчас */
+    if (activeUlt === 'laser' && window.GameLaser && window.GameLaser.isActive && window.GameLaser.isActive()){
+      ultEl.textContent = '⚡ АКТИВЕН';
+      ultBtn.classList.remove('ready');
+      return;
+    }
+
+    /* Лазер на КД */
+    if (activeUlt === 'laser' && window.GameLaser && window.GameLaser.isOnCooldown && window.GameLaser.isOnCooldown()){
+      const left = window.GameLaser.getCooldownLeft();
+      const sec = Math.ceil(left / 1000);
+      ultEl.textContent = '⏳ ' + sec + 'с';
+      ultBtn.classList.remove('ready');
+      return;
+    }
+
+    /* Обычный счётчик — с учётом активной ульты */
+    const req = getUltReq();
+    const displayHits = Math.min(ultHits, req);
+    ultEl.textContent = displayHits + '/' + req;
+    ultBtn.classList.toggle('ready', ultHits >= req);
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -279,7 +325,10 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     setTimeout(() => el.remove(), 1300);
   }
 
-  /* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
+   СТОП. ВСТАВЬ ЧАСТЬ 3 НИЖЕ
+   ═══════════════════════════════════════════════════════════════ */
+     /* ═══════════════════════════════════════════════════════════════
      КИТАЙСКИЕ ПОПАПЫ
      ═══════════════════════════════════════════════════════════════ */
   function chinaPopup(x, y, type, text){
@@ -332,12 +381,9 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     setTimeout(() => el.remove(), 1500);
   }
 
-/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 3 НИЖЕ ═══════════ */ 
-
   /* ═══════════════════════════════════════════════════════════════
      ★ AKC-74M — ГИЛЬЗЫ, ДЫМ, РАЗРЕЗ ДЫМА
      ═══════════════════════════════════════════════════════════════ */
-
   function spawnShell(){
     if (!isAkcActive() || !range || !rifleWrap) return;
 
@@ -401,33 +447,33 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
   }
 
   function cutSmokeAlongBullet(bullet) {
-  if (!range) return;
-  
-  const checkInterval = setInterval(() => {
-    if (!bullet.parentNode) { clearInterval(checkInterval); return; }
-    
-    const particles = range.querySelectorAll('.akc-smoke-particle');
-    if (particles.length === 0) return;
-    
-    const rect = bullet.getBoundingClientRect();
-    if (!rect) { clearInterval(checkInterval); return; }
-    
-    const stageRect = range.getBoundingClientRect();
-    const bulletX = rect.left + rect.width / 2 - stageRect.left;
-    const bulletY = rect.top + rect.height / 2 - stageRect.top;
-    
-    particles.forEach(p => {
-      const pRect = p.getBoundingClientRect();
-      const pX = pRect.left + pRect.width / 2 - stageRect.left;
-      const pY = pRect.top + pRect.height / 2 - stageRect.top;
-      
-      if (Math.abs(bulletX - pX) < 25 && Math.abs(bulletY - pY) < 25) {
-        cutSmokeParticle(pX, pY, bulletX < pX ? 1 : -1);
-        p.remove();
-      }
-    });
-  }, 70); /* было 40 — теперь 70 */
-}
+    if (!range) return;
+
+    const checkInterval = setInterval(() => {
+      if (!bullet.parentNode) { clearInterval(checkInterval); return; }
+
+      const particles = range.querySelectorAll('.akc-smoke-particle');
+      if (particles.length === 0) return;
+
+      const rect = bullet.getBoundingClientRect();
+      if (!rect) { clearInterval(checkInterval); return; }
+
+      const stageRect = range.getBoundingClientRect();
+      const bulletX = rect.left + rect.width / 2 - stageRect.left;
+      const bulletY = rect.top + rect.height / 2 - stageRect.top;
+
+      particles.forEach(p => {
+        const pRect = p.getBoundingClientRect();
+        const pX = pRect.left + pRect.width / 2 - stageRect.left;
+        const pY = pRect.top + pRect.height / 2 - stageRect.top;
+
+        if (Math.abs(bulletX - pX) < 25 && Math.abs(bulletY - pY) < 25) {
+          cutSmokeParticle(pX, pY, bulletX < pX ? 1 : -1);
+          p.remove();
+        }
+      });
+    }, 70);
+  }
 
   function cutSmokeParticle(px, py, direction){
     const piecesCount = 3 + Math.floor(Math.random() * 2);
@@ -490,7 +536,7 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
 
     if (hot){
       rifleWrap.classList.add('akc-hot');
-      if (!smokeInterval) smokeInterval = setInterval(spawnSmoke, 200);
+      if (!smokeInterval) smokeInterval = setInterval(spawnSmoke, 400);
       if (!coolDownCheck){
         coolDownCheck = setInterval(() => {
           const t = Date.now();
@@ -516,9 +562,10 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     score += points * (laserEnabled ? LASER_PENALTY : 1);
   }
 
-/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 4 НИЖЕ ═══════════ */
-
-  /* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
+   СТОП. ВСТАВЬ ЧАСТЬ 4 НИЖЕ
+   ═══════════════════════════════════════════════════════════════ */
+     /* ═══════════════════════════════════════════════════════════════
      ПОПАДАНИЕ
      ═══════════════════════════════════════════════════════════════ */
   function hitTarget(t){
@@ -534,11 +581,21 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     }
 
     comboHits++;
-    const wasUltReady = ultHits >= 5;
-    ultHits = Math.min(5, ultHits + 1);
-    if (!wasUltReady && ultHits >= 5 && !ultReadySoundPlayed){
-      playSfx('ultReady');
-      ultReadySoundPlayed = true;
+
+    /* ★ Не копим ульту, если лазер на КД */
+    const laserOnCd = Storage.getActiveUlt() === 'laser'
+      && window.GameLaser
+      && window.GameLaser.isOnCooldown
+      && window.GameLaser.isOnCooldown();
+
+    if (!laserOnCd){
+      const req = getUltReq();
+      const wasUltReady = ultHits >= req;
+      ultHits = Math.min(req, ultHits + 1);
+      if (!wasUltReady && ultHits >= req && !ultReadySoundPlayed){
+        playSfx('ultReady');
+        ultReadySoundPlayed = true;
+      }
     }
 
     let center = null;
@@ -564,7 +621,6 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     updateUI();
   }
 
-  /* То же, но без вызова miss при промахе (для очереди AKC) */
   function hitTargetNoMiss(t){
     playSfx('hit');
     t.hp--;
@@ -578,11 +634,20 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     }
 
     comboHits++;
-    const wasUltReady = ultHits >= 5;
-    ultHits = Math.min(5, ultHits + 1);
-    if (!wasUltReady && ultHits >= 5 && !ultReadySoundPlayed){
-      playSfx('ultReady');
-      ultReadySoundPlayed = true;
+
+    const laserOnCd = Storage.getActiveUlt() === 'laser'
+      && window.GameLaser
+      && window.GameLaser.isOnCooldown
+      && window.GameLaser.isOnCooldown();
+
+    if (!laserOnCd){
+      const req = getUltReq();
+      const wasUltReady = ultHits >= req;
+      ultHits = Math.min(req, ultHits + 1);
+      if (!wasUltReady && ultHits >= req && !ultReadySoundPlayed){
+        playSfx('ultReady');
+        ultReadySoundPlayed = true;
+      }
     }
 
     let center = null;
@@ -592,6 +657,45 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     }
 
     const newFloor = Math.floor(comboMult());
+    if (newFloor > prevComboFloor){
+      prevComboFloor = newFloor;
+      if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
+      const c = center || getElCenter(t.el);
+      if (isChinaActive()){
+        showChinaCombo(c.x, c.y, newFloor);
+        if (newFloor % 5 === 0) showChinaPride();
+      } else {
+        showGoldCombo(c.x, c.y, newFloor);
+      }
+    }
+
+    if (!alive) removeTarget(t);
+    updateUI();
+  }
+
+  /* ★ Попадание лазером: ×1.5 к очкам, шаг комбо ×0.15, БЕЗ сброса комбо */
+  function hitTargetLaser(t){
+    playSfx('hit');
+    t.hp--;
+    const alive = t.hp > 0;
+
+    if (alive){
+      const hp = t.el.querySelector('.hp');
+      if (hp) hp.textContent = 'HP 1/2';
+    } else {
+      addScore(TYPES[t.type].base * comboMult(0.15) * 1.5);
+    }
+
+    comboHits++;
+    /* ★ Во время лазера ULT НЕ накапливается */
+
+    let center = null;
+    if (!alive){
+      center = getElCenter(t.el);
+      shatterTarget(t.el, center.x, center.y);
+    }
+
+    const newFloor = Math.floor(comboMult(0.15));
     if (newFloor > prevComboFloor){
       prevComboFloor = newFloor;
       if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
@@ -629,7 +733,6 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     updateUI();
   }
 
-  /* Сброс комбо без звука — для очереди AKC */
   function resetComboSilent(){
     comboHits = 0;
     prevComboFloor = 1;
@@ -649,8 +752,8 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
      ПРИЦЕЛ
      ═══════════════════════════════════════════════════════════════ */
   function setAim(clientX, clientY){
-  if (paused) return;
-  const r = range.getBoundingClientRect();
+    if (paused) return;
+    const r = range.getBoundingClientRect();
     aimX = Math.max(8, Math.min(92, (clientX - r.left) / r.width * 100));
     aimY = Math.max(5, Math.min(62, (clientY - r.top) / r.height * 100));
     updateRifle();
@@ -677,7 +780,6 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     return { pivotX, pivotY, tx, ty, angle, mx, my, muzzleDist };
   }
 
-  /* Реальное расстояние от пивота до дула (зависит от скина) */
   let _cachedMuzzleDist = 0;
   let _cachedMuzzleSkin = '';
 
@@ -721,7 +823,7 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
   function isOnHomeBtn(e){
     let el = e.target;
     while (el && el !== range){
-      if (el.id === 'homeBtn') return true;
+      if (el.id === 'homeBtn' || el.id === 'pauseBtn') return true;
       el = el.parentElement;
     }
     return false;
@@ -769,7 +871,10 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     return hit;
   }
 
-  /* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
+   СТОП. ВСТАВЬ ЧАСТЬ 5 НИЖЕ
+   ═══════════════════════════════════════════════════════════════ */
+     /* ═══════════════════════════════════════════════════════════════
      ВЫСТРЕЛ — ОБЫЧНЫЙ (1 пуля)
      ═══════════════════════════════════════════════════════════════ */
   function fireSingle(){
@@ -863,11 +968,12 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
   }
 
   /* ═══════════════════════════════════════════════════════════════
-     ГЛАВНЫЙ ВЫСТРЕЛ — выбирает режим
+     ГЛАВНЫЙ ВЫСТРЕЛ
      ═══════════════════════════════════════════════════════════════ */
   function fire(){
     if (!game) return;
     if (isFiring) return;
+    if (window._laserActive) return;   // блок на время работы лазера
 
     if (isAkcActive()){
       fireAkc();
@@ -876,32 +982,57 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     }
   }
 
-/* ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 5 НИЖЕ ═══════════ */
-
   /* ═══════════════════════════════════════════════════════════════
-     ULT — последовательный расстрел мишеней
+     ULT — проверка активной ульты + классическая
      ═══════════════════════════════════════════════════════════════ */
   function ultimate(){
-    if (!game || ultHits < 5) return;
+    if (!game || ultHits < getUltReq()) return;
 
+    /* ★ Активная ульта из Storage */
+    const activeUlt = Storage.getActiveUlt();
+
+    if (activeUlt === 'laser' && window.GameLaser && window.GameLaser.fire){
+      /* Если лазер на КД — не тратим ульту */
+      if (window.GameLaser.isOnCooldown && window.GameLaser.isOnCooldown()){
+        const msg = document.getElementById('message');
+        msg.textContent = '⏳ Лазер перезаряжается';
+        msg.className = 'pop';
+        setTimeout(() => { msg.textContent = ''; msg.className = ''; }, 800);
+        return;
+      }
+      ultHits = 0;
+      ultReadySoundPlayed = false;
+      updateUI();
+      runStats.ultCount++;
+      window.GameLaser.fire();
+      return;
+    }
+
+    if (activeUlt === 'MLRS' && window.GameMLRS && window.GameMLRS.fire){
+      ultHits = 0;
+      ultReadySoundPlayed = false;
+      updateUI();
+      runStats.ultCount++;
+      window.GameMLRS.fire();
+      return;
+    }
+
+    /* ─── Классическая ульта ×3 ─── */
     window._ultJustFired = true;
     setTimeout(() => { window._ultJustFired = false; }, 1000);
 
     runStats.ultCount++;
     ultReadySoundPlayed = false;
 
-    // Сбор мишеней
     const shotList = targets.map(t => ({
       t,
       center: getElCenter(t.el)
     }));
 
-    // Тайминги
     const AIM_TIME = 60;
     const FIRE_DELAY = 30;
     const BULLET_SPEED = 4200;
 
-    // Звук залпа + обрыв
     playSfx('ult');
     const soundRef = SFX.ult;
     const totalShots = shotList.length;
@@ -913,7 +1044,6 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
       } catch(e){}
     }, totalTime);
 
-    // Очки считаем сразу — механика не меняется
     let total = 0;
     shotList.forEach(s => total += TYPES[s.t.type].base);
     targets = [];
@@ -928,7 +1058,6 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
 
     if (shotList.length === 0) return;
 
-    // Сортировка: сверху вниз
     shotList.sort((a, b) => a.center.y - b.center.y);
 
     ultAiming = true;
@@ -962,7 +1091,6 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
           return;
         }
 
-        // Отдача + вспышка
         rifleWrap.classList.remove('recoil');
         void rifleWrap.offsetWidth;
         rifleWrap.classList.add('recoil');
@@ -970,7 +1098,6 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
         void flash.offsetWidth;
         flash.classList.add('fire');
 
-        // Пуля от дула к цели
         const g = getAimGeom();
         const dx = shot.center.x - g.mx;
         const dy = shot.center.y - g.my;
@@ -1005,7 +1132,10 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     nextShot();
   }
 
-  /* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
+   СТОП. ВСТАВЬ ЧАСТЬ 6 НИЖЕ
+   ═══════════════════════════════════════════════════════════════ */
+     /* ═══════════════════════════════════════════════════════════════
      ИСТОРИЯ
      ═══════════════════════════════════════════════════════════════ */
   function saveToHistory(win){
@@ -1061,8 +1191,8 @@ homeBtn = pb; // оставляем то же имя переменной, чт�
     updateRifle();
 
     const pb = document.getElementById('pauseBtn');
-if (pb) pb.classList.remove('hidden');
-paused = false;
+    if (pb) pb.classList.remove('hidden');
+    paused = false;
     modeBadge.classList.toggle('hidden', !Storage.isInfiniteMode());
 
     const stickerBtn = document.getElementById('stickerBtn');
@@ -1081,122 +1211,121 @@ paused = false;
      ФИНИШ
      ═══════════════════════════════════════════════════════════════ */
   async function finish(win){
-  game = false;
-  isFiring = false;
-  clearInterval(spawnTimer);
-  cancelAnimationFrame(raf);
-  stopHeat();
-  ultAiming = false;
-  ultAimTarget = null;
-  if (rifle) rifle.classList.remove('ult-aiming');
-  laser.classList.add('hidden');
-  const pb = document.getElementById('pauseBtn');
-  if (pb) pb.classList.add('hidden');
-  modeBadge.classList.add('hidden');
+    game = false;
+    isFiring = false;
+    clearInterval(spawnTimer);
+    cancelAnimationFrame(raf);
+    stopHeat();
+    ultAiming = false;
+    ultAimTarget = null;
+    if (rifle) rifle.classList.remove('ult-aiming');
+    laser.classList.add('hidden');
+    const pb = document.getElementById('pauseBtn');
+    if (pb) pb.classList.add('hidden');
+    modeBadge.classList.add('hidden');
 
-  if (win) playSfx('win');
+    if (win) playSfx('win');
 
-  runStats.duration = Math.round((performance.now() - runStats.startTime) / 1000);
-  const coinsEarnedLocal = Math.floor(score / COINS_PER_POINTS);
+    runStats.duration = Math.round((performance.now() - runStats.startTime) / 1000);
+    const coinsEarnedLocal = Math.floor(score / COINS_PER_POINTS);
 
-  if (score > personalBest){
-    personalBest = Math.floor(score);
-    Storage.setPersonalBest(personalBest);
-  }
-  if (win && !Storage.isInfiniteUnlocked()) Storage.unlockInfinite();
+    if (score > personalBest){
+      personalBest = Math.floor(score);
+      Storage.setPersonalBest(personalBest);
+    }
+    if (win && !Storage.isInfiniteUnlocked()) Storage.unlockInfinite();
 
-  saveToHistory(win);
+    saveToHistory(win);
 
-  // ── 1) РИСУЕМ ЭКРАН СРАЗУ
-  document.getElementById('endTitle').textContent = win ? 'ПОБЕДА!' : 'ИГРА ОКОНЧЕНА';
-  document.getElementById('endReason').textContent = win
-    ? '10 000 очков достигнуто. Забери награду!'
-    : (runStats.mode === 'infinite' ? MAX_MISSES + ' промахов исчерпано.' : 'Игра завершена.');
-  document.getElementById('finalScore').textContent = Math.floor(score);
+    document.getElementById('endTitle').textContent = win ? 'ПОБЕДА!' : 'ИГРА ОКОНЧЕНА';
+    document.getElementById('endReason').textContent = win
+      ? '10 000 очков достигнуто. Забери награду!'
+      : (runStats.mode === 'infinite' ? MAX_MISSES + ' промахов исчерпано.' : 'Игра завершена.');
+    document.getElementById('finalScore').textContent = Math.floor(score);
 
-  const ce = document.getElementById('coinsEarned');
-  if (coinsEarnedLocal > 0){
-    ce.textContent = '🪙 +' + coinsEarnedLocal + ' монет';
-    ce.classList.remove('hidden');
-  }
-
-  const stickerBtn = document.getElementById('stickerBtn');
-  if (stickerBtn) stickerBtn.classList.toggle('hidden', !win);
-
-  const catwifeEl = document.getElementById('catwifeImage');
-  if (catwifeEl){
-    const showCatwife = !win && runStats.mode === 'infinite' && sawTenCombo;
-    catwifeEl.classList.toggle('hidden', !showCatwife);
-  }
-
-  endScreen.classList.remove('hidden');
-
-  // ── 2) Фоново отправляем на сервер
-  try {
-    const serverResp = await Sync.submitRun({
-      score: Math.floor(score),
-      duration: runStats.duration,
-      shots: runStats.shotCount,
-      ults: runStats.ultCount,
-      maxCombo: runStats.maxComboMult,
-      isWin: win,
-      mode: runStats.mode,
-      laser: runStats.laser
-    });
-    if (serverResp && typeof serverResp.coins_earned === 'number'){
-      ce.textContent = '🪙 +' + serverResp.coins_earned + ' монет';
+    const ce = document.getElementById('coinsEarned');
+    if (coinsEarnedLocal > 0){
+      ce.textContent = '🪙 +' + coinsEarnedLocal + ' монет';
       ce.classList.remove('hidden');
     }
-  } catch(e){
-    console.warn('[finish] submit failed:', e);
+
+    const stickerBtn = document.getElementById('stickerBtn');
+    if (stickerBtn) stickerBtn.classList.toggle('hidden', !win);
+
+    const catwifeEl = document.getElementById('catwifeImage');
+    if (catwifeEl){
+      const showCatwife = !win && runStats.mode === 'infinite' && sawTenCombo;
+      catwifeEl.classList.toggle('hidden', !showCatwife);
+    }
+
+    endScreen.classList.remove('hidden');
+
+    try {
+      const serverResp = await Sync.submitRun({
+        score: Math.floor(score),
+        duration: runStats.duration,
+        shots: runStats.shotCount,
+        ults: runStats.ultCount,
+        maxCombo: runStats.maxComboMult,
+        isWin: win,
+        mode: runStats.mode,
+        laser: runStats.laser
+      });
+      if (serverResp && typeof serverResp.coins_earned === 'number'){
+        ce.textContent = '🪙 +' + serverResp.coins_earned + ' монет';
+        ce.classList.remove('hidden');
+      }
+    } catch(e){
+      console.warn('[finish] submit failed:', e);
+    }
   }
-}
-/* ═══════════════════════════════════════════════════════════════
-   ПАУЗА
-   ═══════════════════════════════════════════════════════════════ */
-let paused = false;
 
-function pause(){
-  if (!game || paused) return;
-  paused = true;
-  cancelAnimationFrame(raf);
-  clearInterval(spawnTimer);
-  stopHeat();
+  /* ═══════════════════════════════════════════════════════════════
+     ПАУЗА
+     ═══════════════════════════════════════════════════════════════ */
+  let paused = false;
 
-  const screen = document.getElementById('pauseScreen');
-  if (screen) screen.classList.remove('hidden');
+  function pause(){
+    if (!game || paused) return;
+    paused = true;
+    cancelAnimationFrame(raf);
+    clearInterval(spawnTimer);
+    stopHeat();
 
-  const sl = document.getElementById('pauseVolSlider');
-  const vl = document.getElementById('pauseVolVal');
-  if (sl){
-    sl.value = Storage.getVolume();
-    if (vl) vl.textContent = Storage.getVolume() + '%';
-    sl.oninput = () => {
-      const v = parseInt(sl.value, 10);
-      if (vl) vl.textContent = v + '%';
-      Storage.setVolume(v);
-      setVolume(v / 100);
-    };
+    const screen = document.getElementById('pauseScreen');
+    if (screen) screen.classList.remove('hidden');
+
+    const sl = document.getElementById('pauseVolSlider');
+    const vl = document.getElementById('pauseVolVal');
+    if (sl){
+      sl.value = Storage.getVolume();
+      if (vl) vl.textContent = Storage.getVolume() + '%';
+      sl.oninput = () => {
+        const v = parseInt(sl.value, 10);
+        if (vl) vl.textContent = v + '%';
+        Storage.setVolume(v);
+        setVolume(v / 100);
+      };
+    }
   }
-}
 
-function resume(){
-  if (!game || !paused) return;
-  paused = false;
-  const screen = document.getElementById('pauseScreen');
-  if (screen) screen.classList.add('hidden');
-  spawnTimer = setInterval(() => { if (game) spawn(); }, 1000);
-  raf = requestAnimationFrame(loop);
-  updateHeat();
-}
+  function resume(){
+    if (!game || !paused) return;
+    paused = false;
+    const screen = document.getElementById('pauseScreen');
+    if (screen) screen.classList.add('hidden');
+    spawnTimer = setInterval(() => { if (game) spawn(); }, 1000);
+    raf = requestAnimationFrame(loop);
+    updateHeat();
+  }
 
-function exitFromPause(){
-  if (!paused) return;
-  paused = false;
-  const screen = document.getElementById('pauseScreen');
-  if (screen) screen.classList.add('hidden');
-  exitToMenu();
-}
+  function exitFromPause(){
+    if (!paused) return;
+    paused = false;
+    const screen = document.getElementById('pauseScreen');
+    if (screen) screen.classList.add('hidden');
+    exitToMenu();
+  }
 
   /* ═══════════════════════════════════════════════════════════════
      ВЫХОД В МЕНЮ
@@ -1237,7 +1366,7 @@ function exitFromPause(){
 
     laser.classList.add('hidden');
     const pb = document.getElementById('pauseBtn');
-if (pb) pb.classList.add('hidden');
+    if (pb) pb.classList.add('hidden');
     modeBadge.classList.add('hidden');
 
     if (typeof Menu !== 'undefined' && Menu.showMain){
@@ -1253,7 +1382,7 @@ if (pb) pb.classList.add('hidden');
      ГЛАВНЫЙ ЦИКЛ
      ═══════════════════════════════════════════════════════════════ */
   function loop(now){
-  if (!game || paused) return;
+    if (!game || paused) return;
 
     for (const t of [...targets]){
       const dt = (now - t.last) / 1000;
@@ -1311,9 +1440,15 @@ if (pb) pb.classList.add('hidden');
       }
     }
 
-    // Если мишеней 0 и игра идёт — срочный спавн (кроме окна после ULT)
     if (game && targets.length === 0 && !window._ultJustFired){
       spawn();
+    }
+
+    /* ★ Обновляем счётчик ULT при КД (throttle 200 мс) */
+    if (window._lastUltTick === undefined) window._lastUltTick = 0;
+    if (now - window._lastUltTick > 200){
+      window._lastUltTick = now;
+      updateUltCounter();
     }
 
     if (!Storage.isInfiniteMode() && score >= WIN_SCORE){
@@ -1329,7 +1464,7 @@ if (pb) pb.classList.add('hidden');
      ═══════════════════════════════════════════════════════════════ */
   function bindEvents(){
     range.addEventListener('pointerdown', e => {
-  if (!game || paused) return;
+      if (!game || paused) return;
       if (isOnHomeBtn(e)) return;
       range.setPointerCapture(e.pointerId);
       setAim(e.clientX, e.clientY);
@@ -1350,19 +1485,19 @@ if (pb) pb.classList.add('hidden');
     };
 
     if (homeBtn){
-  homeBtn.addEventListener('pointerdown', e => e.stopPropagation(), true);
-  homeBtn.addEventListener('pointerup', e => {
-    e.stopPropagation(); e.preventDefault(); pause();
-  });
-  homeBtn.addEventListener('click', e => {
-    e.stopPropagation(); e.preventDefault(); pause();
-  });
-}
+      homeBtn.addEventListener('pointerdown', e => e.stopPropagation(), true);
+      homeBtn.addEventListener('pointerup', e => {
+        e.stopPropagation(); e.preventDefault(); pause();
+      });
+      homeBtn.addEventListener('click', e => {
+        e.stopPropagation(); e.preventDefault(); pause();
+      });
+    }
 
-const pauseResume = document.getElementById('pauseResume');
-if (pauseResume) pauseResume.onclick = resume;
-const pauseExit = document.getElementById('pauseExit');
-if (pauseExit) pauseExit.onclick = exitFromPause;
+    const pauseResume = document.getElementById('pauseResume');
+    if (pauseResume) pauseResume.onclick = resume;
+    const pauseExit = document.getElementById('pauseExit');
+    if (pauseExit) pauseExit.onclick = exitFromPause;
 
     const stickerBtn = document.getElementById('stickerBtn');
     if (stickerBtn) stickerBtn.onclick = async () => {
@@ -1391,91 +1526,106 @@ if (pauseExit) pauseExit.onclick = exitFromPause;
   }
 
   /* ═══════════════════════════════════════════════════════════════
-   ОТЛАДКА — спавн мишени нужного типа вручную
-   Использовать только из консоли: Game._devSpawn('fastgold')
-   ═══════════════════════════════════════════════════════════════ */
-function _devSpawn(typeName){
-  if (!game) return 'no game';
-  if (targets.length >= 5) return 'full (5 targets)';
+     ОТЛАДКА — спавн мишени
+     ═══════════════════════════════════════════════════════════════ */
+  function _devSpawn(typeName){
+    if (!game) return 'no game';
+    if (targets.length >= 5) return 'full (5 targets)';
 
-  const type = typeName || 'normal';
-  const d = TYPES[type];
-  if (!d) return 'bad type: ' + type;
+    const type = typeName || 'normal';
+    const d = TYPES[type];
+    if (!d) return 'bad type: ' + type;
 
-  const gold = (type === 'gold' || type === 'fastgold');
-  if (gold && targets.filter(t => t.gold).length >= 2){
-    return 'gold cap (max 2)';
-  }
+    const gold = (type === 'gold' || type === 'fastgold');
+    if (gold && targets.filter(t => t.gold).length >= 2){
+      return 'gold cap (max 2)';
+    }
 
-  const lane = Math.floor(Math.random() * 3);
-  const laneSlots = targets
-    .filter(t => t.lane === lane)
-    .reduce((n, t) => n + t.slots, 0);
-  if (laneSlots + 1 > 2) return 'lane ' + lane + ' full';
+    const lane = Math.floor(Math.random() * 3);
+    const laneSlots = targets
+      .filter(t => t.lane === lane)
+      .reduce((n, t) => n + t.slots, 0);
+    if (laneSlots + 1 > 2) return 'lane ' + lane + ' full';
 
-  const el = document.createElement('div');
-  el.className = 'target ' + d.color;
+    const el = document.createElement('div');
+    el.className = 'target ' + d.color;
 
-  const t = {
-    id: nextId++, type, lane,
-    x: 12 + Math.random() * 76,
-    y: 50,
-    hp: d.hp, slots: 1, gold, el,
-    dx: (type === 'fast' || type === 'fastgold')
-      ? (Math.random() < .5 ? 1 : -1) * d.speed
-      : type === 'maneuver'
+    const t = {
+      id: nextId++, type, lane,
+      x: 12 + Math.random() * 76,
+      y: 50,
+      hp: d.hp, slots: 1, gold, el,
+      dx: (type === 'fast' || type === 'fastgold')
         ? (Math.random() < .5 ? 1 : -1) * d.speed
-        : 0,
-    last: performance.now(),
-    jumpAt: performance.now() + 1200 + Math.random() * 1500,
-    telegraphing: false
-  };
+        : type === 'maneuver'
+          ? (Math.random() < .5 ? 1 : -1) * d.speed
+          : 0,
+      last: performance.now(),
+      jumpAt: performance.now() + 1200 + Math.random() * 1500,
+      telegraphing: false
+    };
 
-  el.style.left = t.x + '%';
-  el.style.top  = t.y + '%';
-  el.dataset.id = t.id;
+    el.style.left = t.x + '%';
+    el.style.top  = t.y + '%';
+    el.dataset.id = t.id;
 
-  if (t.hp > 1){
-    const hp = document.createElement('div');
-    hp.className = 'hp';
-    hp.textContent = 'HP 2/2';
-    el.appendChild(hp);
+    if (t.hp > 1){
+      const hp = document.createElement('div');
+      hp.className = 'hp';
+      hp.textContent = 'HP 2/2';
+      el.appendChild(hp);
+    }
+
+    document.querySelectorAll('.lane')[lane].appendChild(el);
+    targets.push(t);
+
+    return 'ok: ' + type + ' in lane ' + lane;
   }
 
-  document.querySelectorAll('.lane')[lane].appendChild(el);
-  targets.push(t);
-
-  return 'ok: ' + type + ' in lane ' + lane;
-}
-  
   /* ═══════════════════════════════════════════════════════════════
      ИНИЦИАЛИЗАЦИЯ
      ═══════════════════════════════════════════════════════════════ */
   function init(){
-  bindDom();
-  bindEvents();
-  Skins.loadFromStorage();
-  updateRifle();
-  updateUI();
-  Sync.updateCoinsUI();
-  Sync.fromServer();
+    bindDom();
+    bindEvents();
+    Skins.loadFromStorage();
+    updateRifle();
+    updateUI();
+    Sync.updateCoinsUI();
+    Sync.fromServer();
 
-  window._devSpawn = _devSpawn;   /* ← добавь ЭТУ строку */
-}
+    window._devSpawn = _devSpawn;
+  }
 
+  /* ═══════════════════════════════════════════════════════════════
+     ЭКСПОРТ
+     ═══════════════════════════════════════════════════════════════ */
   return {
-  init,
-  start,
-  fire,
-  ultimate,
-  exitToMenu,
-  setVolume,
-  isRunning: () => game,
-  pause,
-  resume,
-  exitFromPause
-  
-};
+    init,
+    start,
+    fire,
+    ultimate,
+    exitToMenu,
+    setVolume,
+    isRunning: () => game,
+    pause,
+    resume,
+    exitFromPause,
+    _devSpawn,
+
+    /* ★ Публичное API для модулей ульт */
+    _internals: {
+      getGame:      () => game,
+      getTargets:   () => targets,
+      getAimGeom,
+      addScore,
+      updateUI,
+      hitTargetLaser,
+      getScore:     () => score,
+      getCombo:     () => comboHits,
+      getUltReq
+    }
+  };
 })();
 
 if (document.readyState === 'loading'){

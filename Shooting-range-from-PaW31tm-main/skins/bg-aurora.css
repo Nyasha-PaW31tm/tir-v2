@@ -71,44 +71,81 @@ body[data-bg="aurora-winter"] #range::before{
   to   { transform: translate3d(-1200px, 0, 0); }
 }
 
-/* ═══ СНЕГ (только aurora-winter) ═══
-   Слой торчит за верхний и нижний край.
-   Сдвиг анимации = ровно размеру тайла (200px) → идеальная петля, без рывков. */
-body[data-bg="aurora-winter"] #range::after{
-  content: "";
+/* ═══════════════════════════════════════════════════════════════
+   СНЕГ — два потока крест-накрест под 45°
+   Поток A: вниз-вправо
+   Поток B: вниз-влево
+   ═══════════════════════════════════════════════════════════════ */
+
+#auroraSnow{ display: none; }
+
+body[data-bg="aurora-winter"] #auroraSnow{
+  display: block;
   position: absolute;
-  top: -220px;
-  left: 0;
-  width: 100%;
-  height: calc(100% + 440px);
+  inset: 0;
   z-index: 1;
   pointer-events: none;
-
-  background-image:
-    radial-gradient(circle at 8px 12px,  #fff 2px, transparent 3px),
-    radial-gradient(circle at 45px 30px, rgba(255,255,255,.9) 1.5px, transparent 2.5px),
-    radial-gradient(circle at 120px 8px, #fff 2.2px, transparent 3.2px),
-    radial-gradient(circle at 160px 55px, rgba(255,255,255,.85) 1.6px, transparent 2.6px),
-    radial-gradient(circle at 25px 80px, #fff 1.8px, transparent 2.8px),
-    radial-gradient(circle at 90px 100px, rgba(255,255,255,.9) 1.6px, transparent 2.6px),
-    radial-gradient(circle at 150px 130px, #fff 2px, transparent 3px),
-    radial-gradient(circle at 60px 160px, rgba(255,255,255,.85) 1.5px, transparent 2.5px),
-    radial-gradient(circle at 130px 175px, #fff 1.8px, transparent 2.8px),
-    radial-gradient(circle at 20px 195px, rgba(255,255,255,.9) 1.6px, transparent 2.6px),
-    radial-gradient(circle at 105px 45px, #fff 1.4px, transparent 2.4px),
-    radial-gradient(circle at 175px 90px, rgba(255,255,255,.85) 1.8px, transparent 2.8px);
-
-  background-size: 200px 200px;
-  background-repeat: repeat;
-
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
-  animation: snowFall 6s linear infinite;
+  overflow: hidden;
 }
 
-@keyframes snowFall{
+body[data-bg="aurora-winter"] .snow-layer{
+  position: absolute;
+  inset: -400px;
+  background-repeat: repeat;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* ─── ПОТОК A: вниз-вправо ───
+   Микс: крупные яркие + средние полупрозрачные + мелкие faint. */
+body[data-bg="aurora-winter"] .snow-a{
+  background-image:
+    /* крупные яркие */
+    radial-gradient(circle at 40px 60px,   #fff 3.2px, transparent 4.8px),
+    radial-gradient(circle at 180px 200px, #fff 3.6px, transparent 5.2px),
+    radial-gradient(circle at 300px 100px, #fff 2.8px, transparent 4.2px),
+    /* средние полупрозрачные */
+    radial-gradient(circle at 100px 30px,  rgba(255,255,255,.72) 2.2px, transparent 3.5px),
+    radial-gradient(circle at 240px 140px, rgba(255,255,255,.62) 2.5px, transparent 3.8px),
+    radial-gradient(circle at 50px 280px,  rgba(255,255,255,.75) 2px,   transparent 3.2px),
+    /* мелкие faint */
+    radial-gradient(circle at 150px 80px,  rgba(255,255,255,.5)  1.2px, transparent 2.2px),
+    radial-gradient(circle at 280px 250px, rgba(255,255,255,.45) 1.5px, transparent 2.5px),
+    radial-gradient(circle at 20px 180px,  rgba(255,255,255,.55) 1.3px, transparent 2.3px),
+    radial-gradient(circle at 220px 60px,  rgba(255,255,255,.5)  1.4px, transparent 2.4px);
+  background-size: 350px 350px;
+  animation: snowA 12s linear infinite;
+}
+
+/* ─── ПОТОК B: вниз-влево ───
+   Другие позиции — визуально не совпадает с A. */
+body[data-bg="aurora-winter"] .snow-b{
+  background-image:
+    radial-gradient(circle at 60px 100px,  #fff 3.2px, transparent 4.8px),
+    radial-gradient(circle at 200px 40px,  #fff 3.5px, transparent 5px),
+    radial-gradient(circle at 320px 220px, #fff 2.6px, transparent 4px),
+    radial-gradient(circle at 120px 260px, rgba(255,255,255,.68) 2.2px, transparent 3.5px),
+    radial-gradient(circle at 250px 180px, rgba(255,255,255,.72) 2.4px, transparent 3.7px),
+    radial-gradient(circle at 80px 20px,   rgba(255,255,255,.6)  2px,   transparent 3.2px),
+    radial-gradient(circle at 180px 120px, rgba(255,255,255,.5)  1.3px, transparent 2.3px),
+    radial-gradient(circle at 30px 200px,  rgba(255,255,255,.55) 1.5px, transparent 2.5px),
+    radial-gradient(circle at 290px 60px,  rgba(255,255,255,.5)  1.2px, transparent 2.2px),
+    radial-gradient(circle at 340px 300px, rgba(255,255,255,.45) 1.4px, transparent 2.4px);
+  background-size: 350px 350px;
+  animation: snowB 15s linear infinite;
+}
+
+/* ─── АНИМАЦИИ ───
+   translate на ровно размер тайла (350px) → бесшовная петля.
+   По Y — вниз. По X — вправо/влево соответственно. */
+@keyframes snowA{
   from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(0, 200px, 0); }   /* = размер тайла, шва нет */
+  to   { transform: translate3d(350px, 350px, 0); }
+}
+
+@keyframes snowB{
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-350px, 350px, 0); }
 }
 
 /* ═══ МИШЕНИ / ТОП / ЛАЗЕР ═══ */
