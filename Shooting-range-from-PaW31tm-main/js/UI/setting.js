@@ -111,6 +111,13 @@ const Settings = (() => {
       const owned = Storage.get('owned_bg_nightcity', '0') === '1';
       nightcityBtn.classList.toggle('hidden', !owned);
     }
+    
+    // Ивент: Хэллоуин (показываем если куплен)
+const halloweenBtn = document.getElementById('bgHalloweenBtn');
+if (halloweenBtn){
+  const owned = Storage.get('owned_bg_halloween', '0') === '1';
+  halloweenBtn.classList.toggle('hidden', !owned);
+}
 
     /* ─── Применяем текущий фон к body ─── */
     const current = Storage.getBackground();
@@ -469,24 +476,53 @@ const Settings = (() => {
 
     if (feedbackSubmit) feedbackSubmit.onclick = submitFeedback;
   }
+  
+  /* ═══════════════════════════════════════════════════════════════
+   ТУМБЛЕР «ПРОПУСКАТЬ КАТСЦЕНЫ»
+   Работает в настройках и в паузе. Синхронизирован.
+   ═══════════════════════════════════════════════════════════════ */
+function renderCutsceneToggle(){
+  const enabled = Storage.getSkipCutscenes();
+
+  document.querySelectorAll('[data-cutscene-toggle]').forEach(btn => {
+    btn.textContent = enabled ? 'ВКЛ' : 'ВЫКЛ';
+    btn.classList.toggle('on', enabled);
+    btn.classList.toggle('off', !enabled);
+
+    btn.onclick = () => {
+      const current = btn.classList.contains('on');
+      const newState = !current;
+      Storage.setSkipCutscenes(newState);
+
+      /* Синхронизируем все кнопки */
+      document.querySelectorAll('[data-cutscene-toggle]').forEach(b => {
+        b.textContent = newState ? 'ВКЛ' : 'ВЫКЛ';
+        b.classList.toggle('on', newState);
+        b.classList.toggle('off', !newState);
+      });
+    };
+  });
+}
 
   /* ─── INIT ─── */
   function init(){
-    renderVolume();
-    renderBackgrounds();
-    renderEasterEgg();
-    renderChinaTrigger();
-    renderPromo();
-    renderFeedback();
-  }
+  renderVolume();
+  renderBackgrounds();
+  renderEasterEgg();
+  renderChinaTrigger();
+  renderPromo();
+  renderFeedback();
+  renderCutsceneToggle();
+}
 
   return {
-    init,
-    render: () => {
-      renderVolume();
-      renderBackgrounds();
-    }
-  };
+  init,
+  render: () => {
+    renderVolume();
+    renderBackgrounds();
+    renderCutsceneToggle();
+  }
+};
 })();
 
 if (document.readyState === 'loading'){

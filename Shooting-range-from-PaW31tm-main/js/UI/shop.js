@@ -9,6 +9,19 @@ const Shop = (() => {
   let cachedSkins = [];
   let cachedCoins = 0;
   let lastServerData = null;
+  
+  /* ★ Хэллоуин — дата окончания */
+const HALLOWEEN_END = new Date('2026-11-05T23:59:59+03:00').getTime();
+
+/* ★ Скрываем ивент-товары после окончания ивента (кроме купленных) */
+function filterEventItems(skins){
+  const now = Date.now();
+  return skins.filter(s => {
+    if (s.is_event !== 1) return true;         /* не ивент — всегда показываем */
+    if (now <= HALLOWEEN_END) return true;      /* ивент ещё идёт — показываем */
+    return s.owned;                             /* ивент кончился — только купленные видят */
+  });
+}
 
   function toast(text, ms = 2200){
     const el = document.createElement('div');
@@ -134,15 +147,17 @@ const Shop = (() => {
   }
 
   /* ★ Бейдж "СКИН" / "ОРУЖИЕ" */
-  function getKindBadge(skin){
-    const cat = skin.category || 'weapon';
-    if (cat !== 'weapon') return '';
-
-    if (skin.id === 'akc74m'){
-      return '<span class="shop-kind weapon">Оружие</span>';
-    }
-    return '<span class="shop-kind skin">Скин</span>';
+  /* ★ Бейдж "СКИН" / "ОРУЖИЕ" */
+function getKindBadge(skin) {
+  const cat = skin.category || 'weapon';
+  if (cat !== 'weapon') return '';
+  
+  const WEAPON_IDS = ['akc74m', 'shotgun'];
+  if (WEAPON_IDS.includes(skin.id)) {
+    return '<span class="shop-kind weapon">Оружие</span>';
   }
+  return '<span class="shop-kind skin">Скин</span>';
+}
 
   /* Превью */
   function getPreviewHTML(skin){
@@ -251,23 +266,14 @@ function getUltButtonHTML(skin){
   }
 
   // МЛРС
-  /*if (skin.id === 'ult_MLRS'){
+  if (skin.id === 'ult_MLRS'){
     const owned = skin.owned || Storage.get('owned_ult_MLRS', '0') === '1';
     if (owned){
       if (isActive) return `<button class="shop-buy active" disabled>✅ АКТИВНА</button>`;
       return `<button class="shop-buy owned" data-action="equip-ult" data-id="MLRS">ВЫБРАТЬ</button>`;
     }
     return `<button class="shop-buy" data-action="buy" data-id="ult_MLRS" data-price="12333">🪙 12333</button>`;
-  }*/
-  // МЛРС — пока недоступен
-if (skin.id === 'ult_MLRS'){
-  return `
-    <button class="shop-buy" disabled style="opacity:.45;cursor:not-allowed">
-      🚧 0.11.0
-    </button>
-    <div class="ult-hint">Скоро в обновлении</div>
-  `;
-}
+  }
 
   return '';
 }
@@ -377,11 +383,6 @@ if (skin.id === 'ult_MLRS'){
   const cat = skinData.category || 'weapon';
   
   /* ─── БЫСТРЫЕ ЭКШЕНЫ БЕЗ ПОКУПКИ ─── */
-  /* ★ МЛРС пока недоступен */
-if (skinId === 'ult_MLRS'){
-  toast('🚧 МЛРС появится в 0.11.0');
-  return;
-}
   if (action === 'equip-ult') {
     Storage.setActiveUlt(skinId);
     toast('✅ Ульта выбрана');
@@ -425,6 +426,7 @@ if (skinId === 'ult_MLRS'){
       if (skinId === 'bg_sunset') Storage.set('owned_bg_sunset', '1');
       if (skinId === 'bg_aurora') Storage.set('owned_bg_aurora', '1');
       if (skinId === 'bg_nightcity') Storage.set('owned_bg_nightcity', '1');
+      if (skinId === 'bg_halloween') Storage.set('owned_bg_halloween', '1');
       
       // ★ Флаги покупки ульт
       if (skinId === 'ult_laser') {
@@ -516,7 +518,7 @@ if (skinId === 'ult_MLRS'){
      ═══════════════════════════════════════════════════════════════ */
   function syncOwnedFlags(skins) {
   /* Фоны — двусторонняя синхронизация */
-  const bgIds = ['bg_star', 'bg_sunset', 'bg_aurora', 'bg_nightcity'];
+  const bgIds = ['bg_star', 'bg_sunset', 'bg_aurora', 'bg_nightcity', 'bg_halloween'];
   bgIds.forEach(id => {
     const skin = (skins || []).find(s => s.id === id);
     const key = 'owned_' + id;
@@ -541,7 +543,7 @@ if (skinId === 'ult_MLRS'){
   async function load(){
     if (!API.isTelegramReady()){
       const list = document.getElementById('shopList');
-      cachedSkins = injectChinaSkins([]);
+      cachedSkins = injectChinaSkins(filterEventItems([]));
       recalcActive();
       renderList();
       if (list && cachedSkins.length === 0){
@@ -556,13 +558,13 @@ if (skinId === 'ult_MLRS'){
 
     const data = await API.getSkins();
     if (!data.ok){
-      cachedSkins = injectChinaSkins([]);
+      cachedSkins = injectChinaSkins(filterEventItems([]));
       recalcActive();
       renderList();
       return;
     }
 
-    cachedSkins = injectChinaSkins(data.skins || []);
+    cachedSkins = injectChinaSkins(filterEventItems(data.skins || []));
     cachedCoins = data.coins || 0;
     lastServerData = data;
 

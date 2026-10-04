@@ -1,23 +1,26 @@
 /* ═══════════════════════════════════════════════════════════════
    RATING — экран рейтинга
-   Топ-10 игроков с сервера
+   BETA 0.11.0
    ═══════════════════════════════════════════════════════════════ */
 
 const Rating = (() => {
 
   function renderLoading(){
     const list = document.getElementById('ratingList');
-    if (list) list.innerHTML = '<p style="text-align:center;color:#8893a3;padding:20px">Загрузка...</p>';
+    if (list) list.innerHTML =
+      '<p style="text-align:center;color:#8893a3;padding:20px">Загрузка...</p>';
   }
 
   function renderEmpty(){
     const list = document.getElementById('ratingList');
-    if (list) list.innerHTML = '<p style="text-align:center;color:#8893a3;padding:20px">Пока никто не играл.</p>';
+    if (list) list.innerHTML =
+      '<p style="text-align:center;color:#8893a3;padding:20px">Пока никто не играл.</p>';
   }
 
   function renderError(){
     const list = document.getElementById('ratingList');
-    if (list) list.innerHTML = '<p style="text-align:center;color:#a43e3e;padding:20px">Не удалось загрузить.</p>';
+    if (list) list.innerHTML =
+      '<p style="text-align:center;color:#a43e3e;padding:20px">Не удалось загрузить.</p>';
   }
 
   function render(){
@@ -39,7 +42,13 @@ const Rating = (() => {
         else if (l.rank === 3){ medal = '🥉'; rowClass = 'top3'; }
         else { medal = '#' + l.rank; rowClass = ''; }
 
-        const name = l.username ? '@' + l.username : (l.first_name || 'Игрок');
+        /* ★ display_name из нового воркера */
+        const name = l.display_name
+          || l.custom_name
+          || l.username
+          || l.first_name
+          || 'Игрок';
+
         const modeBadge = l.mode === 'infinite'
           ? '<span class="mini-badge infinite">♾</span> '
           : '';

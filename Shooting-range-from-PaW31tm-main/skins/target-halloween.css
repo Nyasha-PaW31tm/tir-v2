@@ -1,0 +1,114 @@
+/* ═══════════════════════════════════════════════════════════════
+   МИШЕНИ: ХЭЛЛОУИН  (v2 — рисованные SVG-лица)
+   Тыква, мышь, скелет, призрак, ведьма, Дракула.
+   Все механики сохранены — меняется только вид.
+
+   Что изменилось против v1 и почему:
+   • Лица рисуются SVG-картинкой (раньше — радиальные градиенты,
+     из-за них всё выглядело как кривые пятна).
+   • Никаких ::before с z-index:-1 (они ложились ПОВЕРХ лица, т.к.
+     у .target есть transform). Крылья мыши и ободок Дракулы — теперь
+     часть самой картинки / border.
+   • Анимации свечения — только opacity на ::before (дёшево для FPS)
+     и не трогают transform цели → игровое движение не ломается.
+   • Белое кольцо-«прицел» ::after скрыто: оно перечёркивало лица.
+     Хочешь вернуть — удали блок "Кольцо ::after" в конце файла.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Общее для всех Halloween-мишеней ─── */
+body.target-skin-halloween .target{
+  background-color:transparent;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:100% 100%;
+  background-origin:border-box;
+  background-clip:border-box;
+  border-color:transparent;
+  box-shadow:0 0 0 3px #1a0500, 0 0 14px var(--hw-glow, rgba(255,128,32,.8));
+}
+
+/* Пульсирующее свечение (только opacity — композитор, без нагрузки) */
+body.target-skin-halloween .target::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  pointer-events:none;
+  box-shadow:0 0 22px 2px var(--hw-glow, rgba(255,128,32,.8));
+  animation:hwGlow 2s ease-in-out infinite alternate;
+}
+@keyframes hwGlow{
+  from{ opacity:.35; }
+  to  { opacity:1; }
+}
+
+/* ─── ОБЫЧНАЯ → ТЫКВА 🎃 ─── */
+body.target-skin-halloween .target.normal{
+  --hw-glow:rgba(255,128,32,.85);
+  background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='p' cx='.5' cy='.45' r='.6'><stop offset='0' stop-color='%23ffb94a'/><stop offset='.55' stop-color='%23ff7a12'/><stop offset='1' stop-color='%23b33b06'/></radialGradient></defs> <circle cx='50' cy='50' r='50' fill='url(%23p)'/> <g fill='none' stroke='%238a2c04' stroke-width='2.2' opacity='.45' stroke-linecap='round'> <path d='M50 2 C34 22 34 78 50 98'/><path d='M50 2 C66 22 66 78 50 98'/> <path d='M50 2 C20 24 20 76 50 98'/><path d='M50 2 C80 24 80 76 50 98'/></g> <g fill='%232a0800' stroke='%23ffd23a' stroke-width='2' stroke-linejoin='round'> <path d='M22 36 L43 41 L30 54Z'/><path d='M78 36 L57 41 L70 54Z'/> <path d='M50 50 L44 61 L56 61Z'/> <path d='M22 64 Q50 90 78 64 L71 62 L65 71 L58 63 L50 74 L42 63 L35 71 L29 62Z'/></g> </svg>");
+}
+
+/* ─── БЫСТРАЯ → ЛЕТУЧАЯ МЫШЬ 🦇 ─── */
+body.target-skin-halloween .target.fast{
+  --hw-glow:rgba(190,50,140,.85);
+  background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='b' cx='.5' cy='.45' r='.6'><stop offset='0' stop-color='%235a2266'/><stop offset='.6' stop-color='%2326082e'/><stop offset='1' stop-color='%230e0214'/></radialGradient></defs> <circle cx='50' cy='50' r='50' fill='url(%23b)'/> <g fill='%230c0212' stroke='%237a2a8a' stroke-width='1.2' stroke-linejoin='round'> <path d='M43 52 C34 38 20 33 4 40 C11 44 13 51 13 58 C19 54 24 56 28 65 C32 58 37 60 43 68Z'/><g transform='translate(100 0) scale(-1 1)'><path d='M43 52 C34 38 20 33 4 40 C11 44 13 51 13 58 C19 54 24 56 28 65 C32 58 37 60 43 68Z'/></g> <ellipse cx='50' cy='58' rx='9' ry='15'/><circle cx='50' cy='41' r='9'/> <path d='M42 37 L40 22 L48 32Z'/><path d='M58 37 L60 22 L52 32Z'/></g> <circle cx='46' cy='41' r='2.8' fill='%23ff3030'/><circle cx='54' cy='41' r='2.8' fill='%23ff3030'/> <circle cx='46' cy='41' r='5' fill='%23ff3030' opacity='.25'/><circle cx='54' cy='41' r='5' fill='%23ff3030' opacity='.25'/> <path d='M47 47 L48.5 52 L50 47Z M50 47 L51.5 52 L53 47Z' fill='%23fff'/> </svg>");
+  box-shadow:0 0 0 3px #0a0005, 0 0 14px var(--hw-glow);
+}
+
+/* ─── БРОНИРОВАННАЯ → СКЕЛЕТ 💀 ─── */
+body.target-skin-halloween .target.armored{
+  --hw-glow:rgba(240,234,208,.7);
+  background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='s' cx='.5' cy='.45' r='.6'><stop offset='0' stop-color='%234a3e66'/><stop offset='1' stop-color='%231a1228'/></radialGradient><radialGradient id='k' cx='.4' cy='.35' r='.8'><stop offset='0' stop-color='%23fbf6e2'/><stop offset='.7' stop-color='%23d9d0a8'/><stop offset='1' stop-color='%239a9068'/></radialGradient></defs> <circle cx='50' cy='50' r='50' fill='url(%23s)'/> <circle cx='50' cy='50' r='46' fill='none' stroke='%23d8d0b0' stroke-width='4'/> <path d='M50 14 C28 14 22 32 25 48 C26 55 31 58 34 60 L34 73 Q34 78 39 78 L61 78 Q66 78 66 73 L66 60 C69 58 74 55 75 48 C78 32 72 14 50 14Z' fill='url(%23k)'/> <g fill='%23140f1c'><ellipse cx='39' cy='44' rx='8' ry='9'/><ellipse cx='61' cy='44' rx='8' ry='9'/> <path d='M50 53 L45 64 L55 64Z'/></g> <circle cx='39' cy='45' r='2.2' fill='%23ff9a30'/><circle cx='61' cy='45' r='2.2' fill='%23ff9a30'/> <path d='M42 69 V78 M50 69 V78 M58 69 V78 M35 69 H65' stroke='%23140f1c' stroke-width='1.6' fill='none'/> <path d='M52 16 L49 26 L54 31' stroke='%238a8060' stroke-width='1.4' fill='none'/> </svg>");
+  box-shadow:0 0 0 4px #1a1808, 0 0 14px var(--hw-glow);
+}
+
+/* ─── МАНЁВРЕННАЯ → ПРИЗРАК 👻 ─── */
+body.target-skin-halloween .target.maneuver{
+  --hw-glow:rgba(180,190,255,.9);
+  background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='g' cx='.5' cy='.45' r='.6'><stop offset='0' stop-color='%237c82e6'/><stop offset='1' stop-color='%232c2f78'/></radialGradient><linearGradient id='w' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23ffffff'/><stop offset='1' stop-color='%23cfd3f5'/></linearGradient></defs> <circle cx='50' cy='50' r='50' fill='url(%23g)'/> <path d='M24 82 L24 44 C24 24 36 13 50 13 C64 13 76 24 76 44 L76 82 Q70 70 64 80 Q58 90 53 80 Q50 74 47 80 Q42 90 36 80 Q30 70 24 82Z' fill='url(%23w)'/> <ellipse cx='40' cy='43' rx='5' ry='7' fill='%231b1530'/><ellipse cx='60' cy='43' rx='5' ry='7' fill='%231b1530'/> <ellipse cx='50' cy='60' rx='5.5' ry='8' fill='%231b1530'/> <circle cx='31' cy='54' r='4' fill='%23ff9ab8' opacity='.35'/><circle cx='69' cy='54' r='4' fill='%23ff9ab8' opacity='.35'/> </svg>");
+  box-shadow:0 0 0 3px rgba(60,60,120,.7), 0 0 14px var(--hw-glow);
+}
+
+/* ─── ЗОЛОТАЯ → ВЕДЬМА 🧙 ─── */
+body.target-skin-halloween .target.gold{
+  --hw-glow:rgba(255,200,64,.9);
+  background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='g' cx='.5' cy='.4' r='.7'><stop offset='0' stop-color='%234a2a6a'/><stop offset='1' stop-color='%2314061e'/></radialGradient><radialGradient id='f' cx='.45' cy='.4' r='.7'><stop offset='0' stop-color='%23b8e060'/><stop offset='.7' stop-color='%2378a824'/><stop offset='1' stop-color='%233e6410'/></radialGradient></defs> <circle cx='50' cy='50' r='50' fill='url(%23g)'/> <circle cx='50' cy='50' r='46.5' fill='none' stroke='%23ffd04a' stroke-width='5'/> <path d='M30 58 C22 70 26 84 32 90 C34 80 36 72 38 66Z M70 58 C78 70 74 84 68 90 C66 80 64 72 62 66Z' fill='%23ff8a1c'/> <ellipse cx='50' cy='62' rx='22' ry='24' fill='url(%23f)'/> <ellipse cx='50' cy='41' rx='34' ry='7' fill='%231a0a2a' stroke='%23ffd04a' stroke-width='1.2'/> <path d='M50 2 L68 40 L32 40Z' fill='%231a0a2a'/> <path d='M34 38 L66 38 L67.5 41 L32.5 41Z' fill='%237a2aa8'/> <rect x='46' y='36' width='8' height='6' rx='1' fill='none' stroke='%23ffd04a' stroke-width='1.6'/> <path d='M38 54 L45 56 M62 54 L55 56' stroke='%232a1a00' stroke-width='1.6' stroke-linecap='round'/> <ellipse cx='42' cy='58' rx='3.4' ry='2.2' fill='%23ffd04a'/><ellipse cx='58' cy='58' rx='3.4' ry='2.2' fill='%23ffd04a'/> <path d='M50 60 L46 70 L51 69Z' fill='%235c8a14'/> <path d='M40 76 Q50 84 60 76' stroke='%232a0a00' stroke-width='2' fill='none' stroke-linecap='round'/> <circle cx='47' cy='78' r='1' fill='%232a0a00'/><circle cx='53' cy='78' r='1' fill='%232a0a00'/> </svg>");
+  box-shadow:0 0 0 3px #3a2a00, 0 0 14px var(--hw-glow);
+}
+
+/* ─── ЦАРЬ-МИШЕНЬ → ДРАКУЛА 🧛 ───
+   Красный вращающийся ободок = conic-gradient в border-box,
+   угол крутится через @property (Chromium/Telegram WebView — ок;
+   где не поддерживается — ободок просто не вращается). */
+@property --hw-a{ syntax:'<angle>'; inherits:false; initial-value:0deg; }
+
+body.target-skin-halloween .target.fastgold{
+  --hw-glow:rgba(255,40,40,.95);
+  width:62px;
+  height:62px;
+  box-sizing:border-box;
+  border:4px solid transparent;
+  background-image:
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='g' cx='.5' cy='.45' r='.65'><stop offset='0' stop-color='%236a1428'/><stop offset='1' stop-color='%231a0308'/></radialGradient><radialGradient id='f' cx='.45' cy='.4' r='.7'><stop offset='0' stop-color='%23f6eee8'/><stop offset='.7' stop-color='%23d8c2bc'/><stop offset='1' stop-color='%23a88a88'/></radialGradient></defs> <circle cx='50' cy='50' r='50' fill='url(%23g)'/> <path d='M8 98 L8 66 L38 60 L47 84Z' fill='%230c0610' stroke='%23a01428' stroke-width='1.6'/> <path d='M92 98 L92 66 L62 60 L53 84Z' fill='%230c0610' stroke='%23a01428' stroke-width='1.6'/> <path d='M14 92 L14 72 L36 67 L43 84Z' fill='%237a0c1c'/><path d='M86 92 L86 72 L64 67 L57 84Z' fill='%237a0c1c'/> <ellipse cx='50' cy='50' rx='21' ry='25' fill='url(%23f)'/> <path d='M28 46 C26 22 40 15 50 18 C60 15 74 22 72 46 C67 36 59 33 50 42 C41 33 33 36 28 46Z' fill='%230c0610'/> <path d='M38 45 L46 48 M62 45 L54 48' stroke='%230c0610' stroke-width='2.2' stroke-linecap='round'/> <ellipse cx='41' cy='51' rx='4' ry='3' fill='%23ff2020'/><ellipse cx='59' cy='51' rx='4' ry='3' fill='%23ff2020'/> <ellipse cx='41' cy='51' rx='7' ry='5' fill='%23ff2020' opacity='.25'/><ellipse cx='59' cy='51' rx='7' ry='5' fill='%23ff2020' opacity='.25'/> <path d='M50 54 L47 62 L53 62Z' fill='%23c9a8a0' opacity='.7'/> <path d='M40 67 Q50 74 60 67 Q50 70 40 67Z' fill='%233a0610'/> <path d='M42.5 68 L45.5 68 L44 77Z M54.5 68 L57.5 68 L56 77Z' fill='%23fff'/> <circle cx='44' cy='79.5' r='1.5' fill='%23d01830'/> </svg>"),
+    conic-gradient(from var(--hw-a), #ff2020, #ff6000, #ffb040, #ff2020, #c41828, #ff3030, #ff2020);
+  background-size:100% 100%, 100% 100%;
+  background-position:center, center;
+  background-origin:padding-box, border-box;
+  background-clip:padding-box, border-box;
+  box-shadow:0 0 0 2px #1a0508, 0 0 18px var(--hw-glow), 0 0 36px rgba(180,20,40,.7);
+  animation:hwDraculaSpin 3s linear infinite;
+}
+@keyframes hwDraculaSpin{
+  to{ --hw-a:360deg; }
+}
+
+/* ─── Кольцо ::after (было белым прицелом) ─── */
+body.target-skin-halloween .target::after{
+  border-color:transparent;
+  box-shadow:none;
+}
+
+@media (prefers-reduced-motion:reduce){
+  body.target-skin-halloween .target::before,
+  body.target-skin-halloween .target.fastgold{ animation:none; }
+}

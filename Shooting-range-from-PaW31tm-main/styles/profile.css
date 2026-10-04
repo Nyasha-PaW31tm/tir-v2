@@ -1,0 +1,785 @@
+/* ═══════════════════════════════════════════════════════════════
+   PROFILE — профиль игрока
+   BETA 0.11.0
+   ═══════════════════════════════════════════════════════════════ */
+
+.profile-card{
+  width: min(420px, 92vw);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ШАПКА ПРОФИЛЯ — аватар + имя
+   ═══════════════════════════════════════════════════════════════ */
+
+.profile-header{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 0 18px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #2a3039;
+}
+
+.profile-avatar {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #1a1f27;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* overflow:hidden УБРАН — частицы огня/льда/хэллоуина должны вылезать */
+  border: 3px solid #3a4149;
+  box-shadow: 0 0 0 1px #111;
+}
+
+/* Рамка по умолчанию — белая */
+.profile-avatar[data-frame="default"]{
+  border-color: #ffffff;
+}
+
+/* ─── СЕРЕБРО — полированный металл, обегающий блик ─── */
+.profile-avatar[data-frame="silver"]{
+  border-color: #b8bec6;
+  box-shadow:
+    0 0 0 1px #111,
+    0 0 12px rgba(184,190,198,.6),
+    inset 0 3px 6px rgba(255,255,255,.4),
+    inset 0 -4px 8px rgba(0,0,0,.5);
+}
+.profile-avatar[data-frame="silver"]::before{
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(from 0deg,
+    transparent 0deg, transparent 40deg,
+    rgba(255,255,255,0) 50deg,
+    rgba(255,255,255,.9) 62deg,
+    rgba(255,255,255,.5) 72deg,
+    transparent 85deg, transparent 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 0, transparent 60%, #000 63%, #000 100%);
+  mask: radial-gradient(circle, transparent 0, transparent 60%, #000 63%, #000 100%);
+  animation: metalShineSpin 2.8s linear infinite;
+}
+
+/* ─── ЗОЛОТО — тёплый металл, обегающий блик ─── */
+.profile-avatar[data-frame="gold"]{
+  border-color: #ffd23c;
+  box-shadow:
+    0 0 0 1px #111,
+    0 0 16px rgba(255,210,60,.75),
+    inset 0 3px 6px rgba(255,240,180,.55),
+    inset 0 -4px 8px rgba(140,80,0,.5);
+}
+.profile-avatar[data-frame="gold"]::before{
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(from 0deg,
+    transparent 0deg, transparent 40deg,
+    rgba(255,240,180,0) 50deg,
+    rgba(255,248,215,.95) 62deg,
+    rgba(255,220,120,.6) 72deg,
+    transparent 85deg, transparent 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 0, transparent 60%, #000 63%, #000 100%);
+  mask: radial-gradient(circle, transparent 0, transparent 60%, #000 63%, #000 100%);
+  animation: metalShineSpin 2.8s linear infinite;
+}
+
+@keyframes metalShineSpin{
+  to{ transform: rotate(360deg); }
+}
+
+.profile-avatar[data-frame="neon"]{
+  border-color: #00e5ff;
+  box-shadow: 0 0 0 1px #111, 0 0 16px rgba(0,229,255,.7);
+}
+/* ─── ОГОНЬ — языки пламени сверху + тлеющие угольки ─── */
+.profile-avatar[data-frame="fire"]{
+  border-color: #ff6b00;
+  box-shadow:
+    0 0 0 1px #111,
+    0 0 22px rgba(255,107,0,.9),
+    0 0 44px rgba(255,150,0,.5);
+  animation: firePulse 1.8s ease-in-out infinite;
+}
+
+/* Языки пламени сверху */
+.profile-avatar[data-frame="fire"]::before{
+  content: "";
+  position: absolute;
+  inset: -22px -14px auto -14px;
+  height: 42px;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 6px 16px at 15% 75%, #ff4000 0%, rgba(255,80,0,.85) 45%, transparent 75%),
+    radial-gradient(ellipse 8px 20px at 30% 65%, #ffd23c 0%, rgba(255,140,20,.85) 45%, transparent 78%),
+    radial-gradient(ellipse 10px 24px at 50% 55%, #fff5c0 0%, #ffd23c 30%, rgba(255,100,0,.75) 60%, transparent 85%),
+    radial-gradient(ellipse 8px 20px at 70% 65%, #ffd23c 0%, rgba(255,140,20,.85) 45%, transparent 78%),
+    radial-gradient(ellipse 6px 16px at 85% 75%, #ff4000 0%, rgba(255,80,0,.85) 45%, transparent 75%);
+  filter: blur(1.5px);
+  animation: fireFlames 1.4s ease-in-out infinite alternate;
+}
+
+/* Тлеющие угольки вокруг */
+.profile-avatar[data-frame="fire"]::after{
+  content: "";
+  position: absolute;
+  inset: -26px;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 40%, #ffd23c 1.5px, transparent 3px),
+    radial-gradient(circle at 65% 60%, #ff8c42 1.5px, transparent 3px),
+    radial-gradient(circle at 50% 80%, #fff5c0 1px, transparent 2.5px),
+    radial-gradient(circle at 20% 70%, #ff6b00 1.5px, transparent 3px),
+    radial-gradient(circle at 80% 55%, #ffd23c 1px, transparent 2.5px);
+  animation: fireEmbers 2.4s ease-out infinite;
+}
+
+@keyframes firePulse{
+  0%, 100%{ box-shadow: 0 0 0 1px #111, 0 0 22px rgba(255,107,0,.9), 0 0 44px rgba(255,150,0,.4); }
+  50%     { box-shadow: 0 0 0 1px #111, 0 0 32px rgba(255,107,0,1), 0 0 64px rgba(255,150,0,.75); }
+}
+
+@keyframes fireFlames{
+  0%  { transform: scaleY(.85) translateY(2px); opacity: .85; }
+  100%{ transform: scaleY(1.18) translateY(-3px); opacity: 1; }
+}
+
+@keyframes fireEmbers{
+  0%  { transform: translateY(8px) scale(.85); opacity: .3; }
+  50% { opacity: 1; }
+  100%{ transform: translateY(-12px) scale(1.1); opacity: 0; }
+}
+
+/* ─── ЛЁД — кристаллические искры + пар ─── */
+.profile-avatar[data-frame="ice"]{
+  border-color: #a8d8ff;
+  box-shadow:
+    0 0 0 1px #111,
+    0 0 20px rgba(168,216,255,.9),
+    0 0 40px rgba(120,180,255,.45),
+    inset 0 0 14px rgba(200,230,255,.4);
+  animation: icePulse 3s ease-in-out infinite;
+}
+
+/* Кристаллические искры по ободку (медленно крутятся) */
+.profile-avatar[data-frame="ice"]::before{
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(from 0deg,
+    transparent 0deg, transparent 20deg,
+    rgba(255,255,255,.95) 25deg, transparent 30deg,
+    transparent 60deg, transparent 78deg,
+    rgba(200,230,255,.85) 82deg, transparent 88deg,
+    transparent 140deg, transparent 158deg,
+    rgba(255,255,255,.95) 162deg, transparent 168deg,
+    transparent 210deg, transparent 230deg,
+    rgba(200,230,255,.9) 235deg, transparent 240deg,
+    transparent 280deg, transparent 300deg,
+    rgba(255,255,255,.85) 305deg, transparent 312deg,
+    transparent 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 0, transparent 88%, #000 90%, #000 100%);
+  mask: radial-gradient(circle, transparent 0, transparent 88%, #000 90%, #000 100%);
+  animation: iceCrystalSpin 8s linear infinite;
+}
+
+/* Испарение поднимается вверх */
+.profile-avatar[data-frame="ice"]::after{
+  content: "";
+  position: absolute;
+  inset: -24px -12px auto -12px;
+  height: 46px;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 12px 16px at 25% 80%, rgba(220,240,255,.7), transparent 78%),
+    radial-gradient(ellipse 14px 22px at 50% 75%, rgba(200,230,255,.65), transparent 80%),
+    radial-gradient(ellipse 12px 16px at 75% 80%, rgba(220,240,255,.7), transparent 78%);
+  filter: blur(3px);
+  animation: iceFrost 3.2s ease-in-out infinite;
+}
+
+@keyframes icePulse{
+  0%, 100%{ box-shadow: 0 0 0 1px #111, 0 0 18px rgba(168,216,255,.9), 0 0 36px rgba(120,180,255,.3), inset 0 0 14px rgba(200,230,255,.35); }
+  50%     { box-shadow: 0 0 0 1px #111, 0 0 26px rgba(168,216,255,1), 0 0 52px rgba(120,180,255,.7), inset 0 0 22px rgba(200,230,255,.55); }
+}
+
+@keyframes iceCrystalSpin{
+  to{ transform: rotate(360deg); }
+}
+
+@keyframes iceFrost{
+  0%   { opacity: .3; transform: translateY(4px) scale(.9); }
+  50%  { opacity: .85; transform: translateY(-3px) scale(1.05); }
+  100% { opacity: .3; transform: translateY(4px) scale(.9); }
+}
+
+/* ─── РАДУГА — крутящееся радужное кольцо ─── */
+.profile-avatar[data-frame="rainbow"]{
+  border-color: #111;
+  box-shadow:
+    0 0 0 1px #111,
+    0 0 18px rgba(255,0,170,.7),
+    0 0 36px rgba(0,229,255,.55);
+  isolation: isolate;
+}
+.profile-avatar[data-frame="rainbow"]::before{
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    #ff0066, #ff6b00, #ffd23c,
+    #6bff3a, #00e5ff, #6b3aff,
+    #ff00aa, #ff0066);
+  z-index: -1;
+  animation: rainbowSpin 4s linear infinite;
+}
+@keyframes rainbowSpin{
+  to{ transform: rotate(360deg); }
+}
+
+/* ─── ХЭЛЛОУИН — пульсирующий оранжевый ободок + падающие 🎃 и 🍬 ─── */
+.profile-avatar[data-frame="halloween"]{
+  border-color: #ff8020;
+  box-shadow:
+    0 0 0 1px #111,
+    0 0 20px rgba(255,128,32,.9),
+    0 0 40px rgba(255,80,0,.5);
+  animation: hwFramePulse 1.6s ease-in-out infinite alternate;
+}
+@keyframes hwFramePulse{
+  from{ box-shadow: 0 0 0 1px #111, 0 0 16px rgba(255,128,32,.8), 0 0 32px rgba(255,80,0,.4); }
+  to  { box-shadow: 0 0 0 1px #111, 0 0 30px rgba(255,150,60,1), 0 0 60px rgba(255,90,0,.7); }
+}
+
+/* 🎃 Тыква падает с верхней точки */
+.profile-avatar[data-frame="halloween"]::before{
+  content: "🎃";
+  position: absolute;
+  left: 15%;
+  top: -22px;
+  font-size: 18px;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 0 4px rgba(255,140,40,.9));
+  animation: hwDropPumpkin 5s linear infinite;
+}
+
+/* 🍬 Конфета падает с задержкой */
+.profile-avatar[data-frame="halloween"]::after{
+  content: "🍬";
+  position: absolute;
+  left: 78%;
+  top: -22px;
+  font-size: 16px;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 0 4px rgba(255,180,80,.9));
+  animation: hwDropCandy 6.5s linear infinite 2.2s;
+}
+
+@keyframes hwDropPumpkin{
+  0%   { opacity: 0; transform: translate(-50%, -8px) rotate(-15deg); }
+  12%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, 58px) rotate(25deg); }
+}
+@keyframes hwDropCandy{
+  0%   { opacity: 0; transform: translate(-50%, -8px) rotate(15deg); }
+  12%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, 58px) rotate(-30deg); }
+}
+
+.profile-avatar[data-frame="ramiel"]{
+  border-color: #4a90d4;
+  box-shadow:
+    0 0 0 1px #111,
+    0 0 16px rgba(74,144,212,.8),
+    0 0 32px rgba(74,144,212,.4);
+}
+
+.profile-avatar img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-avatar-icon{
+  font-size: 38px;
+  opacity: .35;
+}
+
+.profile-info{
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.profile-name{
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: .3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+
+.profile-uid{
+  font-size: 11px;
+  color: #8893a3;
+  font-family: ui-monospace, monospace;
+  margin-bottom: 2px;
+}
+
+.profile-reg{
+  font-size: 11px;
+  color: #8893a3;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   МЕТРИКИ — сетка 2 колонки
+   ═══════════════════════════════════════════════════════════════ */
+
+.profile-stats{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.profile-stat{
+  padding: 12px 10px;
+  border-radius: 12px;
+  background: #11161e;
+  border: 1px solid #2a3039;
+  text-align: center;
+  min-width: 0;
+}
+
+.profile-stat-label{
+  font-size: 10px;
+  color: #8893a3;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 6px;
+  line-height: 1.25;
+  min-height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  word-break: break-word;
+}
+
+.profile-stat-value{
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: .3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Цвет призов в рулетке по редкости */
+.profile-stat-value.rarity-common    { color: #b8bec6; }
+.profile-stat-value.rarity-uncommon  { color: #7bff9c; }
+.profile-stat-value.rarity-rare      { color: #6bb8ff; }
+.profile-stat-value.rarity-epic      { color: #c58cff; }
+.profile-stat-value.rarity-legendary { color: #ffd23c; }
+.profile-stat-value.rarity-mythic    { color: #ff5050; text-shadow: 0 0 8px rgba(255,80,80,.6); }
+
+/* ═══════════════════════════════════════════════════════════════
+   КНОПКИ ПРОФИЛЯ
+   ═══════════════════════════════════════════════════════════════ */
+
+.profile-btn-full{
+  display: flex !important;
+  width: 100% !important;
+  justify-content: center;
+  margin-top: 10px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   КД СМЕНЫ ИМЕНИ
+   ═══════════════════════════════════════════════════════════════ */
+
+.profile-name-cooldown{
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255,210,60,.1);
+  border: 1px solid rgba(255,210,60,.35);
+  color: #ffd23c;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.profile-name-cooldown.hidden{ display: none !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   СВЕТЛАЯ ТЕМА
+   ═══════════════════════════════════════════════════════════════ */
+
+body[data-bg="light"] .profile-header{
+  border-bottom-color: #a8b0ba;
+}
+body[data-bg="light"] .profile-name{
+  color: #111;
+}
+body[data-bg="light"] .profile-stat{
+  background: #d0d6de;
+  border-color: #a8b0ba;
+}
+body[data-bg="light"] .profile-stat-value{
+  color: #111;
+}
+body[data-bg="light"] .profile-avatar{
+  background: #d0d6de;
+}
+/* ═══════════════════════════════════════════════════════════════
+   PICKERS — модалки выбора аватара / фона / рамки
+   ═══════════════════════════════════════════════════════════════ */
+
+.picker-card{
+  width: min(460px, 94vw);
+  max-height: 85dvh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.picker-title{
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: .5px;
+}
+
+.picker-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.picker-item{
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  background: #11161e;
+  border: 2px solid #2a3039;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color .15s ease, transform .1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.picker-item:active{ transform: scale(.95); }
+
+.picker-item.active{
+  border-color: #ffd23c;
+  box-shadow: 0 0 12px rgba(255,210,60,.5);
+}
+
+.picker-item.locked::after{
+  content: "🔒";
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 14px;
+  filter: drop-shadow(0 1px 2px #000);
+}
+
+.picker-item img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.picker-item-name{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 4px;
+  font-size: 9px;
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(transparent, rgba(0,0,0,.85));
+  color: #fff;
+  letter-spacing: .3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.picker-item-price{
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(0,0,0,.75);
+  color: #ffd23c;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .3px;
+}
+
+.picker-item-price.owned{
+  color: #4ade80;
+}
+
+/* Превью фонов — миниатюры */
+.picker-item.bg-item{
+  background: #0a0c11;
+}
+
+.picker-item[data-bg="dark"]{ background: linear-gradient(180deg,#151a23,#0d1118); }
+.picker-item[data-bg="black"]{ background: #000; }
+.picker-item[data-bg="gray"]{ background: linear-gradient(180deg,#3a4149,#2a2f38); }
+.picker-item[data-bg="light"]{ background: linear-gradient(180deg,#e8ecf1,#c8ced6); }
+.picker-item[data-bg="star"]{
+  background:
+    radial-gradient(circle at 30% 30%, #fff 1px, transparent 1.5px),
+    radial-gradient(circle at 70% 60%, #aac8ff 1px, transparent 1.5px),
+    linear-gradient(135deg, #0a0a1f, #050510);
+}
+.picker-item[data-bg="sunset"]{
+  background: linear-gradient(180deg,#1a0a2a 0%,#4a1a4a 25%,#c4384a 55%,#ff8c42 80%,#ffb85c 100%);
+}
+.picker-item[data-bg="aurora"]{
+  background:
+    radial-gradient(ellipse 60% 20% at 40% 40%, rgba(80,255,180,.7), transparent 70%),
+    linear-gradient(180deg, #040818, #0a0620);
+}
+.picker-item[data-bg="aurora-winter"]{
+  background:
+    radial-gradient(ellipse 60% 20% at 40% 40%, rgba(120,220,255,.6), transparent 70%),
+    radial-gradient(circle at 30% 60%, #fff 1.5px, transparent 2px),
+    radial-gradient(circle at 70% 30%, #fff 1.5px, transparent 2px),
+    linear-gradient(180deg, #040818, #0a0620);
+}
+.picker-item[data-bg="nightcity"]{
+  background:
+    radial-gradient(circle 6px at 80% 20%, #fff5d0, transparent 100%),
+    linear-gradient(180deg, transparent 60%, #182040 60%, #182040 75%, #0a0c18 75%),
+    linear-gradient(180deg, #0a0e22, #1e2248);
+}
+.picker-item[data-bg="china"]{
+  background:
+    radial-gradient(circle 4px at 20% 20%, #ffde00 99%, transparent 100%),
+    linear-gradient(135deg, #de2910, #a01008);
+}
+.picker-item[data-bg="confetti"]{
+  background:
+    radial-gradient(circle at 20% 30%, #ff6b9d 2px, transparent 3px),
+    radial-gradient(circle at 60% 50%, #ffd93d 2px, transparent 3px),
+    radial-gradient(circle at 80% 20%, #6bcbff 2px, transparent 3px),
+    linear-gradient(180deg, #5a2050, #3a1030);
+}
+
+/* Превью рамок */
+.picker-item.frame-item{
+  padding: 12px;
+}
+
+.frame-preview{
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #1a1f27;
+  border: 3px solid #3a4149;
+}
+
+.frame-preview[data-frame="default"]{ border-color: #ffffff; }
+
+.frame-preview[data-frame="silver"]{
+  border-color: #b8bec6;
+  box-shadow: 0 0 10px rgba(184,190,198,.6),
+              inset 0 2px 4px rgba(255,255,255,.5),
+              inset 0 -3px 6px rgba(0,0,0,.5);
+}
+.frame-preview[data-frame="gold"]{
+  border-color: #ffd23c;
+  box-shadow: 0 0 12px rgba(255,210,60,.8),
+              inset 0 2px 4px rgba(255,240,180,.6),
+              inset 0 -3px 6px rgba(140,80,0,.5);
+}
+.frame-preview[data-frame="neon"]{
+  border-color: #00e5ff;
+  box-shadow: 0 0 12px rgba(0,229,255,.8);
+}
+.frame-preview[data-frame="fire"]{
+  border-color: #ff6b00;
+  box-shadow: 0 0 14px rgba(255,107,0,.9), 0 0 28px rgba(255,150,0,.5);
+  animation: firePulse 1.8s ease-in-out infinite;
+}
+.frame-preview[data-frame="ice"]{
+  border-color: #a8d8ff;
+  box-shadow: 0 0 12px rgba(168,216,255,.9), 0 0 24px rgba(120,180,255,.5);
+  animation: icePulse 3s ease-in-out infinite;
+}
+.frame-preview[data-frame="rainbow"]{
+  border-color: #111;
+  box-shadow: 0 0 12px rgba(255,0,170,.7), 0 0 24px rgba(0,229,255,.5);
+  position: relative;
+}
+.frame-preview[data-frame="rainbow"]::before{
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    #ff0066, #ff6b00, #ffd23c,
+    #6bff3a, #00e5ff, #6b3aff,
+    #ff00aa, #ff0066);
+  -webkit-mask: radial-gradient(circle, transparent 0, transparent 82%, #000 85%, #000 100%);
+  mask: radial-gradient(circle, transparent 0, transparent 82%, #000 85%, #000 100%);
+  animation: rainbowSpin 4s linear infinite;
+}
+.frame-preview[data-frame="halloween"]{
+  border-color: #ff8020;
+  box-shadow: 0 0 14px rgba(255,128,32,.9), 0 0 28px rgba(255,80,0,.5);
+  animation: hwFramePulse 1.6s ease-in-out infinite alternate;
+}
+.frame-preview[data-frame="ramiel"]{
+  border-color: #4a90d4;
+  box-shadow: 0 0 14px rgba(74,144,212,.9), 0 0 28px rgba(74,144,212,.5);
+}
+
+/* Светлая тема */
+body[data-bg="light"] .picker-item{
+  background: #d0d6de;
+  border-color: #a8b0ba;
+}
+body[data-bg="light"] .picker-item.active{
+  border-color: #ffd23c;
+}
+
+/* ─── Красная точка на кнопке достижений ─── */
+#achievementsBtn{
+  position: relative;
+}
+
+#achievementsBtn.has-badge::after{
+  content: attr(data-badge);
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: #ff3030;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 2px #171c25,
+    0 0 12px rgba(255,48,48,.7);
+  animation: badgePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes badgePulse{
+  0%, 100%{ transform: scale(1); }
+  50%     { transform: scale(1.1); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ФОНЫ ПРОФИЛЯ — карточка получает data-pbg из profile.js
+   Селектор с #screenProfile перебивает любые темы (светлая и т.д.)
+   ═══════════════════════════════════════════════════════════════ */
+
+#screenProfile .profile-card[data-pbg="dark"]{
+  background: linear-gradient(180deg, #1a1f2a 0%, #0d1118 100%);
+}
+#screenProfile .profile-card[data-pbg="black"]{
+  background: #000;
+  border-color: #222;
+}
+#screenProfile .profile-card[data-pbg="gray"]{
+  background: linear-gradient(180deg, #3a4149 0%, #2a2f38 100%);
+}
+#screenProfile .profile-card[data-pbg="light"]{
+  background: linear-gradient(180deg, #4a525a 0%, #3a4149 100%);
+  color: #fff;
+}
+#screenProfile .profile-card[data-pbg="star"]{
+  background:
+    radial-gradient(circle at 20% 15%, #fff 0.8px, transparent 1.3px),
+    radial-gradient(circle at 65% 30%, #aac8ff 0.9px, transparent 1.4px),
+    radial-gradient(circle at 85% 60%, #fff 0.7px, transparent 1.2px),
+    radial-gradient(circle at 30% 75%, #cfe0ff 0.8px, transparent 1.3px),
+    radial-gradient(circle at 55% 90%, #fff 0.9px, transparent 1.4px),
+    radial-gradient(ellipse at 50% 50%, #1a1a3a 0%, #050510 100%);
+  border-color: #3a2a6a;
+}
+#screenProfile .profile-card[data-pbg="sunset"]{
+  background: linear-gradient(180deg, #1a0a2a 0%, #4a1a4a 35%, #8a3a4a 65%, #c4384a 100%);
+  border-color: #8a3a4a;
+}
+#screenProfile .profile-card[data-pbg="aurora"]{
+  background:
+    radial-gradient(ellipse 60% 25% at 30% 25%, rgba(80,255,180,.35), transparent 70%),
+    radial-gradient(ellipse 50% 20% at 75% 45%, rgba(120,220,255,.3), transparent 70%),
+    linear-gradient(180deg, #040818 0%, #0a0620 100%);
+  border-color: #2a6a5a;
+}
+#screenProfile .profile-card[data-pbg="aurora-winter"]{
+  background:
+    radial-gradient(ellipse 60% 22% at 30% 25%, rgba(120,220,255,.35), transparent 70%),
+    radial-gradient(circle at 20% 15%, #fff 1px, transparent 1.5px),
+    radial-gradient(circle at 70% 40%, #fff 0.8px, transparent 1.3px),
+    radial-gradient(circle at 45% 70%, #cfe0ff 0.9px, transparent 1.4px),
+    linear-gradient(180deg, #040818 0%, #0a0620 100%);
+  border-color: #2a4a7a;
+}
+#screenProfile .profile-card[data-pbg="nightcity"]{
+  background:
+    radial-gradient(circle 5px at 78% 18%, #fff5d0 0%, #ffd080 60%, transparent 100%),
+    radial-gradient(circle at 15% 12%, #fff 0.9px, transparent 1.4px),
+    radial-gradient(circle at 40% 8%, #cfe0ff 1px, transparent 1.5px),
+    linear-gradient(180deg, transparent 62%, #182040 62%, #182040 72%, #0e1020 72%, #0e1020 82%, #0a0c18 82%, #0a0c18 100%),
+    linear-gradient(180deg, #0a0e22 0%, #1e2248 100%);
+  border-color: #ffd23c;
+}
+#screenProfile .profile-card[data-pbg="china"]{
+  background:
+    radial-gradient(circle 6px at 20% 20%, #ffde00 0%, #ffde00 55%, transparent 70%),
+    linear-gradient(135deg, #8a1010 0%, #4a0808 100%);
+  border-color: #ffde00;
+}
+#screenProfile .profile-card[data-pbg="confetti"]{
+  background:
+    radial-gradient(circle at 20% 30%, #ff6b9d 3px, transparent 4px),
+    radial-gradient(circle at 60% 50%, #ffd93d 3px, transparent 4px),
+    radial-gradient(circle at 80% 20%, #6bcbff 3px, transparent 4px),
+    radial-gradient(circle at 40% 75%, #7bff9c 3px, transparent 4px),
+    radial-gradient(circle at 75% 85%, #ff8cd9 3px, transparent 4px),
+    linear-gradient(180deg, #3a1030 0%, #5a2050 100%);
+  border-color: #7a3a6a;
+}

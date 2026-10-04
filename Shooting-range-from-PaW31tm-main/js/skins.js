@@ -23,13 +23,19 @@ const Skins = (() => {
   function apply(skinId) {
   const id = (skinId || DEFAULT_SKIN).toString().trim();
   clearSkinClasses();
-  
+
   if (id && id !== DEFAULT_SKIN) {
     document.body.classList.add('skin-' + id);
   }
-  
+
   currentSkin = id;
   Storage.setActiveSkin(id);
+
+  /* ★ Подменить модель оружия */
+  if (typeof Weapons !== 'undefined' && Weapons.applyFromBody){
+    Weapons.applyFromBody();
+  }
+
   console.log('[skins] applied:', id);
 }
 

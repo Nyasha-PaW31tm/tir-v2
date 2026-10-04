@@ -1,0 +1,249 @@
+/* ═══════════════════════════════════════════════════════════════
+   ACHIEVEMENTS — стили
+   ═══════════════════════════════════════════════════════════════ */
+
+.ach-card{
+  width: min(460px, 94vw);
+  max-height: 88dvh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+/* ─── Строка фильтра ─── */
+.ach-filter-row{
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 10px;
+  align-items: stretch;
+}
+
+.ach-filter-btn{
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #2a3039;
+  border-radius: 12px;
+  background: #11161e;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  margin: 0;
+  transition: border-color .15s ease, background .15s ease;
+  text-align: left;
+}
+
+.ach-filter-btn:active{
+  background: #1a1f27;
+}
+
+.ach-filter-btn.open{
+  border-color: #4a90d4;
+  background: #1a2332;
+}
+
+.ach-filter-icon{
+  font-size: 16px;
+}
+
+.ach-filter-label{
+  flex: 1;
+  letter-spacing: .3px;
+}
+
+.ach-filter-arrow{
+  font-size: 10px;
+  color: #8893a3;
+  transition: transform .2s ease;
+}
+
+.ach-filter-btn.open .ach-filter-arrow{
+  transform: rotate(180deg);
+}
+
+.ach-reset-btn{
+  width: 44px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid rgba(255,80,80,.4);
+  border-radius: 12px;
+  background: rgba(255,80,80,.15);
+  color: #ff6b6b;
+  font-weight: 900;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform .1s ease, background .15s ease;
+}
+
+.ach-reset-btn:active{
+  transform: scale(.92);
+  background: rgba(255,80,80,.25);
+}
+
+.ach-reset-btn.hidden{
+  display: none !important;
+}
+
+/* ─── Меню фильтра ─── */
+.ach-filter-menu{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #11161e;
+  border: 1px solid #2a3039;
+  margin-bottom: 12px;
+  animation: achMenuOpen .18s ease-out;
+}
+
+.ach-filter-menu.hidden{
+  display: none !important;
+}
+
+@keyframes achMenuOpen{
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ach-filter-item{
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #aeb7c5;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  margin: 0;
+  transition: background .15s ease, color .15s ease;
+}
+
+.ach-filter-item:active{
+  background: #1a1f27;
+}
+
+.ach-filter-item.active{
+  background: #2a3a4a;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px #4a90d4;
+}
+
+/* ─── Список достижений ─── */
+.ach-list{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ach-row{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #11161e;
+  border: 1px solid #2a3039;
+  transition: border-color .15s ease;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.ach-row.unlocked{
+  border-color: rgba(255,210,60,.4);
+  background: linear-gradient(135deg, rgba(255,210,60,.05), #11161e);
+}
+
+.ach-row.claimed{
+  opacity: .65;
+}
+
+.ach-icon{
+  font-size: 26px;
+  width: 40px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ach-info{
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.ach-name{
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ach-desc{
+  font-size: 11px;
+  color: #8893a3;
+  line-height: 1.3;
+}
+
+.ach-reward{
+  flex: 0 0 auto;
+  font-weight: 900;
+  font-size: 13px;
+  color: #ffd23c;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.ach-reward.locked{
+  color: #5a6470;
+}
+
+.ach-reward.claimed{
+  color: #4ade80;
+}
+
+.ach-claim-btn{
+  flex: 0 0 auto;
+  width: auto !important;
+  padding: 8px 14px !important;
+  margin: 0 !important;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ffd23c, #ff8c42);
+  color: #111;
+  font-weight: 900;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: .3px;
+  box-shadow: 0 2px 8px rgba(255,140,66,.4);
+  transition: transform .1s ease;
+}
+
+.ach-claim-btn:active{
+  transform: scale(.95);
+}
+
+.ach-empty{
+  padding: 40px 20px;
+  text-align: center;
+  color: #8893a3;
+  font-size: 13px;
+}
+
+/* ─── Светлая тема ─── */
+body[data-bg="light"] .ach-filter-btn,
+body[data-bg="light"] .ach-filter-menu,
+body[data-bg="light"] .ach-row{
+  background: #d0d6de;
+  border-color: #a8b0ba;
+  color: #111;
+}
+body[data-bg="light"] .ach-name{ color: #111; }

@@ -6,14 +6,21 @@
 const Menu = (() => {
 
   const SCREENS = [
-    'screenMain',
-    'screenPreGame',
-    'screenSettings',
-    'screenAbout',
-    'screenHistory',
-    'screenRating',
-    'screenShop'
-  ];
+  'screenMain',
+  'screenPreGame',
+  'screenSettings',
+  'screenAbout',
+  'screenHistory',
+  'screenRating',
+  'screenShop',
+  'screenProfile',
+  'screenProfileSettings',
+  'avatarPicker',
+  'bgPicker',
+  'framePicker',
+  'screenDaily',
+  'screenAchievements'
+];
 
   /* ─── Показать / скрыть экраны ─── */
   function hideAllScreens(){
@@ -30,9 +37,12 @@ const Menu = (() => {
   }
 
   function showMain(){
-    showScreen('screenMain');
-    Sync.updateCoinsUI();
+  showScreen('screenMain');
+  Sync.updateCoinsUI();
+  if (typeof Achievements !== 'undefined' && Achievements.checkBadge){
+    Achievements.checkBadge();
   }
+}
 
   function hideMenu(){
     hideAllScreens();
@@ -117,17 +127,10 @@ const Menu = (() => {
       tab.disabled = !isOwned;
 
       tab.onclick = () => {
-        if (!isOwned) return;
-
-        /* Заглушка МЛРС — пока не работает */
-        if (ult === 'MLRS'){
-          showToast('🚀 МЛРС будет доступен в 0.11.0');
-          return;
-        }
-
-        Storage.setActiveUlt(ult);
-        renderUltTabs();
-      };
+  if (!isOwned) return;
+  Storage.setActiveUlt(ult);
+  renderUltTabs();
+};
     });
 
     /* Хинт под ультами */
@@ -136,7 +139,7 @@ const Menu = (() => {
       const texts = {
         classic: 'Стандартный залп ×3. Доступна всем.',
         laser: '🎯 Прожигает все линии. ×1.5 очки. Открывается при 210к очков или за 6 000 монет.',
-        MLRS: '🚀 Залп РСЗО. Скоро в 0.11.0.'
+        MLRS: '🚀 Залп РСЗО. 8 ракет с осколками. ×1.7 очков. Кап 22 мишени.'
       };
       hint.textContent = texts[active] || texts.classic;
     }
@@ -192,7 +195,7 @@ const Menu = (() => {
     if (backBtn) backBtn.onclick = showMain;
 
     /* Боссы и ежедневка — заглушки */
-    ['bossBtn', 'dailyBtn'].forEach(id => {
+    ['bossBtn'].forEach(id => {
       const btn = document.getElementById(id);
       if (!btn) return;
       btn.onclick = () => {
@@ -215,13 +218,32 @@ const Menu = (() => {
       };
     }
 
-    /* Профиль — заглушка до 0.11 */
-    const profileBtn = document.getElementById('profileBtn');
-    if (profileBtn){
-      profileBtn.onclick = () => {
-        showToast('👤 Профиль появится в 0.11.0');
-      };
-    }
+    /* Профиль */
+const profileBtn = document.getElementById('profileBtn');
+if (profileBtn){
+  profileBtn.onclick = () => {
+    showScreen('screenProfile');
+    if (typeof Profile !== 'undefined' && Profile.render) Profile.render();
+  };
+}
+
+/* Ежедневки */
+const dailyBtn = document.getElementById('dailyBtn');
+if (dailyBtn){
+  dailyBtn.onclick = () => {
+    showScreen('screenDaily');
+    if (typeof Daily !== 'undefined' && Daily.render) Daily.render();
+  };
+}
+
+/* Достижения */
+const achievementsBtn = document.getElementById('achievementsBtn');
+if (achievementsBtn){
+  achievementsBtn.onclick = () => {
+    showScreen('screenAchievements');
+    if (typeof Achievements !== 'undefined' && Achievements.render) Achievements.render();
+  };
+}
 
     /* Рейтинг */
     const ratingBtn = document.getElementById('ratingBtn');
@@ -270,12 +292,22 @@ const Menu = (() => {
 
     /* Кнопки «Назад» с других экранов */
     const backs = {
-      backFromAbout:    showMain,
-      backFromHistory:  showMain,
-      backFromRating:   showMain,
-      backFromShop:     showMain,
-      backFromSettings: showMain
-    };
+  backFromAbout:    showMain,
+  backFromHistory:  showMain,
+  backFromRating:   showMain,
+  backFromShop:     showMain,
+  backFromSettings: showMain,
+  backFromProfile:  showMain,
+  backFromDaily:    showMain,
+  backFromProfileSettings: () => {
+    showScreen('screenProfile');
+    if (typeof Profile !== 'undefined' && Profile.render) Profile.render();
+  },
+  backFromAch: () => {
+    showScreen('screenProfile');
+    if (typeof Profile !== 'undefined' && Profile.render) Profile.render();
+  }
+};
     for (const id in backs){
       const el = document.getElementById(id);
       if (el) el.onclick = backs[id];
@@ -290,6 +322,14 @@ const Menu = (() => {
         showMain();
       };
     }
+    
+    const profileSettingsBtn = document.getElementById('profileSettingsBtn');
+if (profileSettingsBtn){
+  profileSettingsBtn.onclick = () => {
+    showScreen('screenProfileSettings');
+    if (typeof Profile !== 'undefined' && Profile.renderSettings) Profile.renderSettings();
+  };
+}
 
     initPreGame();
   }

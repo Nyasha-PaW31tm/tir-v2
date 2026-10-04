@@ -70,25 +70,33 @@ const Game = (() => {
      ЗВУКИ
      ═══════════════════════════════════════════════════════════════ */
   const SFX = {
-    shot: new Audio('sounds/fire.mp3'),
-    shotAkc: [
-      new Audio('sounds/akc_fire.mp3'),
-      new Audio('sounds/akc_fire.mp3'),
-      new Audio('sounds/akc_fire.mp3')
-    ],
-    hit: new Audio('sounds/armor.mp3'),
-    ult: new Audio('sounds/series_of_shots.mp3'),
-    ultReady: new Audio('sounds/ult.mp3'),
-    win: new Audio('sounds/win.mp3'),
-    miss: new Audio('sounds/miss.mp3')
-  };
+  shot: new Audio('sounds/fire.mp3'),
+  shotAkc: [
+    new Audio('sounds/akc_fire.mp3'),
+    new Audio('sounds/akc_fire.mp3'),
+    new Audio('sounds/akc_fire.mp3')
+  ],
+  shotgun: new Audio('sounds/shotgun-fire.mp3'),   // ← ДОБАВИТЬ
+  hit: new Audio('sounds/armor.mp3'),
+  hit_pumpkin: new Audio('sounds/pumpkin.mp3'),
+  hit_bone: new Audio('sounds/bone.mp3'),
+  ult: new Audio('sounds/series_of_shots.mp3'),
+  ultReady: new Audio('sounds/ult.mp3'),
+  win: new Audio('sounds/win.mp3'),
+  miss: new Audio('sounds/miss.mp3')
+};
 
   let masterVolume = Storage.getVolume() / 100;
   let akcShotIndex = 0;
 
   function playSfx(name){
-    const a = SFX[name];
-    if (!a || masterVolume <= 0) return;
+  const a = SFX[name];
+  if (!a) {
+    /* Fallback: неизвестный звук → обычный hit/miss */
+    if (name === 'hit_pumpkin' || name === 'hit_bone') return playSfx('hit');
+    return;
+  }
+  if (masterVolume <= 0) return;
 
     try {
       if (Array.isArray(a)){
@@ -189,38 +197,55 @@ const Game = (() => {
   }
 
   /* ★ Отдельная функция: показывает либо счётчик, либо КД лазера */
-  function updateUltCounter(){
-    if (!ultEl || !ultBtn) return;
-
-    const activeUlt = Storage.getActiveUlt();
-
-    /* Лазер активен прямо сейчас */
-    if (activeUlt === 'laser' && window.GameLaser && window.GameLaser.isActive && window.GameLaser.isActive()){
+  function updateUltCounter() {
+  if (!ultEl || !ultBtn) return;
+  
+  const activeUlt = Storage.getActiveUlt();
+  
+  /* ═══ ЛАЗЕР ═══ */
+  if (activeUlt === 'laser') {
+    if (window.GameLaser && window.GameLaser.isActive && window.GameLaser.isActive()) {
       ultEl.textContent = '⚡ АКТИВЕН';
       ultBtn.classList.remove('ready');
       return;
     }
-
-    /* Лазер на КД */
-    if (activeUlt === 'laser' && window.GameLaser && window.GameLaser.isOnCooldown && window.GameLaser.isOnCooldown()){
-      const left = window.GameLaser.getCooldownLeft();
-      const sec = Math.ceil(left / 1000);
+    if (window.GameLaser && window.GameLaser.isOnCooldown && window.GameLaser.isOnCooldown()) {
+      const sec = Math.ceil(window.GameLaser.getCooldownLeft() / 1000);
       ultEl.textContent = '⏳ ' + sec + 'с';
       ultBtn.classList.remove('ready');
       return;
     }
-
-    /* Обычный счётчик — с учётом активной ульты */
-    const req = getUltReq();
-    const displayHits = Math.min(ultHits, req);
-    ultEl.textContent = displayHits + '/' + req;
-    ultBtn.classList.toggle('ready', ultHits >= req);
   }
+  
+  /* ═══ МЛРС ═══ */
+  if (activeUlt === 'MLRS') {
+    if (window.GameMLRS && window.GameMLRS.isActive && window.GameMLRS.isActive()) {
+      ultEl.textContent = '🚀 ЗАЛП';
+      ultBtn.classList.remove('ready');
+      return;
+    }
+    if (window.GameMLRS && window.GameMLRS.isOnCooldown && window.GameMLRS.isOnCooldown()) {
+      const sec = Math.ceil(window.GameMLRS.getCooldownLeft() / 1000);
+      ultEl.textContent = '⏳ ' + sec + 'с';
+      ultBtn.classList.remove('ready');
+      return;
+    }
+  }
+  
+  /* ═══ ОБЫЧНЫЙ СЧЁТЧИК ═══ */
+  const req = getUltReq();
+  const displayHits = Math.min(ultHits, req);
+  ultEl.textContent = displayHits + '/' + req;
+  ultBtn.classList.toggle('ready', ultHits >= req);
+}
 
   /* ═══════════════════════════════════════════════════════════════
      СПАВН
      ═══════════════════════════════════════════════════════════════ */
-  function freePoints(){ return Math.max(0, 5 - targets.reduce((n,t) => n + t.slots, 0)); }
+  function freePoints() {
+  if (window._mlrsActive) return 100;
+  return Math.max(0, 5 - targets.reduce((n, t) => n + t.slots, 0));
+}
 
   function pickType(){
     const p = difficulty();
@@ -230,15 +255,22 @@ const Game = (() => {
     return 'normal';
   }
 
-  function validType(type){
-    if (type === 'gold' || type === 'fastgold'){
-      return targets.filter(t => t.gold).length < 2 && freePoints() >= 1;
+  function validType(type) {
+  if (window._mlrsActive) {
+    if (type === 'gold' || type === 'fastgold') {
+      return targets.filter(t => t.gold).length < 4;
     }
-    return freePoints() >= 1;
+    return true;
   }
+  if (type === 'gold' || type === 'fastgold') {
+    return targets.filter(t => t.gold).length < 2 && freePoints() >= 1;
+  }
+  return freePoints() >= 1;
+}
 
-  function spawn(){
-    if (!game || targets.length >= 5) return;
+  function spawn() {
+  const maxTargets = window._mlrsActive ? (window._mlrsMaxTargets || 22) : 5;
+  if (!game || targets.length >= maxTargets) return;
 
     let type = null;
     for (let i = 0; i < 30; i++){
@@ -251,8 +283,9 @@ const Game = (() => {
     const gold = type === 'gold' || type === 'fastgold';
     const slots = 1;
     const lane = Math.floor(Math.random() * 3);
-    const laneSlots = targets.filter(t => t.lane === lane).reduce((n,t) => n + t.slots, 0);
-    if (laneSlots + slots > 2){ setTimeout(spawn, 120); return; }
+    const laneMax = window._mlrsActive ? 5 : 2;
+const laneSlots = targets.filter(t => t.lane === lane).reduce((n, t) => n + t.slots, 0);
+if (laneSlots + slots > laneMax) { setTimeout(spawn, 120); return; }
 
     const el = document.createElement('div');
     el.className = 'target ' + d.color;
@@ -569,148 +602,181 @@ const Game = (() => {
      ПОПАДАНИЕ
      ═══════════════════════════════════════════════════════════════ */
   function hitTarget(t){
-    playSfx('hit');
-    t.hp--;
-    const alive = t.hp > 0;
+  t.hp--;
+  const alive = t.hp > 0;
+  playSfx(pickHitSound(t, !alive));
 
-    if (alive){
-      const hp = t.el.querySelector('.hp');
-      if (hp) hp.textContent = 'HP 1/2';
-    } else {
-      addScore(TYPES[t.type].base * comboMult());
-    }
-
-    comboHits++;
-
-    /* ★ Не копим ульту, если лазер на КД */
-    const laserOnCd = Storage.getActiveUlt() === 'laser'
-      && window.GameLaser
-      && window.GameLaser.isOnCooldown
-      && window.GameLaser.isOnCooldown();
-
-    if (!laserOnCd){
-      const req = getUltReq();
-      const wasUltReady = ultHits >= req;
-      ultHits = Math.min(req, ultHits + 1);
-      if (!wasUltReady && ultHits >= req && !ultReadySoundPlayed){
-        playSfx('ultReady');
-        ultReadySoundPlayed = true;
-      }
-    }
-
-    let center = null;
-    if (!alive){
-      center = getElCenter(t.el);
-      shatterTarget(t.el, center.x, center.y);
-    }
-
-    const newFloor = Math.floor(comboMult());
-    if (newFloor > prevComboFloor){
-      prevComboFloor = newFloor;
-      if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
-      const c = center || getElCenter(t.el);
-      if (isChinaActive()){
-        showChinaCombo(c.x, c.y, newFloor);
-        if (newFloor % 5 === 0) showChinaPride();
-      } else {
-        showGoldCombo(c.x, c.y, newFloor);
-      }
-    }
-
-    if (!alive) removeTarget(t);
-    updateUI();
+  if (alive){
+    const hp = t.el.querySelector('.hp');
+    if (hp) hp.textContent = 'HP 1/2';
+  } else {
+    addScore(TYPES[t.type].base * comboMult());
   }
+
+  comboHits++;
+
+  const laserOnCd = Storage.getActiveUlt() === 'laser'
+    && window.GameLaser && window.GameLaser.isOnCooldown && window.GameLaser.isOnCooldown();
+  const mlrsOnCd = Storage.getActiveUlt() === 'MLRS'
+    && window.GameMLRS && window.GameMLRS.isOnCooldown && window.GameMLRS.isOnCooldown();
+
+  if (!laserOnCd && !mlrsOnCd){
+    const req = getUltReq();
+    const wasUltReady = ultHits >= req;
+    ultHits = Math.min(req, ultHits + 1);
+    if (!wasUltReady && ultHits >= req && !ultReadySoundPlayed){
+      playSfx('ultReady');
+      ultReadySoundPlayed = true;
+    }
+  }
+
+  let center = null;
+  if (!alive){
+    center = getElCenter(t.el);
+    shatterTarget(t.el, center.x, center.y);
+  }
+
+  const newFloor = Math.floor(comboMult());
+  if (newFloor > prevComboFloor){
+    prevComboFloor = newFloor;
+    if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
+    const c = center || getElCenter(t.el);
+    if (isChinaActive()){
+      showChinaCombo(c.x, c.y, newFloor);
+      if (newFloor % 5 === 0) showChinaPride();
+    } else {
+      showGoldCombo(c.x, c.y, newFloor);
+    }
+  }
+
+  if (!alive) removeTarget(t);
+  updateUI();
+}
+  
+  function pickHitSound(t, died){
+  const isHalloween = document.body.classList.contains('target-skin-halloween');
+  if (!died || !isHalloween) return 'hit';
+  if (t.type === 'normal')  return 'hit_pumpkin';
+  if (t.type === 'armored') return 'hit_bone';
+  return 'hit';
+}
 
   function hitTargetNoMiss(t){
-    playSfx('hit');
-    t.hp--;
-    const alive = t.hp > 0;
+  t.hp--;
+  const alive = t.hp > 0;
+  playSfx(pickHitSound(t, !alive));
 
-    if (alive){
-      const hp = t.el.querySelector('.hp');
-      if (hp) hp.textContent = 'HP 1/2';
-    } else {
-      addScore(TYPES[t.type].base * comboMult());
-    }
-
-    comboHits++;
-
-    const laserOnCd = Storage.getActiveUlt() === 'laser'
-      && window.GameLaser
-      && window.GameLaser.isOnCooldown
-      && window.GameLaser.isOnCooldown();
-
-    if (!laserOnCd){
-      const req = getUltReq();
-      const wasUltReady = ultHits >= req;
-      ultHits = Math.min(req, ultHits + 1);
-      if (!wasUltReady && ultHits >= req && !ultReadySoundPlayed){
-        playSfx('ultReady');
-        ultReadySoundPlayed = true;
-      }
-    }
-
-    let center = null;
-    if (!alive){
-      center = getElCenter(t.el);
-      shatterTarget(t.el, center.x, center.y);
-    }
-
-    const newFloor = Math.floor(comboMult());
-    if (newFloor > prevComboFloor){
-      prevComboFloor = newFloor;
-      if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
-      const c = center || getElCenter(t.el);
-      if (isChinaActive()){
-        showChinaCombo(c.x, c.y, newFloor);
-        if (newFloor % 5 === 0) showChinaPride();
-      } else {
-        showGoldCombo(c.x, c.y, newFloor);
-      }
-    }
-
-    if (!alive) removeTarget(t);
-    updateUI();
+  if (alive){
+    const hp = t.el.querySelector('.hp');
+    if (hp) hp.textContent = 'HP 1/2';
+  } else {
+    addScore(TYPES[t.type].base * comboMult());
   }
+
+  comboHits++;
+
+  const laserOnCd = Storage.getActiveUlt() === 'laser'
+    && window.GameLaser && window.GameLaser.isOnCooldown && window.GameLaser.isOnCooldown();
+  const mlrsOnCd = Storage.getActiveUlt() === 'MLRS'
+    && window.GameMLRS && window.GameMLRS.isOnCooldown && window.GameMLRS.isOnCooldown();
+
+  if (!laserOnCd && !mlrsOnCd){
+    const req = getUltReq();
+    const wasUltReady = ultHits >= req;
+    ultHits = Math.min(req, ultHits + 1);
+    if (!wasUltReady && ultHits >= req && !ultReadySoundPlayed){
+      playSfx('ultReady');
+      ultReadySoundPlayed = true;
+    }
+  }
+
+  let center = null;
+  if (!alive){
+    center = getElCenter(t.el);
+    shatterTarget(t.el, center.x, center.y);
+  }
+
+  const newFloor = Math.floor(comboMult());
+  if (newFloor > prevComboFloor){
+    prevComboFloor = newFloor;
+    if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
+    const c = center || getElCenter(t.el);
+    if (isChinaActive()){
+      showChinaCombo(c.x, c.y, newFloor);
+      if (newFloor % 5 === 0) showChinaPride();
+    } else {
+      showGoldCombo(c.x, c.y, newFloor);
+    }
+  }
+
+  if (!alive) removeTarget(t);
+  updateUI();
+}
 
   /* ★ Попадание лазером: ×1.5 к очкам, шаг комбо ×0.15, БЕЗ сброса комбо */
   function hitTargetLaser(t){
-    playSfx('hit');
-    t.hp--;
-    const alive = t.hp > 0;
+  t.hp--;
+  const alive = t.hp > 0;
+  playSfx(pickHitSound(t, !alive));
 
-    if (alive){
-      const hp = t.el.querySelector('.hp');
-      if (hp) hp.textContent = 'HP 1/2';
-    } else {
-      addScore(TYPES[t.type].base * comboMult(0.15) * 1.5);
-    }
-
-    comboHits++;
-    /* ★ Во время лазера ULT НЕ накапливается */
-
-    let center = null;
-    if (!alive){
-      center = getElCenter(t.el);
-      shatterTarget(t.el, center.x, center.y);
-    }
-
-    const newFloor = Math.floor(comboMult(0.15));
-    if (newFloor > prevComboFloor){
-      prevComboFloor = newFloor;
-      if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
-      const c = center || getElCenter(t.el);
-      if (isChinaActive()){
-        showChinaCombo(c.x, c.y, newFloor);
-        if (newFloor % 5 === 0) showChinaPride();
-      } else {
-        showGoldCombo(c.x, c.y, newFloor);
-      }
-    }
-
-    if (!alive) removeTarget(t);
-    updateUI();
+  if (alive){
+    const hp = t.el.querySelector('.hp');
+    if (hp) hp.textContent = 'HP 1/2';
+  } else {
+    addScore(TYPES[t.type].base * comboMult(0.15) * 1.5);
   }
+
+  comboHits++;
+
+  let center = null;
+  if (!alive){
+    center = getElCenter(t.el);
+    shatterTarget(t.el, center.x, center.y);
+  }
+
+  const newFloor = Math.floor(comboMult(0.15));
+  if (newFloor > prevComboFloor){
+    prevComboFloor = newFloor;
+    if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
+    const c = center || getElCenter(t.el);
+    if (isChinaActive()){
+      showChinaCombo(c.x, c.y, newFloor);
+      if (newFloor % 5 === 0) showChinaPride();
+    } else {
+      showGoldCombo(c.x, c.y, newFloor);
+    }
+  }
+
+  if (!alive) removeTarget(t);
+  updateUI();
+}
+  
+  /* ★ Попадание МЛРС: ВАНШОТ, ×1.7 к очкам, комбо капает */
+function hitTargetMLRS(t){
+  t.hp = 0;
+  playSfx(pickHitSound(t, true));
+
+  addScore(TYPES[t.type].base * comboMult() * 1.7);
+  comboHits++;
+
+  const center = getElCenter(t.el);
+  shatterTarget(t.el, center.x, center.y);
+
+  const newFloor = Math.floor(comboMult());
+  if (newFloor > prevComboFloor){
+    prevComboFloor = newFloor;
+    if (newFloor >= 10 && runStats.mode === 'infinite') sawTenCombo = true;
+    if (isChinaActive()){
+      showChinaCombo(center.x, center.y, newFloor);
+      if (newFloor % 5 === 0) showChinaPride();
+    } else {
+      showGoldCombo(center.x, center.y, newFloor);
+    }
+  }
+
+  removeTarget(t);
+  updateUI();
+}
 
   function miss(){
     playSfx('miss');
@@ -783,29 +849,41 @@ const Game = (() => {
   let _cachedMuzzleDist = 0;
   let _cachedMuzzleSkin = '';
 
-  function getMuzzleDistance(){
-    const currentSkin = Storage.getActiveSkin();
+ function getMuzzleDistance(){
+  const currentSkin = Storage.getActiveSkin();
 
-    if (_cachedMuzzleSkin === currentSkin && _cachedMuzzleDist > 0){
-      return _cachedMuzzleDist;
-    }
-
-    const muzzle = rifle.querySelector('.rifle-muzzle');
-    if (!muzzle){
-      _cachedMuzzleDist = 176;
-      _cachedMuzzleSkin = currentSkin;
-      return 176;
-    }
-
-    const muzzleCX = muzzle.offsetLeft + muzzle.offsetWidth / 2;
-    const muzzleCY = muzzle.offsetTop + muzzle.offsetHeight / 2;
-    const pivotX = rifle.offsetWidth / 2;
-    const pivotY = rifle.offsetHeight * 0.9;
-
-    _cachedMuzzleDist = Math.hypot(muzzleCX - pivotX, muzzleCY - pivotY);
-    _cachedMuzzleSkin = currentSkin;
+  if (_cachedMuzzleSkin === currentSkin && _cachedMuzzleDist > 0){
     return _cachedMuzzleDist;
   }
+
+  /* Приоритет 1: ручное значение из data-атрибута */
+  const withData = rifle.querySelector('[data-muzzle-distance]');
+  if (withData){
+    const v = parseFloat(withData.dataset.muzzleDistance);
+    if (v > 0){
+      _cachedMuzzleDist = v;
+      _cachedMuzzleSkin = currentSkin;
+      return _cachedMuzzleDist;
+    }
+  }
+
+  /* Приоритет 2: старая логика через .rifle-muzzle */
+  const muzzle = rifle.querySelector('.rifle-muzzle');
+  if (!muzzle){
+    _cachedMuzzleDist = 176;
+    _cachedMuzzleSkin = currentSkin;
+    return 176;
+  }
+
+  const muzzleCX = muzzle.offsetLeft + muzzle.offsetWidth / 2;
+  const muzzleCY = muzzle.offsetTop + muzzle.offsetHeight / 2;
+  const pivotX = rifle.offsetWidth / 2;
+  const pivotY = rifle.offsetHeight * 0.9;
+
+  _cachedMuzzleDist = Math.hypot(muzzleCX - pivotX, muzzleCY - pivotY);
+  _cachedMuzzleSkin = currentSkin;
+  return _cachedMuzzleDist;
+}
 
   function updateRifle(){
     if (!range) return;
@@ -855,21 +933,21 @@ const Game = (() => {
     setTimeout(() => { b.remove(); bullets = bullets.filter(x => x !== b); }, 320);
   }
 
-  function findHit(aimXPercent, aimYPercent){
-    const r = range.getBoundingClientRect();
-    const tx = aimXPercent / 100 * r.width;
-    const ty = aimYPercent / 100 * r.height;
-    let hit = null, best = 1e9;
-    for (const t of targets){
-      const tr = t.el.getBoundingClientRect();
-      const cx = tr.left + tr.width / 2 - r.left;
-      const cy = tr.top + tr.height / 2 - r.top;
-      const dist = Math.hypot(tx - cx, ty - cy);
-      const rad = Math.max(tr.width, tr.height) / 2;
-      if (dist <= rad && dist < best){ best = dist; hit = t; }
-    }
-    return hit;
+  function findHit(aimXPercent, aimYPercent, radiusOverride){
+  const r = range.getBoundingClientRect();
+  const tx = aimXPercent / 100 * r.width;
+  const ty = aimYPercent / 100 * r.height;
+  let hit = null, best = 1e9;
+  for (const t of targets){
+    const tr = t.el.getBoundingClientRect();
+    const cx = tr.left + tr.width / 2 - r.left;
+    const cy = tr.top + tr.height / 2 - r.top;
+    const dist = Math.hypot(tx - cx, ty - cy);
+    const rad = radiusOverride || (Math.max(tr.width, tr.height) / 2);
+    if (dist <= rad && dist < best){ best = dist; hit = t; }
   }
+  return hit;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    СТОП. ВСТАВЬ ЧАСТЬ 5 НИЖЕ
@@ -971,16 +1049,22 @@ const Game = (() => {
      ГЛАВНЫЙ ВЫСТРЕЛ
      ═══════════════════════════════════════════════════════════════ */
   function fire(){
-    if (!game) return;
-    if (isFiring) return;
-    if (window._laserActive) return;   // блок на время работы лазера
+  if (!game) return;
+  if (isFiring) return;
+  if (window._laserActive) return;
 
-    if (isAkcActive()){
-      fireAkc();
-    } else {
-      fireSingle();
-    }
+  /* ★ Модульное оружие (дробовик и будущее) */
+  if (typeof Weapons !== 'undefined' && Weapons.fire()){
+    return;
   }
+
+  /* Старая логика — default ружьё и AKC-74M (пока в ядре) */
+  if (isAkcActive()){
+    fireAkc();
+  } else {
+    fireSingle();
+  }
+}
 
   /* ═══════════════════════════════════════════════════════════════
      ULT — проверка активной ульты + классическая
@@ -1009,13 +1093,20 @@ const Game = (() => {
     }
 
     if (activeUlt === 'MLRS' && window.GameMLRS && window.GameMLRS.fire){
-      ultHits = 0;
-      ultReadySoundPlayed = false;
-      updateUI();
-      runStats.ultCount++;
-      window.GameMLRS.fire();
-      return;
-    }
+  if (window.GameMLRS.isOnCooldown && window.GameMLRS.isOnCooldown()){
+    const msg = document.getElementById('message');
+    msg.textContent = '⏳ МЛРС перезаряжается';
+    msg.className = 'pop';
+    setTimeout(() => { msg.textContent = ''; msg.className = ''; }, 800);
+    return;
+  }
+  ultHits = 0;
+  ultReadySoundPlayed = false;
+  updateUI();
+  runStats.ultCount++;
+  window.GameMLRS.fire();
+  return;
+}
 
     /* ─── Классическая ульта ×3 ─── */
     window._ultJustFired = true;
@@ -1159,6 +1250,9 @@ const Game = (() => {
      ═══════════════════════════════════════════════════════════════ */
   function start(){
     score = 0; comboHits = 0; ultHits = 0; targets = [];
+    if (typeof Weapons !== 'undefined' && Weapons.reset){
+  Weapons.reset();
+}
     bullets.forEach(b => b.remove()); bullets = [];
     nextId = 1; missCount = 0; prevComboFloor = 1;
     ultReadySoundPlayed = false;
@@ -1463,67 +1557,132 @@ const Game = (() => {
      ОБРАБОТЧИКИ
      ═══════════════════════════════════════════════════════════════ */
   function bindEvents(){
-    range.addEventListener('pointerdown', e => {
-      if (!game || paused) return;
-      if (isOnHomeBtn(e)) return;
-      range.setPointerCapture(e.pointerId);
-      setAim(e.clientX, e.clientY);
-    });
-    range.addEventListener('pointermove', e => {
-      if (!game) return;
-      if (isOnHomeBtn(e)) return;
-      if (e.buttons) setAim(e.clientX, e.clientY);
-    });
+    /* ★ Разблокировка аудио — держим сессию открытой */
+document.addEventListener('pointerdown', function unlockAudio(){
+  if (window._audioUnlocked) return;
 
-    document.getElementById('fire').onclick = fire;
-    document.getElementById('ultimate').onclick = ultimate;
-
-    const againBtn = document.getElementById('again');
-    if (againBtn) againBtn.onclick = () => {
-      endScreen.classList.add('hidden');
-      start();
-    };
-
-    if (homeBtn){
-      homeBtn.addEventListener('pointerdown', e => e.stopPropagation(), true);
-      homeBtn.addEventListener('pointerup', e => {
-        e.stopPropagation(); e.preventDefault(); pause();
-      });
-      homeBtn.addEventListener('click', e => {
-        e.stopPropagation(); e.preventDefault(); pause();
-      });
-    }
-
-    const pauseResume = document.getElementById('pauseResume');
-    if (pauseResume) pauseResume.onclick = resume;
-    const pauseExit = document.getElementById('pauseExit');
-    if (pauseExit) pauseExit.onclick = exitFromPause;
-
-    const stickerBtn = document.getElementById('stickerBtn');
-    if (stickerBtn) stickerBtn.onclick = async () => {
-      const reason = document.getElementById('endReason');
-      if (!API.isTelegramReady()){
-        reason.textContent = 'Открой игру через Telegram-бота.';
-        return;
-      }
-      stickerBtn.disabled = true;
-      stickerBtn.textContent = '⏳ Проверяем...';
-      const data = await API.claimReward();
-      if (data.ok){
-        reason.textContent = '🎁 Награда выдана! Скоро придёт в личку.';
-        stickerBtn.textContent = '✅ ЗАБРАНО';
-        stickerBtn.style.background = '#3a3f4a';
-      } else if (data.error === 'already claimed'){
-        reason.textContent = '🎁 Ты уже получал эту награду.';
-        stickerBtn.textContent = '✅ УЖЕ ЗАБРАНО';
-        stickerBtn.style.background = '#3a3f4a';
-      } else {
-        reason.textContent = 'Ошибка: ' + (data.error || 'unknown');
-        stickerBtn.disabled = false;
-        stickerBtn.textContent = '🎁 ЗАБРАТЬ СТИКЕРЫ';
-      }
-    };
+  const silent = new Audio();
+  silent.volume = 0;
+  silent.src = 'sounds/fire.mp3';
+  silent.loop = true;
+  const p = silent.play();
+  if (p && p.then){
+    p.then(function(){
+      window._audioUnlocked = true;
+      window._audioKeepAlive = silent;
+      console.log('[audio] unlocked + keep-alive started');
+    }).catch(function(){});
+  } else {
+    window._audioUnlocked = true;
+    window._audioKeepAlive = silent;
   }
+});
+  /* ═══════════════════════════════════════════════════════════
+     ПРИЦЕЛИВАНИЕ — тач и мышь
+     Палец на экране крутит ствол. Другой палец на кнопке — стреляет.
+     На ПК мышь двигается — ствол всегда следует за ней.
+     ═══════════════════════════════════════════════════════════ */
+  range.addEventListener('pointerdown', e => {
+    if (!game || paused) return;
+    if (isOnHomeBtn(e)) return;
+    setAim(e.clientX, e.clientY);
+  }, { passive: true });
+
+  range.addEventListener('pointermove', e => {
+    if (!game || paused) return;
+    if (isOnHomeBtn(e)) return;
+    setAim(e.clientX, e.clientY);
+  }, { passive: true });
+
+  /* ═══════════════════════════════════════════════════════════
+     КНОПКА ВЫСТРЕЛ — pointerdown для мгновенного отклика
+     Работает независимо от прицеливания другим пальцем.
+     ═══════════════════════════════════════════════════════════ */
+  const fireBtn = document.getElementById('fire');
+  if (fireBtn){
+    fireBtn.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      fire();
+    }, { passive: false });
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     КНОПКА УЛЬТЫ
+     ═══════════════════════════════════════════════════════════ */
+  const ultBtnEl = document.getElementById('ultimate');
+  if (ultBtnEl){
+    ultBtnEl.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      ultimate();
+    }, { passive: false });
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     КЛАВИАТУРА (ПК)
+     Space = выстрел, E = ульта
+     ═══════════════════════════════════════════════════════════ */
+  document.addEventListener('keydown', e => {
+    if (!game || paused) return;
+    if (e.repeat) return;
+
+    if (e.code === 'Space'){
+      e.preventDefault();
+      fire();
+    } else if (e.code === 'KeyE'){
+      e.preventDefault();
+      ultimate();
+    }
+  });
+
+  /* ═══════════════════════════════════════════════════════════
+     ОСТАЛЬНЫЕ ОБРАБОТЧИКИ
+     ═══════════════════════════════════════════════════════════ */
+  const againBtn = document.getElementById('again');
+  if (againBtn) againBtn.onclick = () => {
+    endScreen.classList.add('hidden');
+    start();
+  };
+
+  if (homeBtn){
+    homeBtn.addEventListener('pointerdown', e => e.stopPropagation(), true);
+    homeBtn.addEventListener('pointerup', e => {
+      e.stopPropagation(); e.preventDefault(); pause();
+    });
+    homeBtn.addEventListener('click', e => {
+      e.stopPropagation(); e.preventDefault(); pause();
+    });
+  }
+
+  const pauseResume = document.getElementById('pauseResume');
+  if (pauseResume) pauseResume.onclick = resume;
+  const pauseExit = document.getElementById('pauseExit');
+  if (pauseExit) pauseExit.onclick = exitFromPause;
+
+  const stickerBtn = document.getElementById('stickerBtn');
+  if (stickerBtn) stickerBtn.onclick = async () => {
+    const reason = document.getElementById('endReason');
+    if (!API.isTelegramReady()){
+      reason.textContent = 'Открой игру через Telegram-бота.';
+      return;
+    }
+    stickerBtn.disabled = true;
+    stickerBtn.textContent = '⏳ Проверяем...';
+    const data = await API.claimReward();
+    if (data.ok){
+      reason.textContent = '🎁 Награда выдана! Скоро придёт в личку.';
+      stickerBtn.textContent = '✅ ЗАБРАНО';
+      stickerBtn.style.background = '#3a3f4a';
+    } else if (data.error === 'already claimed'){
+      reason.textContent = '🎁 Ты уже получал эту награду.';
+      stickerBtn.textContent = '✅ УЖЕ ЗАБРАНО';
+      stickerBtn.style.background = '#3a3f4a';
+    } else {
+      reason.textContent = 'Ошибка: ' + (data.error || 'unknown');
+      stickerBtn.disabled = false;
+      stickerBtn.textContent = '🎁 ЗАБРАТЬ СТИКЕРЫ';
+    }
+  };
+}
 
   /* ═══════════════════════════════════════════════════════════════
      ОТЛАДКА — спавн мишени
@@ -1581,6 +1740,153 @@ const Game = (() => {
 
     return 'ok: ' + type + ' in lane ' + lane;
   }
+  
+/* ═══════════════════════════════════════════════════════════════
+   КАТСЦЕНА МЛРС — встроенная, без iframe
+   ═══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   КАТСЦЕНА МЛРС
+   ═══════════════════════════════════════════════════════════════ */
+async function playCutscene(){
+  if (Storage.getSkipCutscenes()) return;
+
+  const overlay = document.getElementById('cutsceneOverlay');
+  if (!overlay) return;
+
+  const wasGame = game;
+  if (game) pause();
+
+  let styleEl = null;
+  let sounds = null;
+
+  try {
+    /* 1. Загружаем CSS сцены */
+    const cssRes = await fetch('mlrs_scene.css');
+    const cssText = await cssRes.text();
+    styleEl = document.createElement('style');
+    styleEl.id = 'mlrsCutsceneStyle';
+    styleEl.textContent = cssText;
+    document.head.appendChild(styleEl);
+
+    /* 2. Загружаем HTML сцены */
+    const htmlRes = await fetch('mlrs_scene.html');
+    const htmlText = await htmlRes.text();
+    const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+    const sceneEl = doc.querySelector('.cutscene');
+    if (!sceneEl) throw new Error('cutscene not found');
+
+    /* 3. Вставляем */
+    overlay.innerHTML = '';
+    overlay.appendChild(sceneEl);
+    overlay.classList.remove('hidden');
+
+    /* 4. Звуки */
+    sounds = startCutsceneSounds();
+
+    /* 5. Ждём 7 сек */
+    await new Promise(r => setTimeout(r, 7000));
+
+  } catch(e){
+    console.error('[cutscene]', e);
+  }
+
+  stopCutsceneSounds(sounds);
+  overlay.classList.add('hidden');
+  overlay.innerHTML = '';
+  if (styleEl) styleEl.remove();
+
+  if (wasGame) resume();
+}
+
+function startCutsceneSounds(){
+  const engine = new Audio('sounds/engine.mp3');
+  const mech = new Audio('sounds/mechanism_MLRS.mp3');
+  engine.volume = 0.8;
+  mech.volume = 0.9;
+
+  const shots = [];
+  const timers = [];
+
+  timers.push(setTimeout(() => {
+    try {
+      engine.currentTime = 0;
+      engine.play().then(() => console.log('[mlrs] engine play')).catch(e => console.warn('[mlrs] engine fail:', e.message));
+    } catch(e){}
+  }, 0));
+
+  timers.push(setTimeout(() => {
+    try {
+      mech.currentTime = 0;
+      mech.play().then(() => console.log('[mlrs] mech play')).catch(e => console.warn('[mlrs] mech fail:', e.message));
+    } catch(e){}
+  }, 2000));
+
+  [4480, 4690, 4830, 5040, 5180, 5390, 5530, 5740].forEach(t => {
+    timers.push(setTimeout(() => {
+      try {
+        const s = new Audio('sounds/MLRS_shot.mp3');
+        s.volume = 1.0;
+        shots.push(s);
+        s.play().then(() => console.log('[mlrs] shot play')).catch(e => console.warn('[mlrs] shot fail:', e.message));
+      } catch(e){}
+    }, t));
+  });
+
+  return { engine, mech, shots, timers };
+}
+
+function stopCutsceneSounds(s){
+  if (!s) return;
+  s.timers.forEach(t => clearTimeout(t));
+  try { s.engine.pause(); s.engine.currentTime = 0; } catch(e){}
+  try { s.mech.pause(); s.mech.currentTime = 0; } catch(e){}
+  s.shots.forEach(sh => { try { sh.pause(); sh.currentTime = 0; } catch(e){} });
+}
+
+function startCutsceneSounds(){
+  const engine = new Audio('sounds/engine.mp3');
+  const mech = new Audio('sounds/mechanism_MLRS.mp3');
+  engine.volume = 0.8;
+  mech.volume = 0.9;
+
+  const shots = [];
+  const timers = [];
+
+  timers.push(setTimeout(() => {
+    try {
+      engine.currentTime = 0;
+      engine.play().then(() => console.log('[mlrs] engine play')).catch(e => console.warn('[mlrs] engine fail:', e.message));
+    } catch(e){}
+  }, 0));
+
+  timers.push(setTimeout(() => {
+    try {
+      mech.currentTime = 0;
+      mech.play().then(() => console.log('[mlrs] mech play')).catch(e => console.warn('[mlrs] mech fail:', e.message));
+    } catch(e){}
+  }, 2000));
+
+  [4480, 4690, 4830, 5040, 5180, 5390, 5530, 5740].forEach(t => {
+    timers.push(setTimeout(() => {
+      try {
+        const s = new Audio('sounds/MLRS_shot.mp3');
+        s.volume = 1.0;
+        shots.push(s);
+        s.play().then(() => console.log('[mlrs] shot play')).catch(e => console.warn('[mlrs] shot fail:', e.message));
+      } catch(e){}
+    }, t));
+  });
+
+  return { engine, mech, shots, timers };
+}
+
+function stopCutsceneSounds(s){
+  if (!s) return;
+  s.timers.forEach(t => clearTimeout(t));
+  try { s.engine.pause(); s.engine.currentTime = 0; } catch(e){}
+  try { s.mech.pause(); s.mech.currentTime = 0; } catch(e){}
+  s.shots.forEach(sh => { try { sh.pause(); sh.currentTime = 0; } catch(e){} });
+}
 
   /* ═══════════════════════════════════════════════════════════════
      ИНИЦИАЛИЗАЦИЯ
@@ -1589,6 +1895,7 @@ const Game = (() => {
     bindDom();
     bindEvents();
     Skins.loadFromStorage();
+    Skins.loadTargetFromStorage();
     updateRifle();
     updateUI();
     Sync.updateCoinsUI();
@@ -1607,23 +1914,38 @@ const Game = (() => {
     ultimate,
     exitToMenu,
     setVolume,
+    playCutscene,
     isRunning: () => game,
     pause,
     resume,
     exitFromPause,
     _devSpawn,
 
-    /* ★ Публичное API для модулей ульт */
+    /* ★ Публичное API для модулей оружия и ульт */
     _internals: {
-      getGame:      () => game,
-      getTargets:   () => targets,
-      getAimGeom,
-      addScore,
-      updateUI,
-      hitTargetLaser,
-      getScore:     () => score,
-      getCombo:     () => comboHits,
-      getUltReq
+      getGame: () => game,
+      getTargets: () => targets,
+      getAimGeom: getAimGeom,
+      addScore: addScore,
+      updateUI: updateUI,
+      hitTargetLaser: hitTargetLaser,
+      hitTargetMLRS: hitTargetMLRS,
+      getScore: () => score,
+      getCombo: () => comboHits,
+      getUltReq: getUltReq,
+      getElCenter: getElCenter,
+      spawn: spawn,
+      playSfx: playSfx,
+      addShot: function(){ runStats.shotCount++; totalShotCount++; },
+      addRecentShot: function(){ recentShotTimestamps.push(Date.now()); },
+      getAim: function(){ return { x: aimX, y: aimY }; },
+      findHit: findHit,
+      hitTarget: hitTarget,
+      hitTargetNoMiss: hitTargetNoMiss,
+      miss: miss,
+      resetComboSilent: resetComboSilent,
+      spawnBullet: spawnBullet,
+      resetMuzzleCache: function(){ _cachedMuzzleDist = 0; _cachedMuzzleSkin = ''; }
     }
   };
 })();

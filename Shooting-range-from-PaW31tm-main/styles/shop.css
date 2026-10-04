@@ -712,3 +712,106 @@ body[data-bg="light"] .shop-snow-toggle.on{
   line-height: 1.3;
   letter-spacing: .2px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ХЭЛЛОУИН — ИКОНКИ ТОВАРОВ В МАГАЗИНЕ (4 штуки)
+   Вставить В КОНЕЦ styles/shop.css (после блока AKC-74M).
+   Стиль как у weapon-akc74m / target-tg_neon / background-bg_sunset:
+   SVG-маска силуэта + drop-shadow, мишень-кружок, мини-пейзаж.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Дробовик: вертикальная двустволка, сталь + дерево ─── */
+.shop-preview.weapon-shotgun{
+  background: radial-gradient(circle at 50% 40%, #28303a 0%, #12161b 70%, #07090c 100%);
+  border-color: #7d8898;
+  box-shadow: inset 0 0 14px rgba(0,0,0,.85), 0 0 8px rgba(190,205,230,.22);
+  padding: 0;
+}
+.shop-preview.weapon-shotgun::before{
+  inset: 5% 0;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 100'%3E%3Cg fill='white'%3E %3Crect x='17.5' y='2' width='11.5' height='5' rx='1.5'/%3E%3Crect x='31' y='2' width='11.5' height='5' rx='1.5'/%3E %3Crect x='19' y='6' width='9' height='50'/%3E%3Crect x='32' y='6' width='9' height='50'/%3E %3Crect x='28' y='22' width='4' height='3'/%3E%3Crect x='28' y='38' width='4' height='3'/%3E %3Crect x='17' y='42' width='26' height='16' rx='3'/%3E %3Crect x='14' y='58' width='32' height='13' rx='3'/%3E%3Crect x='10.5' y='60' width='4' height='5' rx='1'/%3E%3Crect x='45.5' y='60' width='4' height='5' rx='1'/%3E %3Cpolygon points='23,71 37,71 38,80 45,94 45,99 15,99 15,94 22,80'/%3E %3C/g%3E%3Cpath d='M24 72 Q30 88 36 72' fill='none' stroke='white' stroke-width='2.2'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 100'%3E%3Cg fill='white'%3E %3Crect x='17.5' y='2' width='11.5' height='5' rx='1.5'/%3E%3Crect x='31' y='2' width='11.5' height='5' rx='1.5'/%3E %3Crect x='19' y='6' width='9' height='50'/%3E%3Crect x='32' y='6' width='9' height='50'/%3E %3Crect x='28' y='22' width='4' height='3'/%3E%3Crect x='28' y='38' width='4' height='3'/%3E %3Crect x='17' y='42' width='26' height='16' rx='3'/%3E %3Crect x='14' y='58' width='32' height='13' rx='3'/%3E%3Crect x='10.5' y='60' width='4' height='5' rx='1'/%3E%3Crect x='45.5' y='60' width='4' height='5' rx='1'/%3E %3Cpolygon points='23,71 37,71 38,80 45,94 45,99 15,99 15,94 22,80'/%3E %3C/g%3E%3Cpath d='M24 72 Q30 88 36 72' fill='none' stroke='white' stroke-width='2.2'/%3E%3C/svg%3E") center/contain no-repeat;
+  background: linear-gradient(180deg,
+    #eef2f7 0%, #b5bfcc 50%, #8a94a2 58%,
+    #8a94a2 70%, #a8693a 72%, #7a4a24 88%, #55321a 100%);
+  filter: drop-shadow(0 0 2px rgba(255,255,255,.55)) drop-shadow(0 1px 2px rgba(0,0,0,.9));
+}
+
+/* ─── Костяное ружьё: ствол-кость, тёмный приклад, оранжевое свечение ─── */
+.shop-preview.weapon-halloween{
+  background: radial-gradient(circle at 50% 45%, #3a1a3a 0%, #1c0a22 70%, #0c0310 100%);
+  border-color: #ff8020;
+  box-shadow: inset 0 0 14px rgba(0,0,0,.8), 0 0 12px rgba(255,128,32,.7);
+  padding: 0;
+}
+.shop-preview.weapon-halloween::before{
+  inset: 14% 2%;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50'%3E%3Cg fill='white'%3E%3Cpolygon points='0,20 16,17 16,30 0,33'/%3E%3Crect x='14' y='19' width='30' height='13'/%3E%3Cpolygon points='20,32 30,32 33,46 23,46'/%3E%3Cpolygon points='32,32 44,32 47,48 35,48'/%3E%3Crect x='42' y='21' width='32' height='9'/%3E%3Crect x='42' y='24' width='54' height='3'/%3E%3Crect x='90' y='21' width='10' height='8'/%3E%3Crect x='96' y='19' width='4' height='3'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50'%3E%3Cg fill='white'%3E%3Cpolygon points='0,20 16,17 16,30 0,33'/%3E%3Crect x='14' y='19' width='30' height='13'/%3E%3Cpolygon points='20,32 30,32 33,46 23,46'/%3E%3Cpolygon points='32,32 44,32 47,48 35,48'/%3E%3Crect x='42' y='21' width='32' height='9'/%3E%3Crect x='42' y='24' width='54' height='3'/%3E%3Crect x='90' y='21' width='10' height='8'/%3E%3Crect x='96' y='19' width='4' height='3'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
+  /* слева направо: приклад (дерево) → корпус (фиолет) → ствол (кость) */
+  background: linear-gradient(90deg,
+    #a8693a 0%, #7a4a24 28%,
+    #7a3aa8 31%, #5a2a88 43%,
+    #f2e9cc 46%, #fffaea 62%, #d8cca4 100%);
+  filter: drop-shadow(0 0 3px rgba(255,150,50,.85)) drop-shadow(0 0 7px rgba(255,110,20,.5));
+}
+/* Тлеющее дуло */
+.shop-preview.weapon-halloween::after{
+  content: "";
+  position: absolute;
+  left: 79%;
+  top: 41%;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff0c0 0%, #ffa030 45%, rgba(255,100,20,0) 100%);
+  box-shadow: 0 0 8px rgba(255,140,40,.95);
+  pointer-events: none;
+}
+
+/* ─── Мишень «Тыквы»: круглая тыква со светящимся лицом ─── */
+.shop-preview.target-tg_halloween{
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='p' cx='.5' cy='.45' r='.6'%3E%3Cstop offset='0' stop-color='%23ffb94a'/%3E%3Cstop offset='.55' stop-color='%23ff7a12'/%3E%3Cstop offset='1' stop-color='%23b33b06'/%3E%3C/radialGradient%3E%3C/defs%3E %3Ccircle cx='50' cy='50' r='50' fill='url(%23p)'/%3E %3Cg fill='none' stroke='%238a2c04' stroke-width='2.4' opacity='.45' stroke-linecap='round'%3E%3Cpath d='M50 2 C34 22 34 78 50 98'/%3E%3Cpath d='M50 2 C66 22 66 78 50 98'/%3E%3Cpath d='M50 2 C20 24 20 76 50 98'/%3E%3Cpath d='M50 2 C80 24 80 76 50 98'/%3E%3C/g%3E %3Cpath d='M46 3 C48 -2 54 -2 56 3 L54 9 L48 9Z' fill='%234a7a1c'/%3E %3Cg fill='%232a0800' stroke='%23ffd23a' stroke-width='2.4' stroke-linejoin='round'%3E%3Cpath d='M20 36 L43 41 L29 55Z'/%3E%3Cpath d='M80 36 L57 41 L71 55Z'/%3E%3Cpath d='M50 50 L44 62 L56 62Z'/%3E%3Cpath d='M20 64 Q50 94 80 64 L72 62 L65 72 L58 63 L50 76 L42 63 L35 72 L28 62Z'/%3E%3C/g%3E%3C/svg%3E") center/100% 100% no-repeat;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 0 0 2px #1a0500, 0 0 12px rgba(255,128,32,.85);
+  animation: hwShopPumpkin 2s ease-in-out infinite alternate;
+}
+@keyframes hwShopPumpkin{
+  0%  { box-shadow: 0 0 0 2px #1a0500, 0 0 8px rgba(255,128,32,.6); }
+  100%{ box-shadow: 0 0 0 2px #1a0500, 0 0 16px rgba(255,150,40,1), 0 0 26px rgba(255,100,0,.5); }
+}
+
+/* ─── Фон «Хэллоуин»: луна справа сверху, 2 мыши, туман внизу ─── */
+.shop-preview.background-bg_halloween{
+  background:
+    radial-gradient(circle 11px at 72% 27%, #ffe6a8 0%, #ffb04a 62%, #ee7316 96%, rgba(238,115,22,0) 100%),
+    radial-gradient(circle 28px at 72% 27%, rgba(255,150,50,.45) 0%, rgba(255,120,40,.12) 60%, transparent 100%),
+    radial-gradient(circle at 18% 14%, #fff 0.8px, transparent 1.4px),
+    radial-gradient(circle at 46% 10%, rgba(255,255,255,.7) 0.8px, transparent 1.4px),
+    radial-gradient(circle at 34% 34%, rgba(255,226,176,.7) 0.7px, transparent 1.3px),
+    linear-gradient(180deg, #1a0a2a 0%, #34102c 50%, #4a1a2a 85%, #5a2230 100%);
+  border-color: #ff8020;
+  box-shadow: 0 0 12px rgba(255,128,32,.7);
+  position: relative;
+  overflow: hidden;
+}
+/* Летучие мыши */
+.shop-preview.background-bg_halloween::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cg fill='%230b0212'%3E %3Cg transform='translate(17 22) scale(.55)'%3E%3Cpath d='M0 3 C-2 3 -3 0 -4 -3 L-5 -7 L-2 -5 L2 -5 L5 -7 L4 -3 C3 0 2 3 0 3Z'/%3E%3Cpath d='M-3 0 C-9 -9 -18 -11 -27 -6 C-23 -5 -21 -2 -20 2 C-17 -1 -14 0 -11 4 C-9 1 -6 2 -3 5Z'/%3E%3Cpath d='M3 0 C9 -9 18 -11 27 -6 C23 -5 21 -2 20 2 C17 -1 14 0 11 4 C9 1 6 2 3 5Z'/%3E%3C/g%3E %3Cg transform='translate(36 40) scale(.4)'%3E%3Cpath d='M0 3 C-2 3 -3 0 -4 -3 L-5 -7 L-2 -5 L2 -5 L5 -7 L4 -3 C3 0 2 3 0 3Z'/%3E%3Cpath d='M-3 0 C-9 4 -17 10 -26 12 C-22 8 -20 5 -19 2 C-16 5 -13 5 -10 6 C-8 4 -5 3 -3 3Z'/%3E%3Cpath d='M3 0 C9 4 17 10 26 12 C22 8 20 5 19 2 C16 5 13 5 10 6 C8 4 5 3 3 3Z'/%3E%3C/g%3E %3C/g%3E%3C/svg%3E") center/100% 100% no-repeat;
+  pointer-events: none;
+}
+/* Земля + туман */
+.shop-preview.background-bg_halloween::after{
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 48%;
+  background:
+    linear-gradient(0deg, rgba(190,140,210,.6) 0%, rgba(150,100,180,.28) 40%, rgba(150,100,180,0) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 20' preserveAspectRatio='none'%3E%3Cg fill='%230a0310'%3E%3Cpath d='M0 13 Q15 7 30 12 T60 11 V20 H0Z'/%3E %3Cpath d='M9 13 V9 M9 11 L6 8 M9 10 L12 7' stroke='%230a0310' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E %3Cpath d='M47 12 V6 M47 9 L43 5 M47 8 L51 4' stroke='%230a0310' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E") bottom/100% 100% no-repeat;
+  pointer-events: none;
+}

@@ -1,0 +1,198 @@
+/* ═══════════════════════════════════════════════════════════════
+   СКИН: Костяное ружьё (Хэллоуин)
+   Это СКИН, не оружие: форма и механика стрельбы не меняются
+   (как neon / star / china). Меняется только внешний вид:
+   • палитра через --r-* (как в default/star);
+   • костяная текстура ствола, тёмное дерево приклада,
+     фиолетово-чёрный корпус — только через background,
+     БЕЗ ::before/::after на частях ружья (чтобы не конфликтовать
+     с базовыми стилями);
+   • пули — костяные «гантельки» с тлеющим оранжевым следом;
+   • вспышка выстрела — оранжево-фиолетовая.
+   Цена: 666 🪙, is_event = 1 (до 5 ноября 2026).
+   Файл: skins/halloween.css   Класс: body.skin-halloween
+   ═══════════════════════════════════════════════════════════════ */
+
+body.skin-halloween{
+  /* Приклад и рукоять — тёмное дерево */
+  --r-stock: #3a2312;
+  --r-grip: #24140a;
+
+  /* Корпус — почти чёрный с фиолетовым отливом */
+  --r-receiver: #1c0f26;
+  --r-receiver-inset: #3a1a4a;
+
+  /* Ствол — слоновая кость */
+  --r-barrel: #e6dcc0;
+  --r-barrel-sh: #a89a74;
+
+  /* Прицелы: мушка горит оранжевым, целик — тёмно-фиолетовый */
+  --r-front-sight: #ff9a30;
+  --r-rear-sight: #2a1236;
+
+  /* Дуло — тлеющее оранжевое */
+  --r-muzzle: #ff8020;
+  --r-muzzle-border: #5a1a00;
+
+  /* Свечение дула (только box-shadow — дёшево для FPS) */
+  --r-glow: 0 0 14px rgba(255, 128, 32, .85);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ТЕКСТУРЫ ЧАСТЕЙ (только background — безопасно)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Ствол — кость: цилиндр, позвонки-кольца, поры */
+body.skin-halloween .rifle-barrel{
+  background-color: var(--r-barrel);
+  background-image:
+    /* блик */
+    linear-gradient(90deg,
+      transparent 22%,
+      rgba(255,255,255,.55) 40%,
+      rgba(255,255,255,.12) 55%,
+      transparent 70%),
+    /* тень с правого края (объём) */
+    linear-gradient(90deg,
+      transparent 55%,
+      rgba(70,50,15,.45) 100%),
+    /* кольца-позвонки */
+    repeating-linear-gradient(0deg,
+      transparent 0, transparent 13px,
+      rgba(95,72,30,.55) 13px, rgba(95,72,30,.55) 14px,
+      rgba(255,255,255,.28) 14px, rgba(255,255,255,.28) 15px),
+    /* поры кости */
+    radial-gradient(circle at 28% 22%, rgba(90,66,26,.55) 1px, transparent 1.7px),
+    radial-gradient(circle at 70% 58%, rgba(90,66,26,.5) 1.2px, transparent 1.9px),
+    radial-gradient(circle at 40% 84%, rgba(90,66,26,.5) .9px, transparent 1.6px);
+  background-size: auto, auto, auto, 23px 31px, 29px 37px, 19px 43px;
+  box-shadow:
+    inset 0 0 0 1px rgba(40,25,5,.9),
+    inset -3px 0 0 rgba(60,40,10,.25);
+}
+
+/* Приклад — тёмное дерево: волокна + блик */
+body.skin-halloween .rifle-stock{
+  background-color: var(--r-stock);
+  background-image:
+    linear-gradient(180deg, rgba(255,200,140,.16) 0%, transparent 30%),
+    repeating-linear-gradient(90deg,
+      transparent 0, transparent 5px,
+      rgba(0,0,0,.28) 5px, rgba(0,0,0,.28) 6px,
+      rgba(255,170,90,.07) 6px, rgba(255,170,90,.07) 7px),
+    linear-gradient(180deg, #4a2d16 0%, #3a2312 55%, #22130a 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(10,4,0,.9),
+    inset 0 -3px 4px rgba(0,0,0,.5);
+}
+
+/* Рукоять — тёмное дерево, поперечная насечка */
+body.skin-halloween .rifle-grip{
+  background-color: var(--r-grip);
+  background-image:
+    repeating-linear-gradient(0deg,
+      transparent 0, transparent 6px,
+      rgba(255,170,90,.08) 6px, rgba(255,170,90,.08) 7px),
+    linear-gradient(180deg, #31190c 0%, #24140a 55%, #150a04 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(10,4,0,.9),
+    inset 0 -4px 6px rgba(0,0,0,.55);
+}
+
+/* Корпус — фиолетово-чёрный, тусклые оранжевые «заклёпки» */
+body.skin-halloween .rifle-receiver{
+  background-color: var(--r-receiver);
+  background-image:
+    linear-gradient(180deg, rgba(190,120,255,.16) 0%, transparent 28%),
+    radial-gradient(circle at 18% 16%, rgba(255,140,50,.85) 1.2px, transparent 2px),
+    radial-gradient(circle at 82% 16%, rgba(255,140,50,.85) 1.2px, transparent 2px),
+    radial-gradient(circle at 18% 84%, rgba(255,140,50,.6) 1.2px, transparent 2px),
+    radial-gradient(circle at 82% 84%, rgba(255,140,50,.6) 1.2px, transparent 2px),
+    linear-gradient(90deg, #2a1638 0%, #1c0f26 50%, #120a1a 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(5,0,10,.95),
+    inset 0 -6px 8px rgba(0,0,0,.45);
+}
+
+/* Мушка — горит */
+body.skin-halloween .rifle-front-sight{
+  box-shadow: 0 0 6px rgba(255,140,40,.9);
+}
+
+/* Дуло: тлеет, при выстреле вспыхивает ярче */
+body.skin-halloween #rifleWrap.recoil .rifle-muzzle{
+  box-shadow:
+    0 0 10px rgba(255,150,40,.9),
+    0 0 20px rgba(190,60,255,.45);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПУЛЯ — кость-«гантелька» с тлеющим следом
+   Не трогаем пули ульты (.ult-bullet) и дробь (.pv-pellet):
+   у них своя графика, завязанная на currentColor.
+   ═══════════════════════════════════════════════════════════════ */
+body.skin-halloween .bullet:not(.ult-bullet):not(.pv-pellet){
+  width: 7px;
+  height: 22px;
+  border-radius: 3px;
+  background:
+    linear-gradient(90deg,
+      #9a8a60 0%, #f6efd6 38%, #fffaea 52%, #d8cca4 78%, #8a7a52 100%);
+  box-shadow:
+    0 0 4px rgba(255,170,70,.95),
+    0 0 10px rgba(255,120,30,.55);
+}
+
+/* Утолщения на концах кости */
+body.skin-halloween .bullet:not(.ult-bullet):not(.pv-pellet)::before{
+  content: "";
+  position: absolute;
+  left: -3px; right: -3px;
+  top: -2px;  bottom: -2px;
+  background:
+    radial-gradient(circle at 24% 12%, #f6efd6 0 3px, transparent 3.4px),
+    radial-gradient(circle at 76% 12%, #f6efd6 0 3px, transparent 3.4px),
+    radial-gradient(circle at 24% 88%, #f6efd6 0 3px, transparent 3.4px),
+    radial-gradient(circle at 76% 88%, #f6efd6 0 3px, transparent 3.4px);
+  pointer-events: none;
+}
+
+/* Тлеющий оранжевый след (позади пули — направление задаёт rotate родителя) */
+body.skin-halloween .bullet:not(.ult-bullet):not(.pv-pellet)::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 6px;
+  height: 30px;
+  transform: translateX(-50%);
+  border-radius: 3px;
+  background: linear-gradient(180deg,
+    rgba(255,170,60,.9) 0%,
+    rgba(255,110,20,.55) 40%,
+    rgba(150,50,200,.25) 75%,
+    rgba(150,50,200,0) 100%);
+  filter: blur(1.5px);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ВСПЫШКА ВЫСТРЕЛА — оранжево-фиолетовая
+   (#muzzleFlash общий для всех скинов — красим только при skin-halloween)
+   ═══════════════════════════════════════════════════════════════ */
+body.skin-halloween #muzzleFlash::before{
+  background: linear-gradient(180deg,
+    transparent 0%, #fff0d0 25%, #ffa030 55%, #b040ff 82%, transparent 100%);
+  box-shadow:
+    0 0 8px rgba(255,170,60,.95),
+    0 0 18px rgba(255,110,20,.7),
+    0 0 28px rgba(170,60,255,.45);
+}
+body.skin-halloween #muzzleFlash::after{
+  background: linear-gradient(90deg,
+    transparent 0%, #fff0d0 25%, #ffa030 55%, #b040ff 82%, transparent 100%);
+  box-shadow:
+    0 0 8px rgba(255,170,60,.95),
+    0 0 18px rgba(255,110,20,.7),
+    0 0 28px rgba(170,60,255,.45);
+}

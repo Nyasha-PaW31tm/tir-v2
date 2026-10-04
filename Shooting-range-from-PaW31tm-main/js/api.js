@@ -79,6 +79,49 @@ const API = (() => {
   return {
     isTelegramReady: () => !!getInitData(),
     getProfile(){ return request('/api/profile', { method: 'POST' }); },
+    
+    getProfileExtended(){
+  return request('/api/profile/extended', { method: 'POST' });
+},
+
+getAchievements(){
+  return request('/api/achievements', { method: 'POST' });
+},
+claimAchievement(achievementId){
+  return request('/api/achievements/claim', {
+    method: 'POST',
+    body: { achievement_id: achievementId }
+  });
+},
+unlockAchievement(achievementId){
+  return request('/api/achievements/unlock', {
+    method: 'POST',
+    body: { achievement_id: achievementId }
+  });
+},
+
+setProfile(fields){
+  return request('/api/profile/set', {
+    method: 'POST',
+    body: fields
+  });
+},
+changeName(name){
+  return request('/api/profile/change-name', {
+    method: 'POST',
+    body: { name }
+  });
+},
+getAvatars(){
+  return request('/api/profile/avatars', { method: 'POST' });
+},
+getProfileBgs(){
+  return request('/api/profile/bgs', { method: 'POST' });
+},
+getProfileFrames(){
+  return request('/api/profile/frames', { method: 'POST' });
+},
+    
     submitRun(run){ return request('/api/submit-run', { method: 'POST', body: { run } }); },
     getLeaderboard(){ return request('/api/leaderboard'); },
     getSkins(){ return request('/api/skins', { method: 'POST' }); },

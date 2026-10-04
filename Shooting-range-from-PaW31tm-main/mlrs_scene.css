@@ -1,0 +1,2526 @@
+#cutsceneOverlay * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#cutsceneOverlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* =========================================================
+   CUTSCENE
+   ========================================================= */
+
+.cutscene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #78b6d5;
+    isolation: isolate;
+}
+
+
+/* =========================================================
+   SKY
+   ========================================================= */
+
+.sky {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 1;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #65a7cf 0%,
+            #9fcbe0 55%,
+            #d8d2b2 100%
+        );
+}
+
+
+/* =========================================================
+   SUN
+   ========================================================= */
+
+.sun {
+
+    position: absolute;
+
+    z-index: 2;
+
+    top: 10%;
+    right: 13%;
+
+    width: 13vw;
+    height: 13vw;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #fff8c8,
+            #ffe99b 45%,
+            transparent 75%
+        );
+}
+
+
+/* =========================================================
+   CLOUDS
+   ========================================================= */
+
+.cloud {
+
+    position: absolute;
+
+    z-index: 3;
+
+    width: 22vw;
+    height: 7vw;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.42);
+
+    filter: blur(2px);
+}
+
+
+.cloud::before,
+.cloud::after {
+
+    content: "";
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    background: inherit;
+}
+
+
+.cloud::before {
+
+    width: 9vw;
+    height: 9vw;
+
+    left: 3vw;
+    bottom: 1vw;
+}
+
+
+.cloud::after {
+
+    width: 7vw;
+    height: 7vw;
+
+    right: 3vw;
+    bottom: .8vw;
+}
+
+
+.cloud-1 {
+
+    top: 12%;
+    left: 8%;
+}
+
+
+.cloud-2 {
+
+    top: 23%;
+    left: 55%;
+
+    transform: scale(.7);
+}
+
+
+.cloud-3 {
+
+    top: 7%;
+    right: -3%;
+
+    transform: scale(.55);
+}
+
+
+/* =========================================================
+   MOUNTAINS
+   ========================================================= */
+
+.far-mountains {
+
+    position: absolute;
+
+    z-index: 4;
+
+    left: 0;
+    right: 0;
+
+    bottom: 30%;
+
+    height: 27%;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            transparent 0 28%,
+            #718f93 29% 46%,
+            transparent 47%
+        ),
+
+        linear-gradient(
+            45deg,
+            transparent 0 32%,
+            #6c888d 33% 52%,
+            transparent 53%
+        );
+
+    opacity: .65;
+}
+
+
+.near-mountains {
+
+    position: absolute;
+
+    z-index: 5;
+
+    left: -10%;
+    right: -10%;
+
+    bottom: 25%;
+
+    height: 25%;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            transparent 0 30%,
+            #506f70 31% 52%,
+            transparent 53%
+        ),
+
+        linear-gradient(
+            45deg,
+            transparent 0 35%,
+            #587878 36% 57%,
+            transparent 58%
+        );
+
+    opacity: .85;
+}
+
+
+/* =========================================================
+   GROUND
+   ========================================================= */
+
+.ground {
+
+    position: absolute;
+
+    z-index: 10;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 35%;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #6d754e,
+            #4d5738
+        );
+}
+
+
+.ground-road {
+
+    position: absolute;
+
+    left: -5%;
+    right: -5%;
+
+    top: 19%;
+
+    height: 45%;
+
+    transform: rotate(-2deg);
+
+    background:
+        linear-gradient(
+            to bottom,
+            #6b6656,
+            #514d42
+        );
+}
+
+
+.ground-detail {
+
+    position: absolute;
+
+    width: 2vw;
+    height: .5vw;
+
+    border-radius: 50%;
+
+    background: rgba(40,40,30,.5);
+}
+
+
+.detail-1 {
+
+    left: 15%;
+    top: 70%;
+}
+
+
+.detail-2 {
+
+    left: 47%;
+    top: 55%;
+}
+
+
+.detail-3 {
+
+    right: 14%;
+    top: 74%;
+}
+
+
+/* =========================================================
+   MOVEMENT DUST
+   ========================================================= */
+
+.movement-dust {
+
+    position: absolute;
+
+    z-index: 30;
+
+    width: 15vw;
+    height: 8vw;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            ellipse,
+            rgba(190,180,145,.75),
+            rgba(150,145,120,.35),
+            transparent 72%
+        );
+
+    filter: blur(5px);
+
+    opacity: 0;
+
+    animation:
+        vehicle-dust 7s linear infinite;
+}
+
+
+.movement-dust-1 {
+
+    left: 5%;
+    bottom: 28%;
+}
+
+
+.movement-dust-2 {
+
+    left: 18%;
+    bottom: 31%;
+
+    animation-delay: .15s;
+}
+
+
+.movement-dust-3 {
+
+    left: 31%;
+    bottom: 27%;
+
+    animation-delay: .3s;
+}
+
+
+/* =========================================================
+   MLRS
+   ========================================================= */
+
+.mlrs {
+
+    position: absolute;
+
+    z-index: 40;
+
+    width: 64vw;
+    height: 30vw;
+
+    bottom: 23%;
+
+    transform-origin: center bottom;
+}
+
+
+.mlrs-main {
+
+    left: -70vw;
+
+    animation:
+        vehicle-main 7s linear infinite;
+}
+
+
+.mlrs-back {
+
+    left: -78vw;
+
+    bottom: 31%;
+
+    transform: scale(.76);
+
+    opacity: .9;
+
+    animation:
+        vehicle-back 7s linear infinite;
+}
+
+
+/* =========================================================
+   VEHICLE
+   ========================================================= */
+
+.vehicle {
+
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+}
+
+
+.vehicle-body {
+
+    position: absolute;
+
+    left: 5%;
+    bottom: 18%;
+
+    width: 67%;
+    height: 43%;
+
+    border-radius:
+        2vw
+        1vw
+        .8vw
+        1.5vw;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #59634e,
+            #3e4938
+        );
+
+    box-shadow:
+        inset 0 -.8vw 0 rgba(0,0,0,.2);
+}
+
+
+/* =========================================================
+   CABIN
+   ========================================================= */
+
+.cabin {
+
+    position: absolute;
+
+    right: 4%;
+    bottom: 18%;
+
+    width: 28%;
+    height: 58%;
+
+    border-radius:
+        1.8vw
+        1.8vw
+        .8vw
+        .8vw;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #606b55,
+            #404b3a
+        );
+
+    box-shadow:
+        inset 0 -.8vw 0 rgba(0,0,0,.25);
+}
+
+
+.cabin-window {
+
+    position: absolute;
+
+    right: 9%;
+    top: 10%;
+
+    width: 72%;
+    height: 32%;
+
+    border-radius: .8vw;
+
+    background:
+        linear-gradient(
+            135deg,
+            #344a4d,
+            #172a2d
+        );
+
+    border: .35vw solid #30392f;
+}
+
+
+.cabin-window-small {
+
+    position: absolute;
+
+    right: 8%;
+    top: 47%;
+
+    width: 45%;
+    height: 25%;
+
+    border-radius: .5vw;
+
+    background:
+        linear-gradient(
+            135deg,
+            #405457,
+            #1c3032
+        );
+
+    border: .3vw solid #30392f;
+}
+
+
+.door-line {
+
+    position: absolute;
+
+    left: 13%;
+    bottom: 7%;
+
+    width: 2px;
+    height: 48%;
+
+    background: rgba(20,25,20,.55);
+}
+
+
+/* =========================================================
+   FRONT
+   ========================================================= */
+
+.front-bumper {
+
+    position: absolute;
+
+    right: 0;
+    bottom: 14%;
+
+    width: 8%;
+    height: 13%;
+
+    border-radius: .5vw;
+
+    background: #30372d;
+}
+
+
+.front-light {
+
+    position: absolute;
+
+    right: 1.5%;
+    bottom: 29%;
+
+    width: 3%;
+    height: 5%;
+
+    border-radius: 50%;
+
+    background: #e6d98c;
+}
+
+
+/* =========================================================
+   WHEELS
+   ========================================================= */
+
+.wheel {
+
+    position: absolute;
+
+    bottom: 7%;
+
+    width: 11vw;
+    height: 11vw;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #3b3b36 0 25%,
+            #161713 27% 72%,
+            #080908 74%
+        );
+
+    border: .8vw solid #272824;
+
+    box-shadow:
+        inset 0 0 0 .4vw #55564d;
+
+    animation:
+        wheel-roll 7s linear infinite;
+}
+
+
+.wheel-a {
+    left: 13%;
+}
+
+
+.wheel-b {
+    left: 42%;
+}
+
+
+.wheel-c {
+    right: 8%;
+}
+
+
+/* =========================================================
+   LAUNCHER
+   ========================================================= */
+
+.launcher {
+
+    position: absolute;
+
+    left: 12%;
+    bottom: 48%;
+
+    width: 51%;
+    height: 31%;
+
+    transform-origin: 7% 100%;
+
+    animation:
+        launcher-raise 7s linear infinite;
+
+    overflow: visible;
+}
+
+
+.launcher-base {
+
+    position: absolute;
+
+    left: 0;
+    bottom: 0;
+
+    width: 24%;
+    height: 30%;
+
+    border-radius: .8vw;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #515a47,
+            #343c2f
+        );
+}
+
+
+.launcher-frame {
+
+    position: absolute;
+
+    left: 14%;
+    bottom: 18%;
+
+    width: 82%;
+    height: 70%;
+
+    transform-origin: 0% 100%;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #56604b,
+            #343d30
+        );
+
+    border-radius: .7vw;
+
+    border: .35vw solid #2c3429;
+
+    overflow: visible;
+}
+
+
+/* =========================================================
+   TUBES
+   ========================================================= */
+
+.launcher-tube {
+
+    position: absolute;
+
+    right: 1%;
+
+    width: 94%;
+    height: 9%;
+
+    border-radius: 1vw;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #5e6852,
+            #30392c
+        );
+
+    border: .25vw solid #293126;
+
+    overflow: visible;
+}
+
+
+.tube-1 {
+    top: 7%;
+}
+
+
+.tube-2 {
+    top: 22%;
+}
+
+
+.tube-3 {
+    top: 37%;
+}
+
+
+.tube-4 {
+    top: 52%;
+}
+
+
+.tube-5 {
+    top: 67%;
+}
+
+
+.tube-6 {
+    top: 82%;
+}
+
+
+/* =========================================================
+   MUZZLE FLASH
+   ========================================================= */
+
+.muzzle-flash {
+
+    position: absolute;
+
+    z-index: 200;
+
+    right: -4vw;
+    top: 50%;
+
+    width: 5vw;
+    height: 5vw;
+
+    border-radius: 50%;
+
+    transform:
+        translateY(-50%)
+        scale(.1);
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            circle,
+            #ffffff 0%,
+            #fff5a0 25%,
+            #ffb52e 50%,
+            #ff5a16 68%,
+            transparent 75%
+        );
+}
+
+
+/* =========================================================
+   ROCKET
+   ========================================================= */
+
+.rocket {
+
+    position: absolute;
+
+    z-index: 300;
+
+    right: 0;
+    top: 50%;
+
+    width: 8vw;
+    height: 2.4vw;
+
+    transform:
+        translateY(-50%)
+        translateX(0);
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    overflow: visible;
+}
+
+
+/* =========================================================
+   ROCKET BODY
+   ========================================================= */
+
+.rocket-body {
+
+    position: absolute;
+
+    z-index: 3;
+
+    left: 0;
+    top: 25%;
+
+    width: 78%;
+    height: 50%;
+
+    border-radius: 1vw;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #8b8c80,
+            #45463f
+        );
+
+    box-shadow:
+        inset 0 .2vw 0 rgba(255,255,255,.25);
+}
+
+
+/* =========================================================
+   ROCKET FINS
+   ========================================================= */
+
+.rocket-fin {
+
+    position: absolute;
+
+    z-index: 2;
+
+    left: 15%;
+
+    width: 1.7vw;
+    height: 1.5vw;
+
+    background: #30312d;
+
+    transform: skewX(-25deg);
+}
+
+
+.fin-top {
+
+    top: -15%;
+}
+
+
+.fin-bottom {
+
+    bottom: -15%;
+}
+
+
+/* =========================================================
+   ROCKET FLAME
+   ========================================================= */
+
+.rocket-flame {
+
+    position: absolute;
+
+    z-index: 4;
+
+    left: -18%;
+    top: 22%;
+
+    width: 27%;
+    height: 56%;
+
+    border-radius:
+        50%
+        0
+        0
+        50%;
+
+    background:
+        linear-gradient(
+            to left,
+            #fffbd0,
+            #ffc02d 35%,
+            #ff6418 70%,
+            transparent
+        );
+
+    transform-origin: right center;
+
+    animation:
+        flame .07s ease-in-out infinite alternate;
+}
+
+
+/* =========================================================
+   ROCKET TRAIL
+   ========================================================= */
+
+.rocket-trail {
+
+    position: absolute;
+
+    z-index: 1;
+
+    left: -230%;
+
+    top: 50%;
+
+    width: 230%;
+
+    height: .8vw;
+
+    transform:
+        translateY(-50%);
+
+    border-radius: 1vw;
+
+    background:
+        linear-gradient(
+            to left,
+            rgba(255,240,170,.95),
+            rgba(255,165,60,.65),
+            rgba(255,100,30,.25),
+            transparent
+        );
+
+    filter: blur(.12vw);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   CREW
+   ========================================================= */
+
+.crew {
+
+    position: absolute;
+
+    z-index: 50;
+
+    left: 0;
+    right: 0;
+    bottom: 22%;
+
+    height: 30%;
+
+    pointer-events: none;
+}
+
+
+.soldier {
+
+    position: absolute;
+
+    width: 7vw;
+    height: 16vw;
+
+    opacity: 0;
+
+    animation:
+        crew-arrival 7s linear infinite;
+}
+
+
+.soldier-1 {
+
+    left: 43%;
+    bottom: 2%;
+}
+
+
+.soldier-2 {
+
+    left: 53%;
+    bottom: 1%;
+
+    animation-delay: .12s;
+}
+
+
+.soldier-3 {
+
+    left: 62%;
+    bottom: 0%;
+
+    animation-delay: .24s;
+}
+
+
+.head {
+
+    position: absolute;
+
+    top: 6%;
+    left: 29%;
+
+    width: 42%;
+    height: 19%;
+
+    border-radius: 50%;
+
+    background: #a98568;
+}
+
+
+.helmet {
+
+    position: absolute;
+
+    top: 1%;
+    left: 19%;
+
+    width: 62%;
+    height: 17%;
+
+    border-radius:
+        50%
+        50%
+        35%
+        35%;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #59644f,
+            #323b2d
+        );
+}
+
+
+.torso {
+
+    position: absolute;
+
+    top: 24%;
+    left: 17%;
+
+    width: 66%;
+    height: 37%;
+
+    border-radius: 1vw;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #4c5945,
+            #30392c
+        );
+}
+
+
+.arm {
+
+    position: absolute;
+
+    top: 27%;
+
+    width: 16%;
+    height: 34%;
+
+    border-radius: 1vw;
+
+    background: #3d4937;
+
+    transform-origin: top center;
+}
+
+
+.arm-left {
+
+    left: 4%;
+
+    transform: rotate(15deg);
+}
+
+
+.arm-right {
+
+    right: 4%;
+
+    transform: rotate(-20deg);
+}
+
+
+.leg {
+
+    position: absolute;
+
+    top: 59%;
+
+    width: 20%;
+    height: 38%;
+
+    border-radius: .7vw;
+
+    background: #30392d;
+
+    transform-origin: top center;
+}
+
+
+.leg-left {
+
+    left: 25%;
+
+    transform: rotate(4deg);
+}
+
+
+.leg-right {
+
+    right: 25%;
+
+    transform: rotate(-4deg);
+}
+
+
+/* =========================================================
+   LAUNCH SMOKE
+   ========================================================= */
+
+.launch-effects {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 65;
+
+    pointer-events: none;
+}
+
+
+.launch-smoke {
+
+    position: absolute;
+
+    width: 14vw;
+    height: 14vw;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(205,205,195,.85),
+            rgba(130,130,125,.55),
+            transparent 70%
+        );
+
+    filter: blur(6px);
+
+    opacity: 0;
+
+    transform: scale(.2);
+
+    animation:
+        launch-smoke 7s linear infinite;
+}
+
+
+.smoke-1 {
+    left: 58%;
+    bottom: 38%;
+}
+
+
+.smoke-2 {
+    left: 63%;
+    bottom: 36%;
+}
+
+
+.smoke-3 {
+    left: 67%;
+    bottom: 41%;
+}
+
+
+.smoke-4 {
+    left: 54%;
+    bottom: 34%;
+}
+
+
+.smoke-5 {
+    left: 70%;
+    bottom: 38%;
+}
+
+
+/* =========================================================
+   SMOKE
+   ========================================================= */
+
+@keyframes launch-smoke {
+
+    0%,
+    63% {
+
+        opacity: 0;
+
+        transform:
+            scale(.2);
+    }
+
+    64% {
+
+        opacity: .75;
+
+        transform:
+            scale(.7);
+    }
+
+    70% {
+
+        opacity: .6;
+
+        transform:
+            scale(1.15)
+            translateY(-2vh);
+    }
+
+    80% {
+
+        opacity: .35;
+
+        transform:
+            scale(1.6)
+            translateY(-6vh);
+    }
+
+    93% {
+
+        opacity: 0;
+
+        transform:
+            scale(2)
+            translateY(-11vh);
+    }
+
+    100% {
+
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   SHOCKWAVE
+   ========================================================= */
+
+.shockwave {
+
+    position: absolute;
+
+    left: 65%;
+    bottom: 42%;
+
+    width: 10vw;
+    height: 10vw;
+
+    border-radius: 50%;
+
+    border:
+        .5vw solid rgba(255,200,100,.7);
+
+    opacity: 0;
+
+    transform: scale(.1);
+
+    animation:
+        shockwave 7s linear infinite;
+}
+
+
+@keyframes shockwave {
+
+    0%,
+    63% {
+
+        opacity: 0;
+
+        transform:
+            scale(.1);
+    }
+
+    64% {
+
+        opacity: .7;
+
+        transform:
+            scale(.7);
+    }
+
+    68% {
+
+        opacity: 0;
+
+        transform:
+            scale(2);
+    }
+
+    100% {
+
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   VEHICLE MOVEMENT
+   ========================================================= */
+
+@keyframes vehicle-main {
+
+    0% {
+
+        transform:
+            translateX(0);
+    }
+
+    22% {
+
+        transform:
+            translateX(100vw);
+    }
+
+    22.01%,
+    100% {
+
+        transform:
+            translateX(100vw);
+    }
+}
+
+
+@keyframes vehicle-back {
+
+    0% {
+
+        transform:
+            scale(.76)
+            translateX(0);
+    }
+
+    25% {
+
+        transform:
+            scale(.76)
+            translateX(100vw);
+    }
+
+    25.01%,
+    100% {
+
+        transform:
+            scale(.76)
+            translateX(100vw);
+    }
+}
+
+
+/* =========================================================
+   WHEELS
+   ========================================================= */
+
+@keyframes wheel-roll {
+
+    0% {
+
+        transform:
+            rotate(0deg);
+    }
+
+    22% {
+
+        transform:
+            rotate(900deg);
+    }
+
+    22.01%,
+    100% {
+
+        transform:
+            rotate(900deg);
+    }
+}
+
+
+/* =========================================================
+   LAUNCHER RAISE
+   ========================================================= */
+
+@keyframes launcher-raise {
+
+    0%,
+    38% {
+
+        transform:
+            rotate(0deg);
+    }
+
+    45% {
+
+        transform:
+            rotate(-18deg);
+    }
+
+    52%,
+    100% {
+
+        transform:
+            rotate(-18deg);
+    }
+}
+
+
+/* =========================================================
+   CREW
+   ========================================================= */
+
+@keyframes crew-arrival {
+
+    0%,
+    25% {
+
+        opacity: 0;
+
+        transform:
+            translateX(-7vw)
+            translateY(2vw);
+    }
+
+    31% {
+
+        opacity: 1;
+
+        transform:
+            translateX(0)
+            translateY(0);
+    }
+
+    38%,
+    100% {
+
+        opacity: 1;
+
+        transform:
+            translateX(0)
+            translateY(0);
+    }
+}
+
+
+/* =========================================================
+   VEHICLE DUST
+   ========================================================= */
+
+@keyframes vehicle-dust {
+
+    0%,
+    7% {
+
+        opacity: 0;
+
+        transform:
+            scale(.2);
+    }
+
+    14% {
+
+        opacity: .8;
+
+        transform:
+            scale(.8);
+    }
+
+    27% {
+
+        opacity: .5;
+
+        transform:
+            scale(1.4);
+    }
+
+    42%,
+    100% {
+
+        opacity: 0;
+
+        transform:
+            scale(2);
+    }
+}
+
+
+/* =========================================================
+   ROCKET 1 — MAIN
+   ========================================================= */
+
+@keyframes main-rocket-1 {
+
+    0%,
+    63.8% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    64% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    64.8% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(15vw);
+    }
+
+    66.5% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(65vw);
+    }
+
+    69% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(150vw);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(250vw);
+    }
+}
+
+
+/* =========================================================
+   ROCKET 2 — MAIN
+   ========================================================= */
+
+@keyframes main-rocket-2 {
+
+    0%,
+    68.8% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    69% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    69.8% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(15vw);
+    }
+
+    71.5% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(65vw);
+    }
+
+    74% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(150vw);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(250vw);
+    }
+}
+
+
+/* =========================================================
+   ROCKET 3 — MAIN
+   ========================================================= */
+
+@keyframes main-rocket-3 {
+
+    0%,
+    73.8% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    74% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    74.8% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(15vw);
+    }
+
+    76.5% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(65vw);
+    }
+
+    79% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(150vw);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(250vw);
+    }
+}
+
+
+/* =========================================================
+   ROCKET 4 — MAIN
+   ========================================================= */
+
+@keyframes main-rocket-4 {
+
+    0%,
+    78.8% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    79% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    79.8% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(15vw);
+    }
+
+    81.5% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(65vw);
+    }
+
+    84% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(150vw);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(250vw);
+    }
+}
+
+
+/* =========================================================
+   ROCKET 1 — BACK
+   ========================================================= */
+
+@keyframes back-rocket-1 {
+
+    0%,
+    66.8% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    67% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    67.8% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(15vw);
+    }
+
+    69.5% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(65vw);
+    }
+
+    72% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(150vw);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(250vw);
+    }
+}
+
+
+/* =========================================================
+   ROCKET 2 — BACK
+   ========================================================= */
+
+@keyframes back-rocket-2 {
+
+    0%,
+    71.8% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    72% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    72.8% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(15vw);
+    }
+
+    74.5% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(65vw);
+    }
+
+    77% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(150vw);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(250vw);
+    }
+}
+
+
+/* =========================================================
+   ROCKET 3 — BACK
+   ========================================================= */
+
+@keyframes back-rocket-3 {
+
+    0%,
+    76.8% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    77% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    77.8% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(15vw);
+    }
+
+    79.5% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(65vw);
+    }
+
+    82% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(150vw);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(250vw);
+    }
+}
+
+
+/* =========================================================
+   ROCKET 4 — BACK
+   ========================================================= */
+
+@keyframes back-rocket-4 {
+
+    0%,
+    81.8% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    82% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(0);
+    }
+
+    82.8% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(15vw);
+    }
+
+    84.5% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(65vw);
+    }
+
+    87% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-50%)
+            translateX(150vw);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-50%)
+            translateX(250vw);
+    }
+}
+
+
+/* =========================================================
+   ASSIGN ROCKET ANIMATIONS
+   ========================================================= */
+
+.mlrs-main .tube-1 .rocket {
+    animation:
+        main-rocket-1 7s linear infinite;
+}
+
+
+.mlrs-main .tube-2 .rocket {
+    animation:
+        main-rocket-2 7s linear infinite;
+}
+
+
+.mlrs-main .tube-3 .rocket {
+    animation:
+        main-rocket-3 7s linear infinite;
+}
+
+
+.mlrs-main .tube-4 .rocket {
+    animation:
+        main-rocket-4 7s linear infinite;
+}
+
+
+.mlrs-back .tube-1 .rocket {
+    animation:
+        back-rocket-1 7s linear infinite;
+}
+
+
+.mlrs-back .tube-2 .rocket {
+    animation:
+        back-rocket-2 7s linear infinite;
+}
+
+
+.mlrs-back .tube-3 .rocket {
+    animation:
+        back-rocket-3 7s linear infinite;
+}
+
+
+.mlrs-back .tube-4 .rocket {
+    animation:
+        back-rocket-4 7s linear infinite;
+}
+
+
+/* =========================================================
+   FLASH 1 — MAIN
+   ========================================================= */
+
+@keyframes flash-main-1 {
+
+    0%,
+    63.8% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    64% {
+        opacity: 1;
+        transform:
+            translateY(-50%)
+            scale(1.5);
+    }
+
+    65.2% {
+        opacity: .3;
+        transform:
+            translateY(-50%)
+            scale(.7);
+    }
+
+    66% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+@keyframes flash-main-2 {
+
+    0%,
+    68.8% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    69% {
+        opacity: 1;
+        transform:
+            translateY(-50%)
+            scale(1.5);
+    }
+
+    70.2% {
+        opacity: .3;
+        transform:
+            translateY(-50%)
+            scale(.7);
+    }
+
+    71% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+@keyframes flash-main-3 {
+
+    0%,
+    73.8% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    74% {
+        opacity: 1;
+        transform:
+            translateY(-50%)
+            scale(1.5);
+    }
+
+    75.2% {
+        opacity: .3;
+        transform:
+            translateY(-50%)
+            scale(.7);
+    }
+
+    76% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+@keyframes flash-main-4 {
+
+    0%,
+    78.8% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    79% {
+        opacity: 1;
+        transform:
+            translateY(-50%)
+            scale(1.5);
+    }
+
+    80.2% {
+        opacity: .3;
+        transform:
+            translateY(-50%)
+            scale(.7);
+    }
+
+    81% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   FLASH — BACK
+   ========================================================= */
+
+@keyframes flash-back-1 {
+
+    0%,
+    66.8% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    67% {
+        opacity: 1;
+        transform:
+            translateY(-50%)
+            scale(1.5);
+    }
+
+    68.2% {
+        opacity: .3;
+        transform:
+            translateY(-50%)
+            scale(.7);
+    }
+
+    69% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+@keyframes flash-back-2 {
+
+    0%,
+    71.8% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    72% {
+        opacity: 1;
+        transform:
+            translateY(-50%)
+            scale(1.5);
+    }
+
+    73.2% {
+        opacity: .3;
+        transform:
+            translateY(-50%)
+            scale(.7);
+    }
+
+    74% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+@keyframes flash-back-3 {
+
+    0%,
+    76.8% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    77% {
+        opacity: 1;
+        transform:
+            translateY(-50%)
+            scale(1.5);
+    }
+
+    78.2% {
+        opacity: .3;
+        transform:
+            translateY(-50%)
+            scale(.7);
+    }
+
+    79% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+@keyframes flash-back-4 {
+
+    0%,
+    81.8% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    82% {
+        opacity: 1;
+        transform:
+            translateY(-50%)
+            scale(1.5);
+    }
+
+    83.2% {
+        opacity: .3;
+        transform:
+            translateY(-50%)
+            scale(.7);
+    }
+
+    84% {
+        opacity: 0;
+        transform:
+            translateY(-50%)
+            scale(.1);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   ASSIGN FLASH ANIMATIONS
+   ========================================================= */
+
+.mlrs-main .tube-1 .muzzle-flash {
+    animation:
+        flash-main-1 7s linear infinite;
+}
+
+
+.mlrs-main .tube-2 .muzzle-flash {
+    animation:
+        flash-main-2 7s linear infinite;
+}
+
+
+.mlrs-main .tube-3 .muzzle-flash {
+    animation:
+        flash-main-3 7s linear infinite;
+}
+
+
+.mlrs-main .tube-4 .muzzle-flash {
+    animation:
+        flash-main-4 7s linear infinite;
+}
+
+
+.mlrs-back .tube-1 .muzzle-flash {
+    animation:
+        flash-back-1 7s linear infinite;
+}
+
+
+.mlrs-back .tube-2 .muzzle-flash {
+    animation:
+        flash-back-2 7s linear infinite;
+}
+
+
+.mlrs-back .tube-3 .muzzle-flash {
+    animation:
+        flash-back-3 7s linear infinite;
+}
+
+
+.mlrs-back .tube-4 .muzzle-flash {
+    animation:
+        flash-back-4 7s linear infinite;
+}
+
+
+/* =========================================================
+   FLAME
+   ========================================================= */
+
+@keyframes flame {
+
+    from {
+
+        transform:
+            scaleY(.75);
+    }
+
+    to {
+
+        transform:
+            scaleY(1.2);
+    }
+}
+
+
+/* =========================================================
+   CAMERA FLASH
+   ========================================================= */
+
+.camera-flash {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 90;
+
+    pointer-events: none;
+
+    background: white;
+
+    opacity: 0;
+
+    animation:
+        camera-flash-animation 7s linear infinite;
+}
+
+
+@keyframes camera-flash-animation {
+
+    0%,
+    63% {
+
+        opacity: 0;
+    }
+
+    64% {
+
+        opacity: .25;
+    }
+
+    66% {
+
+        opacity: 0;
+    }
+
+    100% {
+
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   VIGNETTE
+   ========================================================= */
+
+.vignette {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 100;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            transparent 52%,
+            rgba(0,0,0,.48) 100%
+        );
+}

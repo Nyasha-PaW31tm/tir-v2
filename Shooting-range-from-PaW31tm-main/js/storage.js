@@ -29,6 +29,9 @@ const Storage = (() => {
 
     getBackground: () => get('bg', 'dark'),
     setBackground: (v) => set('bg', v),
+    
+    getSkipCutscenes: () => get('skipCutscenes', '0') === '1',
+setSkipCutscenes: (v) => set('skipCutscenes', v ? '1' : '0'),
 
     getVolume: () => parseInt(get('volume', '70'), 10),
     setVolume: (v) => set('volume', v),
