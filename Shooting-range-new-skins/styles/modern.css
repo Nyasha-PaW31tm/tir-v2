@@ -1,0 +1,467 @@
+/* ═══════════════════════════════════════════════════════════════
+   MODERN.CSS — обновление интерфейса: главное меню, карточки, магазин
+   Подключать ПОСЛЕДНИМ из styles/*.css (после shop.css и skins/*.css).
+   Ничего не ломает: только переопределяет вид; темы (светлая, хэллоуин…)
+   по-прежнему задают цвет самой карточки.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root{
+  --ui-line:    rgba(255,255,255,.09);
+  --ui-line2:   rgba(255,255,255,.16);
+  --ui-surface: rgba(255,255,255,.045);
+  --ui-surface2:rgba(255,255,255,.080);
+  --ui-text:    #f2f5fa;
+  --ui-muted:   #93a0b4;
+  --ui-gold:    #ffd23c;
+  --ui-green:   #4fd05a;
+}
+body[data-bg="light"]{
+  --ui-line:    rgba(0,0,0,.12);
+  --ui-line2:   rgba(0,0,0,.22);
+  --ui-surface: rgba(0,0,0,.05);
+  --ui-surface2:rgba(0,0,0,.09);
+  --ui-text:    #111;
+  --ui-muted:   #5a6470;
+}
+
+/* ─── Общая рамка экранов ─── */
+.overlay{
+  background:
+    radial-gradient(90% 55% at 50% 0%, rgba(70,110,170,.20), transparent 70%),
+    rgba(5,7,10,.88);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+html body .menu-card{
+  border-radius: 28px;
+  border-color: var(--ui-line2);
+  box-shadow: 0 24px 80px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ГЛАВНОЕ МЕНЮ
+   ═══════════════════════════════════════════════════════════════ */
+#screenMain .menu-card{
+  padding: 28px 16px 18px;
+  background-image:
+    radial-gradient(120% 55% at 50% -10%, rgba(80,150,255,.22), transparent 62%),
+    radial-gradient(80% 40% at 100% 100%, rgba(255,190,60,.08), transparent 70%);
+}
+#screenMain .logo-mark{
+  font-size: 58px;
+  letter-spacing: 10px;
+  padding-left: 10px;
+  line-height: 1;
+  filter: drop-shadow(0 6px 18px rgba(120,170,255,.35));
+}
+#screenMain h1{
+  font-size: 12px;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+  color: var(--ui-muted);
+  font-weight: 700;
+  margin: 8px 0 10px;
+}
+#screenMain .beta{
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 0 0 16px;
+  border-radius: 999px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
+  font-size: 10px;
+  letter-spacing: 2.5px;
+}
+#screenMain .menu-coins{
+  margin-bottom: 14px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: 17px;
+  background: linear-gradient(180deg, rgba(255,210,60,.16), rgba(255,210,60,.05));
+  border: 1px solid rgba(255,210,60,.38);
+  box-shadow: 0 0 24px rgba(255,210,60,.12);
+}
+/* «ИГРАТЬ»: общее правило .menu-card button (серый фон) перебивало зелёный градиент */
+#screenMain .menu-card .menu-play{
+  padding: 18px 20px;
+  margin: 4px 0 14px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #58b84a 0%, #2f8a28 55%, #1f6a1c 100%);
+}
+
+/* Плитки: 6-колоночная сетка → ряды 2 / 3 / 2 */
+#screenMain .menu-grid{
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-top: 0;
+}
+#screenMain .menu-btn{
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 4px 12px;
+  border-radius: 20px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
+  color: var(--ui-text);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  line-height: 1.1;
+  box-shadow: none;
+  transition: transform .12s ease, background .2s ease, border-color .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+#screenMain .menu-btn.wide{
+  grid-column: span 3;
+  flex-direction: row;
+  gap: 10px;
+  padding: 14px 10px;
+  font-size: 14px;
+}
+#screenMain .menu-btn:active{
+  transform: scale(.96);
+  background: var(--ui-surface2);
+  border-color: var(--ui-line2);
+}
+#screenMain .mt-ico{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  line-height: 1;
+  background: linear-gradient(145deg, var(--ta, rgba(120,150,200,.35)), var(--tb, rgba(120,150,200,.10)));
+  border: 1px solid var(--tl, rgba(120,150,200,.40));
+  flex: none;
+}
+#screenMain .menu-btn.wide .mt-ico{ width: 38px; height: 38px; font-size: 20px; }
+.tone-gold  { --ta:rgba(255,200,60,.40);  --tb:rgba(255,200,60,.10);  --tl:rgba(255,200,60,.50); }
+.tone-blue  { --ta:rgba(90,167,255,.40);  --tb:rgba(90,167,255,.10);  --tl:rgba(90,167,255,.50); }
+.tone-green { --ta:rgba(79,208,90,.38);   --tb:rgba(79,208,90,.10);   --tl:rgba(79,208,90,.48); }
+.tone-red   { --ta:rgba(255,100,110,.38); --tb:rgba(255,100,110,.10); --tl:rgba(255,100,110,.48); }
+.tone-violet{ --ta:rgba(170,120,255,.40); --tb:rgba(170,120,255,.10); --tl:rgba(170,120,255,.50); }
+.tone-gray  { --ta:rgba(150,165,190,.34); --tb:rgba(150,165,190,.09); --tl:rgba(150,165,190,.42); }
+
+/* ═══════════════════════════════════════════════════════════════
+   МАГАЗИН
+   ═══════════════════════════════════════════════════════════════ */
+#screenShop .menu-card{
+  width: min(470px, 94vw);
+  padding: 0 14px 18px;
+  text-align: left;
+}
+
+/* Липкая шапка: заголовок, монеты, рулетка, вкладки, фильтры */
+#screenShop .shop-top{ padding-top: 16px; }
+#screenShop .shop-sticky{
+  position: sticky;
+  top: -1px;
+  z-index: 20;
+  margin: 0 -14px 10px;
+  padding: 8px 14px 8px;
+  background: inherit;
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 12px 16px -14px rgba(0,0,0,.75);
+}
+#screenShop .shop-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+#screenShop .shop-header h1{
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: .2px;
+}
+#screenShop .shop-coins{
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 15px;
+  background: linear-gradient(180deg, rgba(255,210,60,.16), rgba(255,210,60,.05));
+  border: 1px solid rgba(255,210,60,.38);
+}
+
+/* Рулетка — баннер */
+#screenShop #shopRoulette:empty{ display: none; }
+#screenShop #shopRoulette .roulette-btn{
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px !important;
+  padding: 10px 14px;
+  border-radius: 18px;
+  text-align: left;
+  color: var(--ui-text);
+  background: linear-gradient(120deg, rgba(196,58,58,.38), rgba(255,160,60,.16));
+  border: 1px solid rgba(255,120,90,.50);
+  box-shadow: none;
+}
+#screenShop #shopRoulette .roulette-btn.ready{ box-shadow: 0 0 22px rgba(255,100,80,.45); }
+#screenShop .rb-ico{ font-size: 28px; line-height: 1; }
+#screenShop .rb-txt{ display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+#screenShop .rb-txt b{ font-size: 14px; font-weight: 900; }
+#screenShop .rb-txt small{ font-size: 11px; font-weight: 600; color: var(--ui-muted); }
+#screenShop #shopRoulette .roulette-btn .dot{ top: 8px; right: 10px; }
+
+/* Вкладки категорий */
+#screenShop .shop-categories{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin: 0 0 10px;
+  padding: 4px;
+  border-radius: 18px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
+}
+#screenShop .shop-categories .shop-cat-btn{
+  position: relative;
+  padding: 7px 2px 5px !important;
+  border-radius: 14px !important;
+  background: transparent !important;
+  border: 0 !important;
+  font-size: 11px !important;
+  gap: 2px;
+  color: var(--ui-muted);
+  box-shadow: none;
+}
+#screenShop .shop-categories .shop-cat-btn.active{
+  background: linear-gradient(180deg, #3d6396, #2b4a74) !important;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(70,130,220,.38);
+}
+#screenShop .shop-cat-btn .icon{ font-size: 19px; }
+#screenShop .cat-count{
+  font-size: 9.5px;
+  font-weight: 800;
+  opacity: .7;
+  min-height: 11px;
+}
+
+/* Фильтр + сортировка */
+#screenShop .shop-toolbar{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#screenShop .shop-seg{
+  display: flex;
+  flex: 1;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
+}
+#screenShop .shop-seg .shop-seg-btn{
+  flex: 1;
+  width: auto;
+  margin: 0;
+  padding: 7px 4px;
+  font-size: 11.5px;
+  font-weight: 800;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ui-muted);
+  white-space: nowrap;
+}
+#screenShop .shop-seg .shop-seg-btn.active{
+  background: var(--ui-surface2);
+  color: var(--ui-text);
+  box-shadow: inset 0 0 0 1px var(--ui-line2);
+}
+#screenShop .shop-toolbar .shop-sort{
+  flex: none;
+  width: auto;
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
+  color: var(--ui-text);
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Сетка карточек */
+#screenShop .shop-list{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+@media (max-width: 330px){
+  #screenShop .shop-list{ grid-template-columns: 1fr; }
+}
+#screenShop .shop-section{
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 2px 0;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--ui-muted);
+}
+#screenShop .shop-section:first-child{ margin-top: 2px; }
+#screenShop .shop-section::after{
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--ui-line);
+  order: 1;
+}
+#screenShop .shop-section i{
+  order: 2;
+  font-style: normal;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--ui-surface);
+  font-size: 10px;
+}
+#screenShop .shop-empty{ grid-column: 1 / -1; }
+
+.shop-card{
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(180deg, var(--ui-surface2), var(--ui-surface));
+  border: 1px solid var(--ui-line);
+  transition: transform .15s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.shop-card.is-active{
+  border-color: rgba(79,208,90,.70);
+  box-shadow: 0 0 0 1px rgba(79,208,90,.30), 0 10px 28px rgba(79,208,90,.14);
+}
+.shop-card.is-event:not(.is-owned){
+  border-color: rgba(255,128,32,.55);
+  box-shadow: 0 10px 28px rgba(255,128,32,.12);
+}
+
+.shop-card-media{ position: relative; padding: 10px 10px 0; }
+.shop-card .shop-preview{
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1.5 / 1;
+  border-radius: 14px;
+}
+.shop-card .shop-preview.placeholder{
+  background: linear-gradient(135deg, #1d2430, #131820);
+  color: #6b7280;
+}
+.shop-card .shop-preview.placeholder span{ font-size: 34px; opacity: .8; }
+.shop-card-kind{ position: absolute; top: 17px; left: 17px; }
+.shop-card-kind .shop-kind{ font-size: 9px; padding: 2px 7px; }
+.shop-card-tags{
+  position: absolute;
+  top: 17px;
+  right: 17px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.shop-tag{
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .4px;
+  white-space: nowrap;
+}
+.shop-tag.on   { background: rgba(79,208,90,.94);  color: #04200a; }
+.shop-tag.event{ background: rgba(255,128,32,.96); color: #2a1000; }
+.shop-tag.sale { background: #ff4d6a;              color: #fff; }
+
+.shop-card-body{ flex: 1; padding: 10px 12px 0; min-width: 0; }
+.shop-card .shop-name{ font-size: 14.5px; font-weight: 900; line-height: 1.15; }
+.shop-card .shop-desc{
+  margin-top: 3px;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--ui-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.shop-card .shop-price-block{ margin-top: 8px; gap: 6px; }
+.shop-card .shop-price{ font-size: 15px; }
+
+.shop-card-foot{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+}
+.shop-card .shop-buy{
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  padding: 11px 8px !important;
+  font-size: 12.5px !important;
+  border-radius: 13px;
+  letter-spacing: .3px;
+  text-align: center;
+}
+.shop-card .shop-buy[data-action="buy"]{
+  background: linear-gradient(135deg, #ffd23c, #ff9d2e) !important;
+  color: #1a1100 !important;
+  box-shadow: 0 6px 16px rgba(255,170,40,.28);
+}
+.shop-card .shop-buy.poor{
+  background: rgba(255,107,107,.13) !important;
+  color: #ff9a9a !important;
+  box-shadow: inset 0 0 0 1px rgba(255,107,107,.40);
+}
+.shop-card .shop-buy.owned{ box-shadow: inset 0 0 0 1px rgba(120,230,150,.25); }
+.shop-card .shop-buy.active{ background: rgba(79,208,90,.16) !important; color: #7ff08a !important; border: 1px solid rgba(79,208,90,.5) !important; }
+.shop-card .shop-snow-toggle{ width: 100%; margin: 0 !important; padding: 8px; }
+.shop-card .ult-hint{ margin-top: 0; }
+
+#screenShop #backFromShop{
+  margin-top: 18px !important;
+  border-radius: 16px;
+  background: var(--ui-surface2);
+  border: 1px solid var(--ui-line);
+}
+
+/* ─── Активная карточка — широкая, превью слева ─── */
+.shop-card-side{ display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.shop-card.wide{
+  grid-column: 1 / -1;
+  flex-direction: row;
+}
+.shop-card.wide .shop-card-media{ flex: 0 0 46%; padding: 10px 0 10px 10px; }
+.shop-card.wide .shop-preview{ aspect-ratio: 1.25 / 1; }
+.shop-card.wide .shop-card-kind{ left: 17px; }
+.shop-card.wide .shop-card-tags{ top: auto; bottom: 17px; right: auto; left: 17px; flex-direction: row; }
+.shop-card.wide .shop-card-kind{ top: 17px; }
+.shop-card.wide .shop-card-body{ padding-top: 12px; }
+.shop-card.wide .shop-card-foot{ margin-top: auto; }
+
+/* подсказка ульты — над кнопкой, чтобы кнопки в ряду выравнивались по низу */
+.shop-card .shop-card-foot .ult-hint{ order: -1; text-align: left; margin: 0 2px; }
+/* скидка уже показана бейджем на превью */
+.shop-card .shop-discount{ display: none; }
+
+/* светлая тема: контраст золотых/зелёных элементов */
+body[data-bg="light"] .shop-card .shop-price{ color: #8a6a00; }
+body[data-bg="light"] .shop-card .shop-buy.active{ color: #1d6b2a !important; background: rgba(79,208,90,.22) !important; }
+body[data-bg="light"] .shop-card .shop-buy.poor{ color: #b3262d !important; }

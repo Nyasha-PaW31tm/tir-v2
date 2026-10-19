@@ -1,0 +1,163 @@
+/* ═══════════════════════════════════════════════════════════════
+   СКИН МИШЕНЕЙ: РАДАР   (id в магазине: tg_radar → body.target-skin-radar)
+   Мишень — экран радара: тёмный диск, кольца дальности, перекрестие,
+   яркая метка в центре и вращающаяся развёртка-«луч».
+   Каждый тип мишени — свой цвет «сигнала», чтобы типы читались
+   так же быстро, как в классике:
+     normal   — зелёный      fast     — янтарный
+     armored  — голубой      maneuver — пурпурный
+     gold     — золотой      fastgold — золотой (+ родная радуга)
+   Все механики сохранены — меняется только вид.
+
+   Технические решения (важно для игры):
+   • background-color = яркий цвет сигнала: осколки при разбитии
+     мишени берут цвет из getComputedStyle(el).backgroundColor,
+     поэтому осколки получаются цветными, а не чёрными;
+   • развёртка — на ::before и крутится ТОЛЬКО через transform
+     (композитор). На самой .target анимации/transform не трогаем:
+     движение мишеней и их «прыжок/телеграф» задаёт игра;
+   • у .fastgold свой ::before (радужное свечение) — развёртку там не
+     рисуем; радугу оставляем, но маской превращаем в гало вокруг
+     диска, чтобы она не закрашивала радарный экран.
+   Цена: 120 🪙 (предложение).
+   Файл: skins/target-radar.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── ОБЩЕЕ для всех типов (цвет приходит из --rd / --rd-dim) ─── */
+body.target-skin-radar .target{
+  --rd: #38ff7a;                       /* яркий цвет сигнала */
+  --rd-dim: rgba(56,255,122,.38);      /* тусклый — для колец и сетки */
+  --rd-glow: rgba(56,255,122,.7);      /* внешнее свечение */
+  --rd-spd: 3.2s;                      /* скорость развёртки */
+
+  background:
+    /* метка в центре */
+    radial-gradient(circle, #fff 0 1.4px, var(--rd) 1.8px 3.6px, transparent 4.4px),
+    /* перекрестие */
+    linear-gradient(90deg, transparent calc(50% - .5px), var(--rd-dim) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
+    linear-gradient(0deg,  transparent calc(50% - .5px), var(--rd-dim) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
+    /* кольца дальности */
+    repeating-radial-gradient(circle, transparent 0 5.5px, var(--rd-dim) 5.5px 6.5px),
+    /* тёмный экран; снаружи остаётся яркий ободок */
+    radial-gradient(circle, #04170c 0 68%, transparent 69%),
+    /* цвет-основа (его же берут осколки) */
+    var(--rd);
+  box-shadow:
+    0 0 0 3px #02120a,
+    0 0 14px var(--rd-glow);
+}
+
+/* ─── Вращающаяся развёртка (кроме царь-мишени) ─── */
+body.target-skin-radar .target:not(.fastgold)::before{
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    transparent 262deg,
+    var(--rd-dim) 330deg,
+    var(--rd) 360deg);
+  opacity: .62;
+  will-change: transform;
+  animation: tgtRadarSweep var(--rd-spd) linear infinite;
+}
+@keyframes tgtRadarSweep{
+  to{ transform: rotate(360deg); }
+}
+
+/* ─── Внутреннее кольцо ::after (было белым прицелом) → тонкое, цветное ─── */
+body.target-skin-radar .target::after{
+  border: 1.5px solid var(--rd);
+  opacity: .55;
+  box-shadow: 0 0 6px var(--rd-dim);
+}
+
+/* ─── ТИПЫ ─── */
+body.target-skin-radar .target.normal{
+  /* зелёный — значения по умолчанию из блока выше */
+}
+
+body.target-skin-radar .target.fast{
+  --rd: #ffb02e;
+  --rd-dim: rgba(255,176,46,.4);
+  --rd-glow: rgba(255,160,30,.8);
+  --rd-spd: 1.7s;                       /* быстрая — быстрая развёртка */
+}
+
+body.target-skin-radar .target.armored{
+  --rd: #5ad8ff;
+  --rd-dim: rgba(90,216,255,.4);
+  --rd-glow: rgba(90,216,255,.75);
+  --rd-spd: 4.4s;                       /* бронированная — тяжёлая, медленная */
+  border: 4px solid #8fb4c6;            /* стальная рамка (в классике — серая) */
+  box-shadow:
+    0 0 0 3px #02121a,
+    0 0 16px var(--rd-glow);
+}
+
+body.target-skin-radar .target.maneuver{
+  --rd: #e25bff;
+  --rd-dim: rgba(226,91,255,.42);
+  --rd-glow: rgba(226,91,255,.8);
+  --rd-spd: 2.1s;
+}
+
+body.target-skin-radar .target.gold{
+  --rd: #ffd23c;
+  --rd-dim: rgba(255,210,60,.42);
+  --rd-glow: rgba(255,210,60,.9);
+  --rd-spd: 2.5s;
+  box-shadow:
+    0 0 0 3px #1a1202,
+    0 0 22px var(--rd-glow);
+}
+
+/* Царь-мишень: золотой радар, но родные радужный ободок (::before)
+   и пульсация (fastgoldPulse) из style.css остаются нетронутыми */
+body.target-skin-radar .target.fastgold{
+  --rd: #ffd23c;
+  --rd-dim: rgba(255,210,60,.5);
+  --rd-glow: rgba(255,210,60,1);
+}
+body.target-skin-radar .target.fastgold::after{
+  border-width: 3px;
+  border-color: #fffbe0;
+  opacity: .9;
+}
+/* Радугу из style.css оставляем, но только как гало СНАРУЖИ диска —
+   иначе она закрашивает весь радарный экран.
+   ::before = 74px (62px + inset -6px), лицо мишени = 62px → 84% радиуса */
+body.target-skin-radar .target.fastgold::before{
+  -webkit-mask-image: radial-gradient(circle, transparent 0, transparent 82%, #000 85%);
+  mask-image: radial-gradient(circle, transparent 0, transparent 82%, #000 85%);
+}
+
+@media (prefers-reduced-motion: reduce){
+  body.target-skin-radar .target::before{ animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПРЕВЬЮ В МАГАЗИНЕ (id tg_radar): тот же экран + застывшая развёртка
+   ═══════════════════════════════════════════════════════════════ */
+.shop-preview.target-tg_radar{
+  background:
+    radial-gradient(circle, #fff 0 1.4px, #38ff7a 1.8px 3.6px, transparent 4.4px),
+    conic-gradient(from 0deg, transparent 0deg, transparent 262deg, rgba(56,255,122,.38) 330deg, rgba(56,255,122,.9) 360deg),
+    linear-gradient(90deg, transparent calc(50% - .5px), rgba(56,255,122,.4) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
+    linear-gradient(0deg,  transparent calc(50% - .5px), rgba(56,255,122,.4) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
+    repeating-radial-gradient(circle, transparent 0 7px, rgba(56,255,122,.4) 7px 8px),
+    radial-gradient(circle, #04170c 0 68%, transparent 69%),
+    #38ff7a;
+  border-radius: 50%;
+  border: none;
+  box-shadow:
+    0 0 0 2px #02120a,
+    0 0 12px rgba(56,255,122,.8);
+  animation: tgtRadarShopPulse 1.8s ease-in-out infinite alternate;
+}
+@keyframes tgtRadarShopPulse{
+  0%  { box-shadow: 0 0 0 2px #02120a, 0 0 8px rgba(56,255,122,.55); }
+  100%{ box-shadow: 0 0 0 2px #02120a, 0 0 18px rgba(56,255,122,1); }
+}

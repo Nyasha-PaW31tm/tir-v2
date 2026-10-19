@@ -119,6 +119,13 @@ if (halloweenBtn){
   halloweenBtn.classList.toggle('hidden', !owned);
 }
 
+    // Платные: Глубокий океан
+    const oceanBtn = document.getElementById('bgOceanBtn');
+    if (oceanBtn){
+      const owned = Storage.get('owned_bg_ocean', '0') === '1';
+      oceanBtn.classList.toggle('hidden', !owned);
+    }
+
     /* ─── Применяем текущий фон к body ─── */
     const current = Storage.getBackground();
     document.body.dataset.bg = current;

@@ -1,0 +1,209 @@
+/* ═══════════════════════════════════════════════════════════════
+   СКИН: Мороз
+   Это СКИН, не оружие: форма и механика стрельбы не меняются
+   (как neon / star / halloween). Меняется только внешний вид:
+   • СВЕТЛАЯ палитра (все прежние скины тёмные — этот выделяется);
+   • ствол и корпус — матовый лёд с инеем (только background,
+     БЕЗ ::before/::after на частях ружья — чтобы не конфликтовать
+     с базовыми стилями);
+   • пули — ледяные осколки-кристаллы с морозным следом;
+   • вспышка выстрела — бело-голубая.
+   Цена: 90 🪙 (предложение, см. описание в ответе).
+   Файл: skins/frost.css   Класс: body.skin-frost
+   ═══════════════════════════════════════════════════════════════ */
+
+body.skin-frost{
+  /* Приклад и рукоять — иней на тёмной синей стали */
+  --r-stock: #5f86a8;
+  --r-grip: #3f6385;
+
+  /* Корпус — светлый лёд, нижняя кромка глубже */
+  --r-receiver: #d6ecf8;
+  --r-receiver-inset: #7db4d8;
+
+  /* Ствол — почти белый, с голубым бликом */
+  --r-barrel: #eaf7ff;
+  --r-barrel-sh: #8ccbee;
+
+  /* Мушка светится, целик — тёмно-синий для контраста */
+  --r-front-sight: #8ff0ff;
+  --r-rear-sight: #24465f;
+
+  /* Дуло — ледяное с морозным ореолом */
+  --r-muzzle: #c8f0ff;
+  --r-muzzle-border: #3f8ab8;
+  --r-glow: 0 0 12px rgba(150, 228, 255, .85);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ТЕКСТУРЫ ЧАСТЕЙ (только background — безопасно)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Ствол — лёд: вертикальный блик + тонкие трещинки-иней */
+body.skin-frost .rifle-barrel{
+  background-color: var(--r-barrel);
+  background-image:
+    /* блик */
+    linear-gradient(90deg,
+      transparent 18%,
+      rgba(255,255,255,.95) 38%,
+      rgba(255,255,255,.2) 58%,
+      transparent 75%),
+    /* тень справа (объём) */
+    linear-gradient(90deg, transparent 60%, rgba(60,130,180,.35) 100%),
+    /* диагональные «морозные узоры» */
+    repeating-linear-gradient(115deg,
+      transparent 0, transparent 11px,
+      rgba(120,190,230,.45) 11px, rgba(120,190,230,.45) 12px),
+    /* кристаллики */
+    radial-gradient(circle at 30% 24%, rgba(255,255,255,.95) 1px, transparent 1.8px),
+    radial-gradient(circle at 68% 62%, rgba(255,255,255,.9) 1.2px, transparent 2px);
+  background-size: auto, auto, auto, 27px 39px, 33px 47px;
+  box-shadow:
+    inset 0 0 0 1px rgba(60,130,180,.7),
+    inset -3px 0 0 rgba(80,150,200,.3);
+}
+
+/* Приклад — синяя сталь с инеем по краю */
+body.skin-frost .rifle-stock{
+  background-color: var(--r-stock);
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.35) 0%, transparent 32%),
+    repeating-linear-gradient(100deg,
+      transparent 0, transparent 7px,
+      rgba(255,255,255,.12) 7px, rgba(255,255,255,.12) 8px),
+    linear-gradient(180deg, #6f98ba 0%, #5f86a8 55%, #46698a 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(20,50,80,.8),
+    inset 0 -3px 4px rgba(10,30,55,.45);
+}
+
+/* Рукоять — тёмная, с насечкой */
+body.skin-frost .rifle-grip{
+  background-color: var(--r-grip);
+  background-image:
+    repeating-linear-gradient(0deg,
+      transparent 0, transparent 6px,
+      rgba(255,255,255,.12) 6px, rgba(255,255,255,.12) 7px),
+    linear-gradient(180deg, #4b7396 0%, #3f6385 55%, #2c4a66 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(15,40,65,.85),
+    inset 0 -4px 6px rgba(10,30,55,.5);
+}
+
+/* Корпус — лёд с «снежинками»-заклёпками по углам */
+body.skin-frost .rifle-receiver{
+  background-color: var(--r-receiver);
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.7) 0%, transparent 30%),
+    radial-gradient(circle at 18% 16%, #2f8fc4 1.3px, transparent 2.1px),
+    radial-gradient(circle at 82% 16%, #2f8fc4 1.3px, transparent 2.1px),
+    radial-gradient(circle at 18% 84%, rgba(47,143,196,.7) 1.3px, transparent 2.1px),
+    radial-gradient(circle at 82% 84%, rgba(47,143,196,.7) 1.3px, transparent 2.1px),
+    linear-gradient(90deg, #e6f5fd 0%, #d6ecf8 50%, #b9dcef 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(40,100,150,.75),
+    inset 0 -8px 0 var(--r-receiver-inset);
+}
+
+/* Мушка — холодное свечение */
+body.skin-frost .rifle-front-sight{
+  box-shadow: 0 0 6px rgba(140,240,255,.95);
+}
+
+/* Дуло: при выстреле вспыхивает ярче */
+body.skin-frost #rifleWrap.recoil .rifle-muzzle{
+  box-shadow:
+    0 0 10px rgba(190,245,255,.95),
+    0 0 22px rgba(90,190,240,.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПУЛЯ — ледяной осколок
+   Острие смотрит вперёд (в сторону полёта), позади — морозный след.
+   Анимации/transform на самом .bullet НЕ вешаем: полёт задаёт JS
+   (inline animation: bulletTravel) — перебьём и пули замрут.
+   Не трогаем пули ульты (.ult-bullet) и дробь (.pv-pellet).
+   ═══════════════════════════════════════════════════════════════ */
+body.skin-frost .bullet:not(.ult-bullet):not(.pv-pellet){
+  width: 9px;
+  height: 24px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Сам осколок: вытянутый ромб с острым носом */
+body.skin-frost .bullet:not(.ult-bullet):not(.pv-pellet)::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%);
+  background: linear-gradient(90deg,
+    #6ec6f0 0%, #ffffff 46%, #d4f2ff 54%, #4aa8dc 100%);
+  filter: drop-shadow(0 0 4px rgba(150,226,255,.95));
+  animation: frostGlint .32s ease-in-out infinite alternate;
+}
+
+/* Морозный след позади */
+body.skin-frost .bullet:not(.ult-bullet):not(.pv-pellet)::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 6px;
+  height: 30px;
+  transform: translateX(-50%);
+  border-radius: 3px;
+  background: linear-gradient(180deg,
+    rgba(215,246,255,.9) 0%,
+    rgba(130,210,250,.55) 40%,
+    rgba(90,170,230,.2) 75%,
+    rgba(90,170,230,0) 100%);
+  filter: blur(1.4px);
+  pointer-events: none;
+}
+
+/* Лёгкое мерцание граней (только на псевдоэлементе) */
+@keyframes frostGlint{
+  from{ opacity: .82; }
+  to  { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ВСПЫШКА ВЫСТРЕЛА — бело-голубая
+   (#muzzleFlash общий для всех скинов — красим только при skin-frost)
+   ═══════════════════════════════════════════════════════════════ */
+body.skin-frost #muzzleFlash::before{
+  background: linear-gradient(180deg,
+    transparent 0%, #ffffff 25%, #a8e6ff 55%, #4aa8e8 82%, transparent 100%);
+  box-shadow:
+    0 0 8px rgba(200,245,255,.95),
+    0 0 18px rgba(120,210,250,.7),
+    0 0 28px rgba(80,170,235,.45);
+}
+body.skin-frost #muzzleFlash::after{
+  background: linear-gradient(90deg,
+    transparent 0%, #ffffff 25%, #a8e6ff 55%, #4aa8e8 82%, transparent 100%);
+  box-shadow:
+    0 0 8px rgba(200,245,255,.95),
+    0 0 18px rgba(120,210,250,.7),
+    0 0 28px rgba(80,170,235,.45);
+}
+
+@media (prefers-reduced-motion: reduce){
+  body.skin-frost .bullet::before{ animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПРЕВЬЮ В МАГАЗИНЕ (силуэт ружья берётся из общей маски в shop.css)
+   ═══════════════════════════════════════════════════════════════ */
+.shop-preview.weapon-frost{
+  background: linear-gradient(135deg, #1d3a55, #0b1826);
+  border-color: #8ff0ff;
+  box-shadow: 0 0 12px rgba(143,240,255,.55);
+}
+.shop-preview.weapon-frost::before{
+  background: linear-gradient(180deg, #ffffff 0%, #8fd8ff 100%);
+  filter: drop-shadow(0 0 4px #8ff0ff) drop-shadow(0 0 8px rgba(120,210,250,.6));
+}

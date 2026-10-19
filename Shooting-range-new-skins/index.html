@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Тир — BETA 0.11.1</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<link rel="stylesheet" href="style.css?v=0.11.1">
+<link rel="stylesheet" href="styles/ui.css?v=0.11.1">
+<link rel="stylesheet" href="styles/menu.css?v=0.11.1">
+<link rel="stylesheet" href="styles/shop.css?v=0.11.1">
+<link rel="stylesheet" href="styles/roulette.css?v=0.11.1">
+<link rel="stylesheet" href="styles/rating.css?v=0.11.1">
+<link rel="stylesheet" href="styles/history.css?v=0.11.1">
+<link rel="stylesheet" href="styles/setting.css?v=0.11.1">
+<link rel="stylesheet" href="styles/profile.css?v=0.11.1">
+<link rel="stylesheet" href="styles/daily.css?v=0.11.1">
+<link rel="stylesheet" href="styles/achievements.css?v=0.11.1">
+<link rel="stylesheet" href="styles/about.css?v=0.11.1">
+<link rel="stylesheet" href="styles/end-screen.css?v=0.11.1">
+<link rel="stylesheet" href="styles/ult.css?v=0.11.1">
+
+<link rel="stylesheet" href="skins/default.css?v=0.11.1">
+<link rel="stylesheet" href="skins/neon.css?v=0.11.1">
+<link rel="stylesheet" href="skins/star.css?v=0.11.1">
+<link rel="stylesheet" href="skins/china.css?v=0.11.1">
+<link rel="stylesheet" href="skins/target-neon.css?v=0.11.1">
+<link rel="stylesheet" href="skins/target-halloween.css?v=0.11.1">
+<link rel="stylesheet" href="skins/target-radar.css?v=0.11.1">
+<link rel="stylesheet" href="skins/akc74m.css?v=0.11.1">
+<link rel="stylesheet" href="skins/halloween.css?v=0.11.1">
+<link rel="stylesheet" href="skins/frost.css?v=0.11.1">
+<link rel="stylesheet" href="skins/toxic.css?v=0.11.1">
+<link rel="stylesheet" href="skins/bg-star.css?v=0.11.1">
+<link rel="stylesheet" href="skins/bg-aurora.css?v=0.11.1">
+<link rel="stylesheet" href="skins/bg-nightcity.css?v=0.11.1">
+<link rel="stylesheet" href="skins/bg-china.css?v=0.11.1">
+<link rel="stylesheet" href="skins/bg-sunset.css?v=0.11.1">
+<link rel="stylesheet" href="skins/bg-halloween.css?v=0.11.1">
+<link rel="stylesheet" href="skins/bg-ocean.css?v=0.11.1">
+<link rel="stylesheet" href="skins/skins.css?v=0.11.1">
+
+<link rel="stylesheet" href="weapons/weapon.shotgun.css?v=0.11.1">
+<link rel="stylesheet" href="styles/modern.css?v=0.11.1">
+
+</head>
+<body data-bg="dark">
+<div id="app">
+
+  <header class="top">
+    <div class="score">Очки: <b id="score">0</b></div>
+    <div class="stats">
+      <span id="comboBlock">Комбо <b id="combo">×1.0</b></span>
+      <span id="ultBlock">ULT <b id="ult">0/5</b></span>
+      <span id="missesBlock" class="hidden">Промахи <b id="misses">0/8</b></span>
+      
+    </div>
+  </header>
+
+  <main id="range">
+    <button id="pauseBtn" class="home-btn hidden" title="Пауза">⏸</button>
+    <div id="modeBadge" class="mode-badge hidden">♾ БЕСКОНЕЧНЫЙ</div>
+
+    <div class="lane" data-lane="0"></div>
+    <div class="lane" data-lane="1"></div>
+    <div class="lane" data-lane="2"></div>
+
+    <div id="laser" class="hidden"></div>
+
+    <div id="rifleWrap">
+      <div id="rifle">
+        <div class="rifle-stock"></div>
+        <div class="rifle-grip"></div>
+        <div class="rifle-receiver">
+          <div class="rifle-bolt-handle"></div>
+        </div>
+        <div class="rifle-barrel"></div>
+        <div class="rifle-front-sight"></div>
+        <div class="rifle-rear-sight"></div>
+        <div class="rifle-muzzle"></div>
+      </div>
+    </div>
+
+    <div id="muzzleFlash"></div>
+    <div id="message"></div>
+    <div id="ncScene">
+      <div class="nc-lane nc-a"></div>
+      <div class="nc-lane nc-b"></div>
+      <div class="nc-lane nc-c"></div>
+      <div class="nc-lane nc-d"></div>
+    </div>
+    <div id="auroraSnow">
+      <div class="snow-layer snow-a"></div>
+      <div class="snow-layer snow-b"></div>
+    </div>
+  </main>
+
+  <footer class="controls">
+    <button id="fire">ВЫСТРЕЛ</button>
+    <button id="ultimate">ULT</button>
+  </footer>
+
+  <section id="endScreen" class="overlay hidden">
+    <div class="menu-card">
+      <img id="catwifeImage" class="catwife hidden" src="images/catwife.png" alt="">
+      <h1 id="endTitle">ПОБЕДА!</h1>
+      <p>Результат: <b id="finalScore">0</b></p>
+      <p id="endReason"></p>
+      <p id="coinsEarned" class="hidden">🪙 +0 монет</p>
+      <button id="stickerBtn" class="hidden">🎁 ЗАБРАТЬ СТИКЕРЫ</button>
+      <button id="again">ЕЩЁ РАЗ</button>
+      <button id="backMenu" class="secondary">В МЕНЮ</button>
+    </div>
+  </section>
+
+  <section id="screenMain" class="overlay">
+    <div class="menu-card">
+      <div class="logo-mark">ТИР</div>
+      <h1>Стрельбище</h1>
+      <p class="beta">BETA 0.11.1</p>
+
+      <div class="menu-coins">🪙 <span id="menuCoins">0</span></div>
+
+      <button id="playBtn" class="menu-play">
+        <span class="menu-play-icon">🎯</span>
+        <span class="menu-play-text">ИГРАТЬ</span>
+      </button>
+
+      <div class="menu-grid">
+        <button id="shopBtn"     class="menu-btn wide tone-gold"><span class="mt-ico">🛒</span><span class="mt-txt">Магазин</span></button>
+        <button id="ratingBtn"   class="menu-btn wide tone-blue"><span class="mt-ico">🏆</span><span class="mt-txt">Рейтинг</span></button>
+        <button id="profileBtn"  class="menu-btn tone-green"><span class="mt-ico">👤</span><span class="mt-txt">Профиль</span></button>
+        <button id="dailyBtn"    class="menu-btn tone-red"><span class="mt-ico">📅</span><span class="mt-txt">Ежедневки</span></button>
+        <button id="historyBtn"  class="menu-btn tone-violet"><span class="mt-ico">📜</span><span class="mt-txt">История</span></button>
+        <button id="settingsBtn" class="menu-btn wide tone-gray"><span class="mt-ico">⚙️</span><span class="mt-txt">Настройки</span></button>
+        <button id="aboutBtn"    class="menu-btn wide tone-gray"><span class="mt-ico">ℹ️</span><span class="mt-txt">Об игре</span></button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screenPreGame" class="overlay hidden">
+    <div class="menu-card">
+      <h2 class="pregame-title">Подготовка к забегу</h2>
+      <p class="beta">Настрой забег перед стартом</p>
+
+      <div class="setting-block">
+        <h3>🎮 Режим</h3>
+        <div class="pregame-modes">
+          <button class="mode-tab active" data-mode="normal">Обычный</button>
+          <button class="mode-tab" data-mode="infinite" id="modeInfiniteTab">♾ Бесконечный</button>
+        </div>
+        <p class="pregame-hint" id="modeHint">Цель — 10 000 очков. Победа открывает бесконечный режим.</p>
+      </div>
+
+      <div class="setting">
+        <span>🎯 Лазерный указатель<br><small>−35% к очкам при включении</small></span>
+        <button id="laserToggle" class="toggle off">ВЫКЛ</button>
+      </div>
+
+      <div class="setting-block">
+        <h3>⚡ Ульта</h3>
+        <div class="ult-tabs">
+          <button class="ult-tab active" data-ult="classic">
+            <span class="ult-icon">⚡</span>
+            <span class="ult-name">Classic</span>
+          </button>
+          <button class="ult-tab locked" data-ult="laser">
+            <span class="ult-icon">🎯</span>
+            <span class="ult-name">Лазер</span>
+            <span class="ult-lock">🔒</span>
+          </button>
+          <button class="ult-tab locked" data-ult="MLRS">
+            <span class="ult-icon">🚀</span>
+            <span class="ult-name">МЛРС</span>
+            <span class="ult-lock">🔒</span>
+          </button>
+        </div>
+        <p class="pregame-hint" id="ultHint">Стандартный залп ×3. Доступна всем.</p>
+      </div>
+
+      <!-- ═══ БОССЫ ═══ -->
+<div class="pregame-extras">
+  <button class="pregame-extra" id="bossBtn" disabled style="grid-column: 1 / -1;">
+    <span class="pregame-extra-icon">👹</span>
+    <span class="pregame-extra-name">Боссы</span>
+    <span class="pregame-extra-lock">🔒 0.13.0</span>
+  </button>
+</div>
+
+      <button id="startRunBtn" class="menu-play" style="margin-top:18px">
+        <span class="menu-play-icon">▶</span>
+        <span class="menu-play-text">НАЧАТЬ ЗАБЕГ</span>
+      </button>
+
+      <button id="backFromPreGame" class="secondary" style="margin-top:12px">← НАЗАД</button>
+    </div>
+  </section>
+
+  <section id="screenSettings" class="overlay hidden">
+    <div class="menu-card">
+      <h2 class="settings-title">⚙️ Настройки</h2>
+
+      <div class="setting-block">
+        <h3>🔊 Звук</h3>
+        <div class="vol-row">
+          <input type="range" id="volSlider" min="0" max="100" value="70">
+          <span class="vol-val" id="volVal">70%</span>
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <h3>🎨 Фон</h3>
+        <div class="bg-row">
+          <button class="bg-btn color-dark" data-bg="dark">Тёмный</button>
+          <button class="bg-btn color-black" data-bg="black">Чёрный</button>
+          <button class="bg-btn color-gray" data-bg="gray">Серый</button>
+          <button class="bg-btn color-light" data-bg="light">Светлый</button>
+          <button class="bg-btn color-confetti hidden" id="bgConfettiBtn" data-bg="confetti">🌸 Конфети</button>
+          <button class="bg-btn hidden" id="bgStarBtn" data-bg="star" style="background:linear-gradient(135deg,#0a0a1f,#5a3c9a);color:#fff">🌟 Космос</button>
+          <button class="bg-btn hidden" id="bgChinaBtn" data-bg="china" style="background:linear-gradient(135deg,#de2910,#a01008);color:#ffde00">🚩 Китай</button>
+          <button class="bg-btn hidden" id="bgSunsetBtn" data-bg="sunset" style="background:linear-gradient(135deg,#ff8c42,#c4384a);color:#fff">🌅 Закат</button>
+
+          <button class="bg-btn bg-btn-wide hidden" id="bgAuroraBtn" data-bg="aurora">
+            <span class="bg-name">🌌 Аврора</span>
+            <span class="bg-snow" id="auroraSnowToggle">❄ Снег ВЫКЛ</span>
+          </button>
+
+          <button class="bg-btn hidden" id="bgNightcityBtn" data-bg="nightcity" style="background:linear-gradient(135deg,#0a0c1a,#ffd23c);color:#fff">🌃 Ночной город</button>
+          
+          <button class="bg-btn hidden" id="bgHalloweenBtn" data-bg="halloween" style="background:linear-gradient(135deg,#1a0a2a,#ff8020);color:#fff">🎃 Хэллоуин</button>
+          <button class="bg-btn hidden" id="bgOceanBtn" data-bg="ocean" style="background:linear-gradient(135deg,#19a7b8,#031326);color:#fff">🌊 Океан</button>
+          
+        </div>
+      </div>
+
+      <div class="setting">
+        <span>📊 Счётчик FPS<br><small>Для отладки — реальный FPS раз в секунду</small></span>
+        <button class="toggle off" data-fps-toggle>ВЫКЛ</button>
+      </div>
+      
+      <div class="setting">
+  <span>🎬 Пропускать катсцены<br><small>Ульты МЛРС и другие анимации</small></span>
+  <button class="toggle off" data-cutscene-toggle>ВЫКЛ</button>
+</div>
+
+      <button id="promoBtn" class="promo-btn">🎁 ПРОМОКОД</button>
+      <button id="feedbackBtn" class="feedback-btn">💬 ОБРАТНАЯ СВЯЗЬ</button>
+
+      <button id="devBtn" class="dev-btn">🚧 В разработке</button>
+      <button id="backFromSettings" class="secondary" style="margin-top:20px">← НАЗАД</button>
+    </div>
+  </section>
+
+  <section id="screenAbout" class="overlay hidden">
+    <div class="menu-card">
+      <h1>О игре</h1>
+      <p class="beta">BETA 0.11.1</p>
+      <p>Тир / Стрельбище — браузерная игра на чистом HTML/CSS/JS</p>
+      <button id="backFromAbout" class="secondary">← НАЗАД</button>
+    </div>
+  </section>
+
+  <section id="screenHistory" class="overlay hidden">
+    <div class="menu-card">
+      <h1>📜 История</h1>
+      <p class="beta">Последние 10 забегов</p>
+      <div id="historyList"></div>
+      <button id="backFromHistory" class="secondary">← НАЗАД</button>
+    </div>
+  </section>
+
+  <section id="screenRating" class="overlay hidden">
+    <div class="menu-card">
+      <h1>🏆 Рейтинг</h1>
+      <p class="beta">Топ-10 игроков</p>
+      <div id="ratingList"></div>
+      <button id="backFromRating" class="secondary">← НАЗАД</button>
+    </div>
+  </section>
+
+  <section id="screenShop" class="overlay hidden">
+    <div class="menu-card">
+      <div class="shop-top">
+        <div class="shop-header">
+          <h1>🛒 Магазин</h1>
+          <span class="shop-coins">🪙 <span id="shopCoins">0</span></span>
+        </div>
+
+        <div id="shopRoulette"></div>
+      </div>
+
+      <div class="shop-sticky">
+        <div class="shop-categories">
+          <button class="shop-cat-btn active" data-category="weapon">
+            <span class="icon">🔫</span>
+            <span>Оружие</span>
+          </button>
+          <button class="shop-cat-btn" data-category="background">
+            <span class="icon">🎨</span>
+            <span>Фоны</span>
+          </button>
+          <button class="shop-cat-btn" data-category="target">
+            <span class="icon">🎯</span>
+            <span>Мишени</span>
+          </button>
+          <button class="shop-cat-btn" data-category="ultimate">
+            <span class="icon">⚡</span>
+            <span>Ульты</span>
+          </button>
+        </div>
+
+        <div id="shopToolbar" class="shop-toolbar"></div>
+      </div>
+
+      <div id="shopList" class="shop-list">
+        <p class="shop-empty">Загрузка...</p>
+      </div>
+
+      <button id="backFromShop" class="secondary" style="margin-top:20px">← НАЗАД</button>
+    </div>
+  </section>
+
+  <section id="promoModal" class="overlay hidden">
+    <div class="menu-card">
+      <h1>🎁 Промокод</h1>
+      <p class="beta">Введи код и получи награду</p>
+      <input type="text" id="promoInput" class="promo-input" placeholder="НАПРИМЕР: NYASHA2026" maxlength="32" autocomplete="off">
+      <button id="promoSubmit" class="primary">АКТИВИРОВАТЬ</button>
+      <button id="promoClose" class="secondary">← НАЗАД</button>
+      <div id="promoResult" class="promo-result hidden"></div>
+    </div>
+  </section>
+
+  <section id="feedbackModal" class="overlay hidden">
+    <div class="menu-card">
+      <h1>💬 Обратная связь</h1>
+      <p class="beta">Опиши проблему, баг или предложение</p>
+      <textarea id="feedbackInput" class="feedback-input" placeholder="Например: нашёл баг..." maxlength="2000"></textarea>
+      <div class="feedback-counter"><span id="feedbackCount">0</span> / 2000</div>
+      <button id="feedbackSubmit" class="primary">ОТПРАВИТЬ</button>
+      <button id="feedbackClose" class="secondary">← ОТМЕНА</button>
+      <div id="feedbackResult" class="feedback-result hidden"></div>
+    </div>
+  </section>
+
+  <section id="pauseScreen" class="overlay hidden">
+    <div class="menu-card">
+      <h1>⏸ Пауза</h1>
+      <p class="beta">Игра заморожена</p>
+
+      <div class="setting-block">
+        <h3>🔊 Звук</h3>
+        <div class="vol-row">
+          <input type="range" id="pauseVolSlider" min="0" max="100" value="70">
+          <span class="vol-val" id="pauseVolVal">70%</span>
+        </div>
+      </div>
+
+      <div class="setting">
+        <span>📊 Счётчик FPS</span>
+        <button class="toggle off" data-fps-toggle>ВЫКЛ</button>
+      </div>
+      
+      <div class="setting">
+  <span>🎬 Пропускать катсцены</span>
+  <button class="toggle off" data-cutscene-toggle>ВЫКЛ</button>
+</div>
+
+      <button id="pauseResume">ПРОДОЛЖИТЬ</button>
+      <button id="pauseExit" class="secondary">ВЫЙТИ В МЕНЮ</button>
+    </div>
+  </section>
+  <!-- ═══════════════ ПРОФИЛЬ ═══════════════ -->
+<section id="screenProfile" class="overlay hidden">
+  <div class="menu-card profile-card">
+
+    <!-- Шапка профиля -->
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">
+        <span class="profile-avatar-icon" id="profileAvatarIcon">👤</span>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name" id="profileName">Загрузка...</div>
+        <div class="profile-uid">uid: <span id="profileUid">...</span></div>
+        <div class="profile-reg">рег: <span id="profileReg">...</span></div>
+      </div>
+    </div>
+
+    <!-- Метрики -->
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <div class="profile-stat-label">Забегов всего</div>
+        <div class="profile-stat-value" id="profRuns">0</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-label">Монет всего</div>
+        <div class="profile-stat-value" id="profCoins">0</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-label">Лучший результат</div>
+        <div class="profile-stat-value" id="profBest">0</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-label">Лучшее комбо</div>
+        <div class="profile-stat-value" id="profCombo">×1.0</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-label">Прокручено рулетку</div>
+        <div class="profile-stat-value" id="profSpins">0</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-label">Лучший приз в рулетке</div>
+        <div class="profile-stat-value" id="profBestPrize">—</div>
+      </div>
+    </div>
+
+    <!-- Кнопки -->
+    <button id="achievementsBtn" class="menu-btn profile-btn-full">🏆 Достижения</button>
+<button id="profileSettingsBtn" class="menu-btn profile-btn-full">⚙️ Настройки профиля</button>
+<button id="profileShareBtn" class="menu-btn profile-btn-full">🔗 Поделиться профилем</button>
+<button id="backFromProfile" class="secondary" style="margin-top:12px">← НАЗАД</button>
+  </div>
+</section>
+
+<!-- ═══════════════ НАСТРОЙКИ ПРОФИЛЯ ═══════════════ -->
+<section id="screenProfileSettings" class="overlay hidden">
+  <div class="menu-card">
+    <h2 class="settings-title">⚙️ Настройки профиля</h2>
+
+    <button class="menu-btn profile-btn-full" id="changeAvatarBtn">🖼 Сменить аватарку</button>
+    <button class="menu-btn profile-btn-full" id="changeNameBtn">✏️ Сменить имя</button>
+    <button class="menu-btn profile-btn-full" id="changeBgBtn">🎨 Сменить фон профиля</button>
+    <button class="menu-btn profile-btn-full" id="changeFrameBtn">🔲 Сменить рамку</button>
+
+    <div class="profile-name-cooldown hidden" id="nameCooldown"></div>
+
+    <button id="backFromProfileSettings" class="secondary" style="margin-top:20px">← НАЗАД</button>
+  </div>
+</section>
+
+<!-- ═══════════════ ЕЖЕДНЕВКИ ═══════════════ -->
+<section id="screenDaily" class="overlay hidden">
+  <div class="menu-card daily-card">
+    <h2 class="settings-title">📅 Ежедневные задания</h2>
+    <p class="beta">3 задания на сегодня · обновление каждый день</p>
+
+    <div id="dailyList" class="daily-list"></div>
+
+    <div id="dailyBonus" class="daily-bonus hidden">
+      🎉 Все задания выполнены!
+    </div>
+
+    <button id="backFromDaily" class="secondary" style="margin-top:20px">← НАЗАД</button>
+  </div>
+</section>
+
+<!-- ═══════════════ ДОСТИЖЕНИЯ ═══════════════ -->
+<section id="screenAchievements" class="overlay hidden">
+  <div class="menu-card ach-card">
+    <h2 class="settings-title">🏆 Достижения</h2>
+    <p class="beta">
+      Открыто: <b id="achCount">0 / 0</b> ·
+      Незабранных: <b id="achUnclaimed" style="color:#ffd23c">0</b>
+    </p>
+
+    <div class="ach-filter-row">
+  <button class="ach-filter-btn" id="achFilterBtn">
+    <span class="ach-filter-icon">🔍</span>
+    <span class="ach-filter-label" id="achFilterLabel">Все</span>
+    <span class="ach-filter-arrow">▼</span>
+  </button>
+  <button class="ach-reset-btn hidden" id="achResetBtn" title="Сбросить">✕</button>
+</div>
+
+<div class="ach-filter-menu hidden" id="achFilterMenu">
+  <button class="ach-filter-item active" data-cat="all">Все</button>
+  <button class="ach-filter-item" data-cat="general">🎯 Основные</button>
+  <button class="ach-filter-item" data-cat="win">🏆 Победы</button>
+  <button class="ach-filter-item" data-cat="combo">🔥 Комбо</button>
+  <button class="ach-filter-item" data-cat="score">💯 Очки</button>
+  <button class="ach-filter-item" data-cat="ult">⚡ Ульты</button>
+  <button class="ach-filter-item" data-cat="targets">🎯 Мишени</button>
+  <button class="ach-filter-item" data-cat="shop">🛒 Магазин</button>
+  <button class="ach-filter-item" data-cat="spin">🎰 Рулетка</button>
+  <button class="ach-filter-item" data-cat="boss">💀 Боссы</button>
+  <button class="ach-filter-item" data-cat="daily">📅 Заходы</button>
+</div>
+
+    <div id="achList" class="ach-list"></div>
+
+    <button id="backFromAch" class="secondary" style="margin-top:20px">← НАЗАД</button>
+  </div>
+</section>
+
+<!-- ═══════════════ ВЫБОР АВАТАРКИ ═══════════════ -->
+<section id="avatarPicker" class="overlay hidden">
+  <div class="menu-card picker-card">
+    <h2 class="picker-title">🖼 Выбери аватарку</h2>
+    <div class="picker-grid" id="avatarGrid"></div>
+    <button id="avatarPickerClose" class="secondary" style="margin-top:16px">← НАЗАД</button>
+  </div>
+</section>
+
+<!-- ═══════════════ ВЫБОР ФОНА ПРОФИЛЯ ═══════════════ -->
+<section id="bgPicker" class="overlay hidden">
+  <div class="menu-card picker-card">
+    <h2 class="picker-title">🎨 Выбери фон профиля</h2>
+    <div class="picker-grid" id="bgGrid"></div>
+    <button id="bgPickerClose" class="secondary" style="margin-top:16px">← НАЗАД</button>
+  </div>
+</section>
+
+<!-- ═══════════════ ВЫБОР РАМКИ ═══════════════ -->
+<section id="framePicker" class="overlay hidden">
+  <div class="menu-card picker-card">
+    <h2 class="picker-title">🔲 Выбери рамку</h2>
+    <div class="picker-grid" id="frameGrid"></div>
+    <button id="framePickerClose" class="secondary" style="margin-top:16px">← НАЗАД</button>
+  </div>
+</section>
+
+</div>
+
+<!-- ═══════════════ СКРИПТЫ ═══════════════ -->
+<script src="js/storage.js?v=0.11.1"></script>
+<script src="js/api.js?v=0.11.1"></script>
+
+<script src="js/weapons/weapons.js?v=0.11.1"></script>
+<script src="js/weapons/weapon.shotgun.js?v=0.11.1"></script>
+
+<script src="js/skins.js?v=0.11.1"></script>
+<script src="js/sync.js?v=0.11.1"></script>
+<script src="js/fps.js?v=0.11.1"></script>
+<script src="js/game.js?v=0.11.1"></script>
+<script src="js/ult.laser.js?v=0.11.1"></script>
+<script src="js/cutscene.js?v=0.11.1"></script>
+<script src="js/ult.mlrs.js?v=0.11.1"></script>
+<script src="js/UI/menu.js?v=0.11.1"></script>
+<script src="js/UI/shop.js?v=0.11.1"></script>
+<script src="js/UI/roulette.js?v=0.11.1"></script>
+<script src="js/UI/rating.js?v=0.11.1"></script>
+<script src="js/UI/history.js?v=0.11.1"></script>
+<script src="js/UI/setting.js?v=0.11.1"></script>
+<script src="js/UI/profile.js?v=0.11.1"></script>
+<script src="js/UI/daily.js?v=0.11.1"></script>
+<script src="js/UI/achievements.js?v=0.11.1"></script>
+<script src="js/UI/about.js?v=0.11.1"></script>
+
+
+
+<!-- Скрытие Авроры до покупки -->
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var btn = document.getElementById('bgAuroraBtn');
+  if (!btn) return;
+  var owned = false;
+  try { owned = localStorage.getItem('tir_owned_bg_aurora') === '1'; } catch(e){}
+  if (!owned) btn.classList.add('hidden');
+});
+</script>
+
+<!-- ═══ ОВЕРЛЕЙ КАТСЦЕНЫ ═══ -->
+<div id="cutsceneOverlay" class="hidden"></div>
+
+</body>
+</html>

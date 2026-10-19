@@ -1,0 +1,217 @@
+/* ═══════════════════════════════════════════════════════════════
+   СКИН: Токсин
+   Это СКИН, не оружие: форма и механика стрельбы не меняются.
+   Меняется только внешний вид:
+   • ЗЕЛЁНАЯ палитра (зелёного нет ни в одном из прежних скинов);
+   • корпус — чёрный с жёлто-чёрными «хазард»-полосами,
+     ствол — тёмная колба со светящейся кислотой и пузырьками
+     (только background, БЕЗ ::before/::after на частях ружья);
+   • пули — капли кислоты, пульсирующие, с густым зелёным следом;
+   • вспышка выстрела — кислотно-зелёная.
+   Цена: 150 🪙 (предложение, см. описание в ответе).
+   Файл: skins/toxic.css   Класс: body.skin-toxic
+   ═══════════════════════════════════════════════════════════════ */
+
+body.skin-toxic{
+  /* Приклад и рукоять — чёрный полимер с зелёным отливом */
+  --r-stock: #1a2614;
+  --r-grip: #0f170b;
+
+  /* Корпус — почти чёрный, нижняя кромка кислотная */
+  --r-receiver: #151c10;
+  --r-receiver-inset: #4aa012;
+
+  /* Ствол — тёмная колба, свечение сбоку */
+  --r-barrel: #1f2c17;
+  --r-barrel-sh: #7dff2a;
+
+  /* Мушка горит, целик — тёмно-зелёный */
+  --r-front-sight: #c4ff4a;
+  --r-rear-sight: #1f3410;
+
+  /* Дуло — кислотное с ореолом */
+  --r-muzzle: #8aff1f;
+  --r-muzzle-border: #2f6a08;
+  --r-glow: 0 0 14px rgba(140, 255, 40, .85);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ТЕКСТУРЫ ЧАСТЕЙ (только background — безопасно)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Ствол — колба с кислотой: свечение по оси + пузырьки */
+body.skin-toxic .rifle-barrel{
+  background-color: var(--r-barrel);
+  background-image:
+    /* яркая жила кислоты по центру */
+    linear-gradient(90deg,
+      transparent 30%,
+      rgba(150,255,60,.55) 46%,
+      rgba(210,255,140,.8) 52%,
+      rgba(150,255,60,.45) 60%,
+      transparent 74%),
+    /* пузырьки */
+    radial-gradient(circle at 50% 18%, rgba(220,255,160,.95) 1.4px, transparent 2.2px),
+    radial-gradient(circle at 44% 62%, rgba(220,255,160,.8) 1px, transparent 1.8px),
+    radial-gradient(circle at 57% 86%, rgba(220,255,160,.85) 1.2px, transparent 2px),
+    /* кольца-обоймы колбы */
+    repeating-linear-gradient(0deg,
+      transparent 0, transparent 17px,
+      rgba(0,0,0,.55) 17px, rgba(0,0,0,.55) 19px);
+  background-size: auto, 31px 41px, 37px 53px, 29px 61px, auto;
+  box-shadow:
+    inset 0 0 0 1px rgba(5,12,2,.95),
+    inset 3px 0 0 var(--r-barrel-sh);
+}
+
+/* Приклад — чёрный полимер, зелёные прожилки */
+body.skin-toxic .rifle-stock{
+  background-color: var(--r-stock);
+  background-image:
+    linear-gradient(180deg, rgba(160,255,80,.14) 0%, transparent 30%),
+    repeating-linear-gradient(60deg,
+      transparent 0, transparent 9px,
+      rgba(110,230,40,.12) 9px, rgba(110,230,40,.12) 10px),
+    linear-gradient(180deg, #223319 0%, #1a2614 55%, #0e1609 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(3,8,1,.95),
+    inset 0 -3px 4px rgba(0,0,0,.55);
+}
+
+/* Рукоять — резиновая насечка */
+body.skin-toxic .rifle-grip{
+  background-color: var(--r-grip);
+  background-image:
+    repeating-linear-gradient(0deg,
+      transparent 0, transparent 6px,
+      rgba(120,255,50,.12) 6px, rgba(120,255,50,.12) 7px),
+    linear-gradient(180deg, #172210 0%, #0f170b 55%, #090e06 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(3,8,1,.95),
+    inset 0 -4px 6px rgba(0,0,0,.6);
+}
+
+/* Корпус — «хазард»: жёлто-чёрные полосы по верху + светящиеся точки */
+body.skin-toxic .rifle-receiver{
+  background-color: var(--r-receiver);
+  background-image:
+    /* хазард-полоса сверху */
+    repeating-linear-gradient(135deg,
+      #e8d21a 0, #e8d21a 5px,
+      #151c10 5px, #151c10 10px),
+    /* зелёные «индикаторы» */
+    radial-gradient(circle at 24% 62%, #9dff2e 1.6px, transparent 2.6px),
+    radial-gradient(circle at 50% 62%, rgba(157,255,46,.6) 1.6px, transparent 2.6px),
+    radial-gradient(circle at 76% 62%, rgba(157,255,46,.3) 1.6px, transparent 2.6px),
+    linear-gradient(90deg, #1b2514 0%, #151c10 50%, #0d130a 100%);
+  background-size: 100% 12px, auto, auto, auto, auto;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-position: 0 6px, 0 0, 0 0, 0 0, 0 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(3,8,1,.95),
+    inset 0 -8px 0 var(--r-receiver-inset);
+}
+
+/* Мушка — горит */
+body.skin-toxic .rifle-front-sight{
+  box-shadow: 0 0 6px rgba(190,255,70,.95);
+}
+
+/* Дуло: при выстреле вспыхивает ярче */
+body.skin-toxic #rifleWrap.recoil .rifle-muzzle{
+  box-shadow:
+    0 0 10px rgba(170,255,70,.95),
+    0 0 22px rgba(70,200,20,.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПУЛЯ — капля кислоты
+   Анимации/transform на самом .bullet НЕ вешаем (полёт задаёт JS).
+   Пульсация — только opacity на ::after (дёшево для FPS).
+   Не трогаем пули ульты (.ult-bullet) и дробь (.pv-pellet).
+   ═══════════════════════════════════════════════════════════════ */
+body.skin-toxic .bullet:not(.ult-bullet):not(.pv-pellet){
+  width: 9px;
+  height: 14px;
+  /* Капля: острый нос сверху (по ходу полёта), круглое «брюхо» снизу */
+  border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%;
+  background: radial-gradient(circle at 42% 62%,
+    #f2ffc0 0%, #9dff2e 40%, #3fb008 80%, #1f6a04 100%);
+  box-shadow:
+    0 0 5px rgba(150,255,50,.95),
+    0 0 12px rgba(100,230,30,.65);
+}
+
+/* Блик на капле */
+body.skin-toxic .bullet:not(.ult-bullet):not(.pv-pellet)::before{
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  width: 3px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.85);
+  pointer-events: none;
+}
+
+/* Густой зелёный след (позади пули) с пульсацией */
+body.skin-toxic .bullet:not(.ult-bullet):not(.pv-pellet)::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 7px;
+  height: 30px;
+  transform: translateX(-50%);
+  border-radius: 4px;
+  background: linear-gradient(180deg,
+    rgba(160,255,60,.9) 0%,
+    rgba(90,220,20,.55) 40%,
+    rgba(40,150,10,.22) 75%,
+    rgba(40,150,10,0) 100%);
+  filter: blur(1.6px);
+  pointer-events: none;
+  animation: toxicDrip .28s ease-in-out infinite alternate;
+}
+@keyframes toxicDrip{
+  from{ opacity: .6; }
+  to  { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ВСПЫШКА ВЫСТРЕЛА — кислотно-зелёная
+   ═══════════════════════════════════════════════════════════════ */
+body.skin-toxic #muzzleFlash::before{
+  background: linear-gradient(180deg,
+    transparent 0%, #f4ffd0 25%, #a6ff3a 55%, #2fa808 82%, transparent 100%);
+  box-shadow:
+    0 0 8px rgba(190,255,90,.95),
+    0 0 18px rgba(110,230,30,.7),
+    0 0 28px rgba(50,170,10,.45);
+}
+body.skin-toxic #muzzleFlash::after{
+  background: linear-gradient(90deg,
+    transparent 0%, #f4ffd0 25%, #a6ff3a 55%, #2fa808 82%, transparent 100%);
+  box-shadow:
+    0 0 8px rgba(190,255,90,.95),
+    0 0 18px rgba(110,230,30,.7),
+    0 0 28px rgba(50,170,10,.45);
+}
+
+@media (prefers-reduced-motion: reduce){
+  body.skin-toxic .bullet::after{ animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ПРЕВЬЮ В МАГАЗИНЕ
+   ═══════════════════════════════════════════════════════════════ */
+.shop-preview.weapon-toxic{
+  background: linear-gradient(135deg, #1b2a12, #070c04);
+  border-color: #9dff2e;
+  box-shadow: 0 0 12px rgba(157,255,46,.55);
+}
+.shop-preview.weapon-toxic::before{
+  background: linear-gradient(180deg, #e2ff9a 0%, #4fc10c 100%);
+  filter: drop-shadow(0 0 4px #9dff2e) drop-shadow(0 0 8px rgba(100,230,30,.6));
+}

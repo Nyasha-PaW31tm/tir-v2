@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>МЛРС — предпросмотр катсцены</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,sans-serif;overflow:hidden}
+  #ov{position:fixed;inset:0}
+  #ui{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;gap:10px;align-items:center;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(0,0,0,.65)}
+  button{background:#ffb347;color:#201000;border:0;border-radius:10px;padding:10px 16px;font-weight:800;font-size:15px}
+  input[type=range]{flex:1}
+  label{font-size:13px;white-space:nowrap}
+  #tm{font:600 13px monospace;min-width:70px;text-align:right}
+</style>
+</head>
+<body>
+<div id="ov"></div>
+<div id="ui">
+  <button id="play">▶ Играть</button>
+  <input id="seek" type="range" min="0" max="7000" step="10" value="0">
+  <span id="tm">0 мс</span>
+  <label><input id="snd" type="checkbox" checked> звук</label>
+</div>
+<script src="js/cutscene.js"></script>
+<script>
+  /* Предпросмотр: ползунок — любой кадр, «Играть» — полный прогон с таймлайном и звуком.
+     Все тайминги правятся в js/cutscene.js → константа TL. */
+  const ov = document.getElementById('ov'), seek = document.getElementById('seek'),
+        tm = document.getElementById('tm'), btn = document.getElementById('play');
+  const D = MLRSCutscene.debug;
+  function idle(){ ov.classList.remove('hidden'); D.setup(ov); D.render(+seek.value); }
+  seek.oninput = () => { tm.textContent = seek.value + ' мс'; D.render(+seek.value); };
+  btn.onclick = async () => {
+    btn.disabled = true; D.teardown();
+    const tick = setInterval(() => {}, 1000);
+    await MLRSCutscene.play(ov, { audio: document.getElementById('snd').checked });
+    clearInterval(tick); btn.disabled = false; seek.value = 0; tm.textContent = '0 мс'; idle();
+  };
+  idle();
+</script>
+</body>
+</html>
