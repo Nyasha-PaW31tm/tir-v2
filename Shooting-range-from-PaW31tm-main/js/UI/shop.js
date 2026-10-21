@@ -219,13 +219,13 @@ function filterEventItems(skins){
     ultimate:   ['ult_classic', 'ult_laser', 'ult_MLRS']
   };
   const PREVIEW_ALIASES = [
-    [/halloween|hallow|bone|skelet|skull|кост|тыкв|хэллоуин|хеллоуин/i, 'halloween'],
-    [/akc|ak-?74|акс/i,                                                'akc74m'],
-    [/shotgun|дроб/i,                                                  'shotgun'],
-    [/crossbow|арбалет/i,                                              'crossbow'],
-    [/paint|краск/i,                                                   'paintball']
-      [/sling|рогатк/i, 'slingshot'],
-  ];
+  [/halloween|hallow|bone|skelet|skull|кост|тыкв|хэллоуин|хеллоуин/i, 'halloween'],
+  [/akc|ak-?74|акс/i,                                                'akc74m'],
+  [/shotgun|дроб/i,                                                  'shotgun'],
+  [/crossbow|арбалет/i,                                              'crossbow'],
+  [/paint|краск/i,                                                   'paintball'],
+  [/sling|рогатк/i,                                                  'slingshot']
+];
   
   const CAT_ICON = { weapon: '🔫', target: '🎯', background: '🎨', ultimate: '⚡' };
 
@@ -241,22 +241,22 @@ function filterEventItems(skins){
   }
 
   function getPreviewHTML(skin){
-    const cat = skin.category || 'weapon';
+  const cat = skin.category || 'weapon';
 
-    if (cat === 'weapon'){
-      return `<div class="shop-preview weapon-${weaponPreviewKey(skin)}"></div>`;
-    }
-
-    const prefix = { target: 'target', ultimate: 'ult', background: 'background' }[cat];
-    const known  = PREVIEW_KNOWN[cat] || [];
-    if (prefix && known.includes(skin.id)){
-      return `<div class="shop-preview ${prefix}-${skin.id}"></div>`;
-    }
-    if (skin.id.startsWith('bg_') && known.includes(skin.id)){
-      return `<div class="shop-preview background-${skin.id}"></div>`;
-    }
-    return `<div class="shop-preview placeholder"><span>${CAT_ICON[cat] || '🎁'}</span></div>`;
+  if (cat === 'weapon'){
+    return `<div class="shop-preview weapon-${weaponKey(skin)}"></div>`;
   }
+
+  const prefix = { target: 'target', ultimate: 'ult', background: 'background' }[cat];
+  const known  = PREVIEW_KNOWN[cat] || [];
+  if (prefix && known.includes(skin.id)){
+    return `<div class="shop-preview ${prefix}-${skin.id}"></div>`;
+  }
+  if (skin.id.startsWith('bg_') && known.includes(skin.id)){
+    return `<div class="shop-preview background-${skin.id}"></div>`;
+  }
+  return `<div class="shop-preview placeholder"><span>${CAT_ICON[cat] || '🎁'}</span></div>`;
+}
 
   /* Цена */
   function getPriceHTML(skin){
