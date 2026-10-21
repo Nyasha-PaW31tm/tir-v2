@@ -224,8 +224,9 @@ function filterEventItems(skins){
     [/shotgun|дроб/i,                                                  'shotgun'],
     [/crossbow|арбалет/i,                                              'crossbow'],
     [/paint|краск/i,                                                   'paintball']
-  ],
-  [/sling|рогатк/i, 'slingshot'];
+      [/sling|рогатк/i, 'slingshot'],
+  ];
+  
   const CAT_ICON = { weapon: '🔫', target: '🎯', background: '🎨', ultimate: '⚡' };
 
     function weaponKey(skin){
