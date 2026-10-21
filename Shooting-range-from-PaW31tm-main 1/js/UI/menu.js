@@ -184,8 +184,15 @@ const Menu = (() => {
     /* Кнопка «Начать забег» */
     const startBtn = document.getElementById('startRunBtn');
     if (startBtn){
-      startBtn.onclick = () => {
+      startBtn.onclick = async () => {
         hideMenu();
+        /* Вступление с оружием игрока (можно пропустить кнопкой; общий тумблер «пропускать катсцены») */
+        const overlay = document.getElementById('cutsceneOverlay');
+        const noIntro = ['crossbow', 'paintball', 'slingshot'].indexOf(Storage.getActiveSkin()) !== -1;   /* для них пока нет своей катсцены */
+        if (overlay && window.IntroCutscene && !Storage.getSkipCutscenes() && !noIntro){
+          try { await window.IntroCutscene.play(overlay); }
+          catch(e){ console.error('[intro]', e); }
+        }
         if (typeof Game !== 'undefined' && Game.start) Game.start();
       };
     }

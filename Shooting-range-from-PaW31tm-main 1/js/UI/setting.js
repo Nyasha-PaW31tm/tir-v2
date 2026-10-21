@@ -125,6 +125,12 @@ if (halloweenBtn){
       const owned = Storage.get('owned_bg_ocean', '0') === '1';
       oceanBtn.classList.toggle('hidden', !owned);
     }
+    
+    const asinokoBtn = document.getElementById('bgAsinokoBtn');
+if (asinokoBtn){
+  const owned = Storage.get('owned_bg_asinoko', '0') === '1';
+  asinokoBtn.classList.toggle('hidden', !owned);
+}
 
     /* ─── Применяем текущий фон к body ─── */
     const current = Storage.getBackground();
@@ -137,6 +143,7 @@ if (halloweenBtn){
         || (btnBg === 'aurora' && current === 'aurora-winter');
       b.classList.toggle('active', isActive);
     });
+    
 
     /* ─── Клик по кнопке фона ─── */
     buttons.forEach(btn => {

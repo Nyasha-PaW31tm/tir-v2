@@ -197,7 +197,7 @@ function filterEventItems(skins){
     const cat = skin.category || 'weapon';
     if (cat !== 'weapon') return '';
 
-    const WEAPON_IDS = ['akc74m', 'shotgun'];
+    const WEAPON_IDS = ['akc74m', 'shotgun', 'crossbow', 'paintball', 'slingshot'];
     if (WEAPON_IDS.includes(skin.id)) {
       return '<span class="shop-kind weapon">Оружие</span>';
     }
@@ -213,7 +213,7 @@ function filterEventItems(skins){
      иконку вместо заглушки.
      ═══════════════════════════════════════════════════════════════ */
   const PREVIEW_KNOWN = {
-    weapon:     ['default', 'neon', 'star', 'china', 'akc74m', 'shotgun', 'halloween', 'frost', 'toxic'],
+    weapon:     ['default', 'neon', 'star', 'china', 'akc74m', 'shotgun', 'halloween', 'frost', 'toxic', 'crossbow', 'paintball'],
     target:     ['tg_classic', 'tg_neon', 'tg_halloween', 'tg_radar'],
     background: ['bg_star', 'bg_sunset', 'bg_aurora', 'bg_nightcity', 'bg_halloween', 'bg_china', 'bg_ocean'],
     ultimate:   ['ult_classic', 'ult_laser', 'ult_MLRS']
@@ -221,11 +221,14 @@ function filterEventItems(skins){
   const PREVIEW_ALIASES = [
     [/halloween|hallow|bone|skelet|skull|кост|тыкв|хэллоуин|хеллоуин/i, 'halloween'],
     [/akc|ak-?74|акс/i,                                                'akc74m'],
-    [/shotgun|дроб/i,                                                  'shotgun']
-  ];
+    [/shotgun|дроб/i,                                                  'shotgun'],
+    [/crossbow|арбалет/i,                                              'crossbow'],
+    [/paint|краск/i,                                                   'paintball']
+  ],
+  [/sling|рогатк/i, 'slingshot'];
   const CAT_ICON = { weapon: '🔫', target: '🎯', background: '🎨', ultimate: '⚡' };
 
-  function weaponPreviewKey(skin){
+    function weaponKey(skin){
     if (PREVIEW_KNOWN.weapon.includes(skin.id)) return skin.id;
     const hay = [skin.id, skin.name, skin.description].join(' ');
     for (const [re, key] of PREVIEW_ALIASES){
@@ -613,6 +616,7 @@ function getUltButtonHTML(skin){
       if (skinId === 'bg_nightcity') Storage.set('owned_bg_nightcity', '1');
       if (skinId === 'bg_halloween') Storage.set('owned_bg_halloween', '1');
       if (skinId === 'bg_ocean') Storage.set('owned_bg_ocean', '1');
+      if (skinId === 'bg_asinoko') Storage.set('owned_bg_asinoko', '1');
       
       // ★ Флаги покупки ульт
       if (skinId === 'ult_laser') {
@@ -704,7 +708,7 @@ function getUltButtonHTML(skin){
      ═══════════════════════════════════════════════════════════════ */
   function syncOwnedFlags(skins) {
   /* Фоны — двусторонняя синхронизация */
-  const bgIds = ['bg_star', 'bg_sunset', 'bg_aurora', 'bg_nightcity', 'bg_halloween', 'bg_ocean'];
+  const bgIds = ['bg_star', 'bg_sunset', 'bg_aurora', 'bg_nightcity', 'bg_halloween', 'bg_ocean', 'bg_asinoko'];
   bgIds.forEach(id => {
     const skin = (skins || []).find(s => s.id === id);
     const key = 'owned_' + id;

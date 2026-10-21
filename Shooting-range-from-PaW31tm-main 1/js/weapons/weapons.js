@@ -65,12 +65,18 @@ const Weapons = (() => {
       if (c.startsWith('weapon-')) rifle.classList.remove(c);
     });
 
-    /* Вставить нужную модель */
-    if (id && MODELS[id]){
-      rifle.innerHTML = MODELS[id];
+    /* Вставить нужную модель (встроенная или та, что оружие принесло само) */
+    const model = id && (MODELS[id] || (registry[id] && registry[id].model));
+    if (model){
+      rifle.innerHTML = model;
       rifle.classList.add('weapon-' + id);
     } else {
       rifle.innerHTML = DEFAULT_MODEL;
+    }
+
+    /* Хук «оружие взято в руки» (арбалет, краскопульт: анимации, цвет) */
+    if (id && registry[id] && typeof registry[id].onEquip === 'function'){
+      try { registry[id].onEquip(rifle); } catch(e){ console.warn('[weapons] onEquip', id, e); }
     }
 
     /* Сброс кэша длины дула */

@@ -30,7 +30,14 @@
 <link rel="stylesheet" href="skins/bg-aurora.css">
 <link rel="stylesheet" href="skins/bg-nightcity.css">
 <link rel="stylesheet" href="skins/bg-ocean.css">
+<link rel="stylesheet" href="skins/halloween.css">
+<link rel="stylesheet" href="skins/target-halloween.css">
+<link rel="stylesheet" href="skins/bg-halloween.css">
 <link rel="stylesheet" href="skins/skins.css">
+<link rel="stylesheet" href="weapons/weapon.shotgun.css">
+<link rel="stylesheet" href="weapons/weapon.crossbow.css">
+<link rel="stylesheet" href="weapons/weapon.paintball.css">
+<link rel="stylesheet" href="weapons/weapon.slingshot.css">
 
 <style>
 /* ─── Только стили превьюера (то, чего нет в игре) ─── */
@@ -63,6 +70,22 @@ html, body {
   position: absolute; inset: 0; flex: none; height: 100%; border-radius: 0;
 }
 
+/* Мишени в превью: попадание / «убита» (мишень не удаляется, через секунду оживает) */
+.target.pv-hit{ animation: pvHit .3s ease-out; }
+@keyframes pvHit{ 0%{ filter: brightness(2.4) } 100%{ filter: brightness(1) } }
+.target.pv-dead{ opacity: .12; filter: grayscale(1); transition: opacity .15s; }
+.pv-pop{
+  position: absolute; z-index: 30; pointer-events: none; font-weight: 900; font-size: 15px;
+  text-shadow: 0 2px 4px #000; transform: translate(-50%,-50%);
+  animation: pvPop .8s ease-out forwards;
+}
+@keyframes pvPop{
+  0%{ opacity:0; transform: translate(-50%,-50%) scale(.5) }
+  20%{ opacity:1; transform: translate(-50%,-120%) scale(1.15) }
+  100%{ opacity:0; transform: translate(-50%,-220%) scale(1) }
+}
+.pv-hint{ color:#8893a3; font-size:12px; margin:-6px 0 8px; }
+
 /* Пуля летит вверх и исчезает (только для превью) */
 .pv-bullet {
   animation: pvBulletFly 1s linear forwards !important;
@@ -89,6 +112,16 @@ html, body {
     <button class="pv-btn" data-skin="akc74m">AKC-74M</button>
     <button class="pv-btn" data-skin="frost">❄ Мороз</button>
     <button class="pv-btn" data-skin="toxic">☣ Токсин</button>
+    <button class="pv-btn" data-skin="halloween">🎃 Костяное</button>
+  </div>
+
+  <div class="pv-title">Оружие со своей механикой</div>
+  <p class="pv-hint">Води пальцем/мышью по сцене — ствол следует за прицелом. Жми ВЫСТРЕЛ. Мишени «убиваются» и оживают через секунду.</p>
+  <div class="pv-buttons">
+    <button class="pv-btn" data-skin="shotgun">💥 Дробовик</button>
+    <button class="pv-btn" data-skin="crossbow">🏹 Арбалет</button>
+    <button class="pv-btn" data-skin="paintball">🎨 Краскопульт</button>
+    <button class="pv-btn" data-skin="slingshot">🪨 Рогатка</button>
   </div>
 
   <div class="pv-title">Мишени</div>
@@ -96,6 +129,7 @@ html, body {
     <button class="pv-btn" data-target="default">Классика</button>
     <button class="pv-btn" data-target="tg_neon">Неон</button>
     <button class="pv-btn" data-target="tg_radar">📡 Радар</button>
+    <button class="pv-btn" data-target="tg_halloween">🎃 Хэллоуин</button>
   </div>
 
   <div class="pv-title">Фон</div>
@@ -112,6 +146,7 @@ html, body {
   <button class="pv-btn" data-bg="aurora-winter">❄ Аврора. Зима</button>
   <button class="pv-btn" data-bg="nightcity">🌃 Ночной город</button>
   <button class="pv-btn" data-bg="ocean">🌊 Океан</button>
+  <button class="pv-btn" data-bg="halloween">🎃 Хэллоуин</button>
 </div>
 
   <div class="pv-title">Мишени (все типы)</div>
@@ -148,6 +183,8 @@ html, body {
           <div class="rifle-muzzle"></div>
         </div>
       </div>
+      <div id="muzzleFlash"></div>
+      <div id="auroraSnow"><div class="snow-layer snow-a"></div><div class="snow-layer snow-b"></div></div>
       <div id="ncScene">
   <div class="nc-lane nc-a"></div>
   <div class="nc-lane nc-b"></div>
@@ -185,7 +222,160 @@ html, body {
 <!-- ★★ Скрипты ИГРЫ (только безопасные модули) ★★ -->
 <script src="js/storage.js"></script>
 <script src="js/api.js"></script>
+<script src="js/weapons/weapons.js"></script>
+<script src="js/weapons/weapon.shotgun.js"></script>
+<script src="js/weapons/weapon.fx.js"></script>
+<script src="js/weapons/weapon.crossbow.js"></script>
+<script src="js/weapons/weapon.paintball.js"></script>
+<script src="js/weapons/weapon.slingshot.js"></script>
 <script src="js/skins.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   PREVIEW: заглушка Game._internals — чтобы оружие с механикой
+   (дробовик, арбалет, краскопульт, рогатка) стреляло в превью.
+   Реальная игра не затрагивается. Мишени не удаляются: «убитая»
+   тускнеет и оживает через секунду.
+   ═══════════════════════════════════════════════════════════════ */
+const Game = (function(){
+  const $range = () => document.getElementById('range');
+  const $rifle = () => document.getElementById('rifle');
+  const aim = { x: 50, y: 38 };
+  const cache = new WeakMap();
+
+  function objOf(el){
+    let o = cache.get(el);
+    if (!o){
+      const hp = el.classList.contains('armored') ? 2 : 1;
+      o = { el: el, hp: hp, max: hp };
+      cache.set(el, o);
+    }
+    return o;
+  }
+  function targets(){ return Array.from($range().querySelectorAll('.target')).map(objOf); }
+
+  function center(el){
+    const tr = el.getBoundingClientRect(), r = $range().getBoundingClientRect();
+    return { x: tr.left + tr.width / 2 - r.left, y: tr.top + tr.height / 2 - r.top };
+  }
+
+  function geom(){
+    const r = $range().getBoundingClientRect(), rf = $rifle();
+    const pivotX = r.width / 2, pivotY = r.height - 18;
+    const tx = aim.x / 100 * r.width, ty = aim.y / 100 * r.height;
+    const angle = Math.atan2(tx - pivotX, pivotY - ty) * 180 / Math.PI;
+    let md = 0;
+    const withData = rf.querySelector('[data-muzzle-distance]');
+    if (withData) md = parseFloat(withData.dataset.muzzleDistance) || 0;
+    if (!(md > 0)){
+      const m = rf.querySelector('.rifle-muzzle');
+      md = m ? Math.hypot(m.offsetLeft + m.offsetWidth / 2 - rf.offsetWidth / 2,
+                          m.offsetTop + m.offsetHeight / 2 - rf.offsetHeight * 0.9) : 176;
+    }
+    const mx = pivotX + Math.sin(angle * Math.PI / 180) * md;
+    const my = pivotY - Math.cos(angle * Math.PI / 180) * md;
+    return { pivotX, pivotY, tx, ty, angle, mx, my, muzzleDist: md };
+  }
+
+  function updateRifle(){
+    const rf = $rifle();
+    if (!rf) return;
+    const modular = typeof Weapons !== 'undefined' && Weapons.getActive();
+    rf.style.transform = modular ? 'rotate(' + geom().angle + 'deg)' : '';
+  }
+
+  function findHit(xp, yp, radiusOverride){
+    const r = $range().getBoundingClientRect();
+    const tx = xp / 100 * r.width, ty = yp / 100 * r.height;
+    let hit = null, best = 1e9;
+    for (const t of targets()){
+      if (t.hp <= 0) continue;
+      const tr = t.el.getBoundingClientRect();
+      const cx = tr.left + tr.width / 2 - r.left, cy = tr.top + tr.height / 2 - r.top;
+      const dist = Math.hypot(tx - cx, ty - cy);
+      const rad = radiusOverride || (Math.max(tr.width, tr.height) / 2);
+      if (dist <= rad && dist < best){ best = dist; hit = t; }
+    }
+    return hit;
+  }
+
+  function pop(x, y, text, color){
+    const p = document.createElement('div');
+    p.className = 'pv-pop';
+    p.textContent = text;
+    p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.color = color;
+    $range().appendChild(p);
+    setTimeout(() => p.remove(), 850);
+  }
+
+  function hit(t){
+    t.hp--;
+    const el = t.el, c = center(el);
+    const h = el.querySelector('.hp');
+    if (h && t.max > 1) h.textContent = 'HP ' + Math.max(0, t.hp) + '/' + t.max;
+    el.classList.remove('pv-hit'); void el.offsetWidth; el.classList.add('pv-hit');
+    pop(c.x, c.y, t.hp <= 0 ? '💥' : 'HIT', '#7ff08a');
+    if (t.hp <= 0){
+      el.classList.add('pv-dead');
+      setTimeout(() => {
+        el.classList.remove('pv-dead');
+        t.hp = t.max;
+        const h2 = el.querySelector('.hp');
+        if (h2 && t.max > 1) h2.textContent = 'HP ' + t.max + '/' + t.max;
+      }, 1100);
+    }
+  }
+
+  function miss(){
+    const r = $range().getBoundingClientRect();
+    pop(aim.x / 100 * r.width, aim.y / 100 * r.height, 'MISS', '#ff6b6b');
+  }
+
+  const SFX = { shotgun: 'sounds/shotgun-fire.mp3', shot: 'sounds/fire.mp3', hit: 'sounds/armor.mp3', miss: 'sounds/miss.mp3' };
+  function playSfx(name){
+    if (!SFX[name]) return;
+    try {
+      const a = new Audio(SFX[name]);
+      a.volume = Math.max(0, Math.min(1, Storage.getVolume() / 100));
+      a.play().catch(() => {});
+    } catch(e){}
+  }
+
+  /* прицел: палец/мышь по сцене */
+  document.addEventListener('DOMContentLoaded', () => {
+    const range = $range();
+    const move = e => {
+      const r = range.getBoundingClientRect();
+      aim.x = Math.max(8, Math.min(92, (e.clientX - r.left) / r.width * 100));
+      aim.y = Math.max(5, Math.min(62, (e.clientY - r.top) / r.height * 100));
+      updateRifle();
+    };
+    range.addEventListener('pointermove', move);
+    range.addEventListener('pointerdown', move);
+    document.addEventListener('click', e => {
+      if (e.target.closest && e.target.closest('[data-skin]')) setTimeout(updateRifle, 0);
+    });
+    updateRifle();
+  });
+
+  return {
+    _internals: {
+      getGame: () => true,
+      getTargets: targets,
+      getAimGeom: geom,
+      getAim: () => ({ x: aim.x, y: aim.y }),
+      getElCenter: center,
+      findHit: findHit,
+      hitTarget: hit,
+      hitTargetNoMiss: hit,
+      miss: miss,
+      addShot(){}, addRecentShot(){}, spawnBullet(){},
+      playSfx: playSfx,
+      resetMuzzleCache(){}
+    }
+  };
+})();
+</script>
 
 <!-- ═══════════ СТОП. ВСТАВЬ ЧАСТЬ 2 НИЖЕ ═══════════ -->
 
@@ -488,6 +678,7 @@ if (ultBtn) ultBtn.onclick = () => playSfx('ult');
 
   /* ─── Выстрел ─── */
   function fireOnce() {
+  if (typeof Weapons !== 'undefined' && Weapons.fire()) return;
   if (isFiring) return;
   
   if (isAkcActive()) {

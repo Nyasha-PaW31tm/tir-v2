@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Тир — BETA 0.11.1</title>
+<title>Тир — BETA 0.11.2</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <link rel="stylesheet" href="style.css?v=0.11.1">
@@ -38,10 +38,14 @@
 <link rel="stylesheet" href="skins/bg-china.css?v=0.11.1">
 <link rel="stylesheet" href="skins/bg-sunset.css?v=0.11.1">
 <link rel="stylesheet" href="skins/bg-halloween.css?v=0.11.1">
+<link rel="stylesheet" href="skins/bg-asinoko.css?v=0.11.1">
 <link rel="stylesheet" href="skins/bg-ocean.css?v=0.11.1">
 <link rel="stylesheet" href="skins/skins.css?v=0.11.1">
 
 <link rel="stylesheet" href="weapons/weapon.shotgun.css?v=0.11.1">
+<link rel="stylesheet" href="weapons/weapon.crossbow.css?v=0.12.0">
+<link rel="stylesheet" href="weapons/weapon.paintball.css?v=0.12.0">
+<link rel="stylesheet" href="weapons/weapon.slingshot.css?v=0.12.0">
 <link rel="stylesheet" href="styles/modern.css?v=0.11.1">
 
 </head>
@@ -118,7 +122,7 @@
     <div class="menu-card">
       <div class="logo-mark">ТИР</div>
       <h1>Стрельбище</h1>
-      <p class="beta">BETA 0.11.1</p>
+      <p class="beta">BETA 0.11.2</p>
 
       <div class="menu-coins">🪙 <span id="menuCoins">0</span></div>
 
@@ -229,7 +233,8 @@
           <button class="bg-btn hidden" id="bgNightcityBtn" data-bg="nightcity" style="background:linear-gradient(135deg,#0a0c1a,#ffd23c);color:#fff">🌃 Ночной город</button>
           
           <button class="bg-btn hidden" id="bgHalloweenBtn" data-bg="halloween" style="background:linear-gradient(135deg,#1a0a2a,#ff8020);color:#fff">🎃 Хэллоуин</button>
-          <button class="bg-btn hidden" id="bgOceanBtn" data-bg="ocean" style="background:linear-gradient(135deg,#19a7b8,#031326);color:#fff">🌊 Океан</button>
+          <button class="bg-btn hidden" id="bgOceanBtn" data-bg="ocean" style="background:linear-gradient(135deg,#19a7b8,#031326);color:#fff">🌊 Океан</button
+          <button class="bg-btn hidden" id="bgAsinokoBtn" data-bg="asinoko">🖼 Асиноко</button>>
           
         </div>
       </div>
@@ -255,7 +260,7 @@
   <section id="screenAbout" class="overlay hidden">
     <div class="menu-card">
       <h1>О игре</h1>
-      <p class="beta">BETA 0.11.1</p>
+      <p class="beta">BETA 0.11.2</p>
       <p>Тир / Стрельбище — браузерная игра на чистом HTML/CSS/JS</p>
       <button id="backFromAbout" class="secondary">← НАЗАД</button>
     </div>
@@ -528,6 +533,10 @@
 
 <script src="js/weapons/weapons.js?v=0.11.1"></script>
 <script src="js/weapons/weapon.shotgun.js?v=0.11.1"></script>
+<script src="js/weapons/weapon.fx.js?v=0.12.0"></script>
+<script src="js/weapons/weapon.crossbow.js?v=0.12.0"></script>
+<script src="js/weapons/weapon.paintball.js?v=0.12.0"></script>
+<script src="js/weapons/weapon.slingshot.js?v=0.12.0"></script>
 
 <script src="js/skins.js?v=0.11.1"></script>
 <script src="js/sync.js?v=0.11.1"></script>
@@ -535,6 +544,7 @@
 <script src="js/game.js?v=0.11.1"></script>
 <script src="js/ult.laser.js?v=0.11.1"></script>
 <script src="js/cutscene.js?v=0.11.1"></script>
+<script src="js/intro_cutscene.js?v=0.11.2"></script>
 <script src="js/ult.mlrs.js?v=0.11.1"></script>
 <script src="js/UI/menu.js?v=0.11.1"></script>
 <script src="js/UI/shop.js?v=0.11.1"></script>

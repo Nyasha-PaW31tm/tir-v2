@@ -1,0 +1,157 @@
+/* ═══════════════════════════════════════════════════════════════
+   ОРУЖИЕ: КРАСКОПУЛЬТ
+   Класс-триггер: #rifle.weapon-paintball   (скин: body.skin-paintball)
+   Цвет шарика приходит из JS через переменные на <body>:
+     --pb-c / --pb-c-l / --pb-c-d  — заряженный шарик (следующий выстрел)
+     --pb-fire                     — цвет только что сделанного выстрела
+   ═══════════════════════════════════════════════════════════════ */
+
+#rifle.weapon-paintball{
+  width: 190px;
+  height: 220px;
+  transform-origin: 50% 90%;
+}
+
+#rifle.weapon-paintball .pb-svg{
+  position: absolute;
+  left: 0; top: 0;
+  overflow: visible;
+  pointer-events: none;
+  filter: drop-shadow(0 7px 5px rgba(0,0,0,.55));
+}
+
+/* цвет заряженного шарика: кольцо дула, полоса на баллоне, шарик в подаче */
+.pb-svg .pb-tip,
+.pb-svg .pb-band,
+.pb-svg .pb-feed{
+  fill: var(--pb-c, #ff4d6d);
+  transition: fill .2s ease;
+}
+.pb-svg .pb-tip{ filter: drop-shadow(0 0 4px var(--pb-c, #ff4d6d)); }
+.pb-svg .pb-feed{ stroke: rgba(255,255,255,.75); stroke-width: 1.2; }
+
+/* шарики в бункере чуть «дышат» */
+.pb-svg .pb-hb{
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pbBob 2.6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes pbBob{
+  0%,100%{ transform: translate(0,0); }
+  50%    { transform: translate(1.3px,-1.8px); }
+}
+
+/* выстрел: бункер трясётся, в подачу падает новый шарик, кольцо дула вспыхивает */
+.pb-svg.pb-fired .pb-hballs{
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pbShake .34s ease-out;
+}
+@keyframes pbShake{
+  0%  { transform: translate(0,0); }
+  20% { transform: translate(-2.6px, 2.2px); }
+  45% { transform: translate(2.4px,-1.8px); }
+  70% { transform: translate(-1.2px, 1px); }
+  100%{ transform: translate(0,0); }
+}
+.pb-svg.pb-fired .pb-feed{
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pbFeed .34s cubic-bezier(.3,1.6,.5,1);
+}
+@keyframes pbFeed{
+  0%  { transform: scale(.2); }
+  100%{ transform: scale(1); }
+}
+.pb-svg.pb-fired .pb-tip{
+  animation: pbTip .3s ease-out;
+}
+@keyframes pbTip{
+  0%  { filter: drop-shadow(0 0 3px var(--pb-fire)) drop-shadow(0 0 12px var(--pb-fire)); }
+  100%{ filter: drop-shadow(0 0 4px var(--pb-c, #ff4d6d)); }
+}
+
+/* дульная вспышка — цветом выстрела */
+body.skin-paintball #muzzleFlash::before{
+  background: linear-gradient(180deg, transparent 0%, #fff 25%, var(--pb-fire, #ff4d6d) 62%, transparent 100%);
+  box-shadow: 0 0 10px var(--pb-fire, #ff4d6d), 0 0 24px var(--pb-fire, #ff4d6d);
+}
+body.skin-paintball #muzzleFlash::after{
+  background: linear-gradient(90deg, transparent 0%, #fff 25%, var(--pb-fire, #ff4d6d) 62%, transparent 100%);
+  box-shadow: 0 0 10px var(--pb-fire, #ff4d6d), 0 0 24px var(--pb-fire, #ff4d6d);
+}
+
+/* облачко краски + газа у дула */
+.pb-puff{
+  position: absolute;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255,255,255,.85) 0%, rgba(255,255,255,.35) 30%, var(--c) 55%, transparent 72%);
+  transform: translate(-50%,-50%) scale(.4);
+  z-index: 9;
+  pointer-events: none;
+  animation: pbPuff .4s ease-out forwards;
+}
+@keyframes pbPuff{
+  0%  { transform: translate(-50%,-50%) scale(.4); opacity: .95; }
+  100%{ transform: translate(-50%,-62%) scale(2.6); opacity: 0; }
+}
+
+/* летящий шарик */
+.pb-ball{
+  position: absolute;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #fff 0, var(--cl) 16%, var(--c) 56%, var(--cd) 100%);
+  box-shadow: 0 0 8px var(--c), 0 0 16px var(--c);
+  z-index: 9;
+  pointer-events: none;
+}
+@keyframes pbBallFly{
+  0%  { transform: translate(-50%,-50%) scale(.8); }
+  100%{ transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); }
+}
+
+/* летящая капля */
+.pb-drop{
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--cl), var(--c) 60%, var(--cd));
+  box-shadow: 0 0 6px var(--c);
+  z-index: 9;
+  pointer-events: none;
+}
+@keyframes pbDropFly{
+  0%  { transform: translate(-50%,-50%) scale(1.2); }
+  100%{ transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.8); }
+}
+
+/* пятно краски: хлопок → висит → тает */
+.pb-splat{
+  position: absolute;
+  z-index: 5;                     /* поверх мишеней (4), под оружием (7) */
+  pointer-events: none;
+  transform: translate(-50%,-50%) rotate(var(--rot,0deg));
+  filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.45));
+  animation: pbSplat var(--life, 2s) cubic-bezier(.2,.8,.3,1) forwards;
+}
+@keyframes pbSplat{
+  0%  { transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(.25); opacity: 1; }
+  7%  { transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.16); }
+  14% { transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1); }
+  76% { transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1); opacity: 1; }
+  100%{ transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(.97); opacity: 0; }
+}
+/* потёки медленно ползут вниз */
+.pb-splat .pb-drip{
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  transform: scaleY(.12);
+  animation: pbDrip calc(var(--life) * .62) ease-in forwards;
+  animation-delay: var(--dl, .1s);
+}
+@keyframes pbDrip{
+  to{ transform: scaleY(1); }
+}

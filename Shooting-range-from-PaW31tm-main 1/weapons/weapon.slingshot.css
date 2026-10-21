@@ -1,0 +1,271 @@
+/* ═══════════════════════════════════════════════════════════════
+   ОРУЖИЕ: РОГАТКА
+   Класс-триггер: #rifle.weapon-slingshot   (скин: body.skin-slingshot)
+   Модель — SVG (js/weapons/weapon.slingshot.js), кожанка и резинки
+   анимируются из JS.
+   ═══════════════════════════════════════════════════════════════ */
+
+#rifle.weapon-slingshot{
+  width: 190px;
+  height: 220px;
+  transform-origin: 50% 90%;
+}
+#rifle.weapon-slingshot .sl-svg{
+  position: absolute;
+  left: 0; top: 0;
+  overflow: visible;
+  pointer-events: none;
+  filter: drop-shadow(0 7px 5px rgba(0,0,0,.55));
+}
+
+/* У рогатки нет дульной вспышки */
+body.skin-slingshot #muzzleFlash{ display: none !important; }
+
+/* Тлеющий фитиль петарды в кожанке */
+.sl-svg .sl-spark{
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: slFlick .18s steps(2) infinite alternate;
+}
+@keyframes slFlick{
+  from{ opacity: .55; transform: scale(.7); }
+  to  { opacity: 1;   transform: scale(1.25); }
+}
+@keyframes slSpin{ to{ transform: rotate(360deg); } }
+
+/* ─── Летящие снаряды: внешний .sl-fly двигает JS (WAAPI), внутри — вращение ─── */
+.sl-fly{
+  position: absolute;
+  width: 0; height: 0;
+  z-index: 9;
+  pointer-events: none;
+}
+
+/* 🪨 Камень (3 вида) */
+.sl-stone{
+  position: absolute;
+  left: -6px; top: -6px;
+  width: 12px; height: 12px;
+  border-radius: 48% 42% 55% 45% / 45% 55% 42% 52%;
+  background: radial-gradient(circle at 34% 30%, #c9ccd2 0, var(--s1, #8d9096) 45%, var(--s2, #484b52) 100%);
+  box-shadow: inset -1px -2px 2px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.6);
+  animation: slSpin .28s linear infinite;
+}
+.sl-stone.sl-v1{ --s1: #8a7561; --s2: #4a3a2c; }
+.sl-stone.sl-v2{ --s1: #6a6e76; --s2: #2c2e34; }
+
+/* 🔴 Резиновый шарик — крупнее камня */
+.sl-ball{
+  position: absolute;
+  left: -11px; top: -11px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #ff9d8f 0, #ff3d2e 30%, #c4160e 68%, #6e0906 100%);
+  box-shadow: inset -2px -3px 4px rgba(0,0,0,.35), 0 0 6px rgba(255,60,40,.55), 0 1px 3px rgba(0,0,0,.6);
+  animation: slSpin .45s linear infinite;
+}
+.sl-ball::before{                    /* блик резины */
+  content: "";
+  position: absolute;
+  left: 3px; top: 3px;
+  width: 8px; height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.55);
+  transform: rotate(-30deg);
+}
+.sl-ball::after{                     /* шов */
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border-top: 1.5px solid rgba(110,9,6,.5);
+  border-bottom: 1.5px solid rgba(110,9,6,.25);
+}
+
+/* 🧨 Петарда «Корсар 5» */
+.sl-cracker{
+  position: absolute;
+  left: -5px; top: -11px;
+  width: 10px; height: 22px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #8e150f, #e0362a 45%, #a31a12);
+  box-shadow: inset 0 0 0 1px #4a0805, 0 0 6px rgba(255,90,40,.7);
+  animation: slSpin .38s linear infinite;
+}
+.sl-cracker::before{                 /* жёлтые полосы */
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 6px;
+  height: 3px;
+  background: #f2c230;
+  box-shadow: 0 8px 0 #f2c230;
+}
+.sl-cracker::after{                  /* зелёный фитилёк с искрой */
+  content: "";
+  position: absolute;
+  left: 4px; top: -8px;
+  width: 2px; height: 8px;
+  border-radius: 1px;
+  background: #3fb83a;
+  box-shadow: 0 -2px 5px 2px rgba(255,200,80,.95);
+}
+
+/* искры за петардой */
+.sl-tspark{
+  position: absolute;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: #ffd86b;
+  box-shadow: 0 0 5px #ff9a2a;
+  z-index: 9;
+  pointer-events: none;
+  transform: translate(-50%,-50%);
+  animation: slTs .32s ease-out forwards;
+}
+@keyframes slTs{
+  to{ opacity: 0; transform: translate(-50%, -90%) scale(.3); }
+}
+
+/* осколки камня / шарика */
+.sl-chip{
+  position: absolute;
+  width: 5px; height: 5px;
+  border-radius: 2px;
+  background: var(--c, #999);
+  z-index: 10;
+  pointer-events: none;
+  animation: slChip .42s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes slChip{
+  0%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+  100%{ transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3) rotate(200deg); opacity: 0; }
+}
+
+/* кольцо рикошета */
+.sl-bounce{
+  position: absolute;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.9);
+  box-shadow: 0 0 10px rgba(255,90,70,.9);
+  z-index: 10;
+  pointer-events: none;
+  transform: translate(-50%,-50%) scale(.3);
+  animation: slBounce .34s ease-out forwards;
+}
+@keyframes slBounce{
+  0%  { transform: translate(-50%,-50%) scale(.3); opacity: 1; }
+  100%{ transform: translate(-50%,-50%) scale(1.8); opacity: 0; }
+}
+
+/* ─── ВЗРЫВ ─── */
+.sl-boom{
+  position: absolute;
+  width: 0; height: 0;
+  z-index: 12;
+  pointer-events: none;
+}
+.sl-boom i{
+  position: absolute;
+  display: block;
+  left: 0; top: 0;
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+}
+.sl-b-flash{
+  width: 130px; height: 130px;
+  background: radial-gradient(circle, #fff 0, #fff3a0 22%, #ff9a2a 50%, rgba(255,70,10,0) 72%);
+  animation: slFlash .38s ease-out forwards;
+}
+@keyframes slFlash{
+  0%  { transform: translate(-50%,-50%) scale(.2); opacity: 1; }
+  40% { transform: translate(-50%,-50%) scale(1.25); opacity: 1; }
+  100%{ transform: translate(-50%,-50%) scale(1.7); opacity: 0; }
+}
+.sl-b-ring{
+  width: calc(var(--R) * 2);
+  height: calc(var(--R) * 2);
+  border: 3px solid rgba(255,214,120,.9);
+  box-shadow: 0 0 14px rgba(255,150,40,.8), inset 0 0 14px rgba(255,150,40,.45);
+  animation: slRing .45s ease-out forwards;
+}
+@keyframes slRing{
+  0%  { transform: translate(-50%,-50%) scale(.1); opacity: 1; }
+  100%{ transform: translate(-50%,-50%) scale(1); opacity: 0; }
+}
+.sl-b-sp{
+  width: 5px; height: 5px;
+  border-radius: 1px !important;
+  background: #ffd86b;
+  box-shadow: 0 0 6px #ff9a2a;
+  animation: slSpark .55s cubic-bezier(.15,.7,.3,1) forwards;
+}
+@keyframes slSpark{
+  0%  { transform: translate(-50%,-50%) rotate(var(--a)) translateX(0); opacity: 1; }
+  100%{ transform: translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)); opacity: 0; }
+}
+
+.sl-smoke{
+  position: absolute;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(190,190,190,.55), rgba(90,90,90,.25) 60%, transparent 72%);
+  transform: translate(-50%,-50%) scale(.4);
+  z-index: 11;
+  pointer-events: none;
+  animation: slSmoke 1.1s ease-out forwards;
+}
+@keyframes slSmoke{
+  0%  { transform: translate(-50%,-50%) scale(.4); opacity: .9; }
+  100%{ transform: translate(-50%,-150%) scale(2.2); opacity: 0; }
+}
+
+.sl-scorch{
+  position: absolute;
+  width: calc(var(--R) * 1.1);
+  height: calc(var(--R) * 1.1);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(20,10,5,.5), rgba(20,10,5,0) 70%);
+  transform: translate(-50%,-50%);
+  z-index: 3;
+  pointer-events: none;
+  animation: slScorch 1.6s ease-out forwards;
+}
+@keyframes slScorch{
+  0%  { opacity: 1; }
+  100%{ opacity: 0; }
+}
+
+/* тряска поля от взрыва */
+#range.sl-shake{ animation: slShake .26s linear; }
+@keyframes slShake{
+  0%  { transform: translate(0,0); }
+  20% { transform: translate(-4px, 3px); }
+  40% { transform: translate(4px,-3px); }
+  60% { transform: translate(-3px,-2px); }
+  80% { transform: translate(2px, 2px); }
+  100%{ transform: translate(0,0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ИКОНКА В МАГАЗИНЕ (id: slingshot) — цветной SVG вместо силуэта-винтовки
+   ═══════════════════════════════════════════════════════════════ */
+.shop-preview.weapon-slingshot{
+  padding: 0 !important;
+  background: radial-gradient(circle at 50% 42%, #3a2d1f 0%, #1a130c 72%, #0a0705 100%) !important;
+  border-color: #e0a85a !important;
+  box-shadow: inset 0 0 14px rgba(0,0,0,.85), 0 0 9px rgba(224,168,90,.3) !important;
+}
+.shop-preview.weapon-slingshot::before{
+  content: "" !important;
+  position: absolute !important;
+  inset: 5% !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  background-color: transparent !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.8)) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E %3Cpath d='M45 98 L55 98 L53 68 L50 58 L47 68Z' fill='%239a5f2c' stroke='%233b2210' stroke-width='1.4'/%3E %3Cpath d='M50 64 C48 48 36 38 30 14' fill='none' stroke='%232a170a' stroke-width='10' stroke-linecap='round'/%3E %3Cpath d='M50 64 C52 48 64 38 70 14' fill='none' stroke='%232a170a' stroke-width='10' stroke-linecap='round'/%3E %3Cpath d='M50 64 C48 48 36 38 30 14' fill='none' stroke='%23b0733a' stroke-width='6' stroke-linecap='round'/%3E %3Cpath d='M50 64 C52 48 64 38 70 14' fill='none' stroke='%23b0733a' stroke-width='6' stroke-linecap='round'/%3E %3Cpolyline points='30,15 43,50' fill='none' stroke='%23e8c27a' stroke-width='2.2'/%3E %3Cpolyline points='70,15 57,50' fill='none' stroke='%23e8c27a' stroke-width='2.2'/%3E %3Cpath d='M41 50 Q42 43 47 43 L53 43 Q58 43 59 50 Q58 57 50 57 Q42 57 41 50Z' fill='%237a4a24' stroke='%232e1a0a'/%3E %3Ccircle cx='50' cy='44' r='7' fill='%23ff3d2e' stroke='%236e0906'/%3E %3Cellipse cx='47.5' cy='41.5' rx='2.4' ry='1.4' fill='%23fff' opacity='.5'/%3E %3Cg transform='translate(82 24) rotate(28)'%3E%3Crect x='-4' y='-9' width='8' height='18' rx='1.6' fill='%23d4281f' stroke='%234a0805'/%3E%3Crect x='-4' y='-3' width='8' height='2.6' fill='%23f2c230'/%3E%3Cpath d='M0 -9 C3 -13 -2 -14 1 -18' fill='none' stroke='%233fb83a' stroke-width='1.6' stroke-linecap='round'/%3E%3Ccircle cx='1' cy='-18.5' r='2' fill='%23ffe27a'/%3E%3C/g%3E %3Cpath d='M16 70 L22 64 L28 70 L25 77 L18 77Z' fill='%238d9096' stroke='%231c1c1c'/%3E%3C/svg%3E") !important;
+}

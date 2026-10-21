@@ -1,0 +1,6 @@
+body[data-bg="asinoko"] #range {
+  /* 40% затемнение, чтобы белые мишени и текст читались, + сама картинка */
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+    url('../images/Asinoko-bg.webp') center / cover no-repeat;
+}
